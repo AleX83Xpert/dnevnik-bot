@@ -2,6 +2,8 @@ services:
   DnevnikApp:
     container_name: dnevnik-app
     image: library/node:lts-alpine
+    depends_on:
+      - postgresdb
     user: "node"
     working_dir: /app
     volumes:
