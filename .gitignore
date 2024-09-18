@@ -1,0 +1,6 @@
+node_modules
+.keystone/
+.vscode/
+pgdata/
+.env
+*.log

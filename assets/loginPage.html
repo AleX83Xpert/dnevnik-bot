@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Test login</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+
+<body>
+  <form id="tokensForm">
+    <label for="accessToken">Auth__token:</label><br />
+    <input type="password" id="accessToken" name="accessToken" value=""><br /><br />
+
+    <label for="refreshToken">Auth__refresh:</label><br />
+    <input type="password" id="refreshToken" name="refreshToken" value=""><br /><br />
+
+    <input type="submit" value="Submit">
+  </form>
+  <script>
+    const form = document.getElementById('tokensForm')
+    form.addEventListener('submit', function (event) {
+      const webApp = window.Telegram.WebApp
+      const chat = window.Telegram.WebAppChat
+      const user = window.Telegram.WebAppUser
+      const accessToken = event.target.elements.accessToken.value
+      const refreshToken = event.target.elements.refreshToken.value
+
+      // See the field web_app_data in the class Message (https://core.telegram.org/bots/api#message)
+      webApp.sendData(JSON.stringify({ accessToken, refreshToken }))
+
+      event.target.reset()
+      event.preventDefault()
+    })
+  </script>
+</body>
+
+</html>

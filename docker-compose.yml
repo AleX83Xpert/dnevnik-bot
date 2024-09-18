@@ -1,0 +1,34 @@
+services:
+  DnevnikApp:
+    container_name: dnevnik-app
+    image: library/node:lts-alpine
+    user: "node"
+    working_dir: /app
+    volumes:
+      - ./:/app
+    command: sh -c "npm install && npm run build && npm start"
+    networks:
+      - appnet
+  
+  postgresdb:
+    container_name: dnevnik-postgresdb
+    image: postgres
+    environment:
+      POSTGRES_DB: main
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    networks:
+      - appnet
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  appnet:
+    driver: bridge
