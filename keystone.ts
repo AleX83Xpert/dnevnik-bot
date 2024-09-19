@@ -14,7 +14,7 @@ export default withAuth(
     db: {
       provider: 'postgresql',
       url: process.env.DATABASE_URL as string,
-      shadowDatabaseUrl: 'postgres://postgres:postgres@localhost:5432/mainshadowdb', // TODO move to env?
+      shadowDatabaseUrl: process.env.SHADOW_DATABASE_URL as string,
       onConnect: async (context) => { logger.info({ msg: 'Connected to database' }) },
       enableLogging: true,
       idField: { kind: 'uuid' },

@@ -11,7 +11,7 @@ services:
       - appnet
 
   dnevnik-app-01:
-    restart: on-failure
+    # restart: on-failure
     container_name: dnevnik-app-01
     hostname: dnevnik-app-01
     image: library/node:lts-alpine
@@ -20,7 +20,7 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
-    command: sh -c "npm ci && npm run build && npm run disable-telemetry && npm run migrate-apply && npm start"
+    command: sh -c "npm ci && npm run disable-telemetry && npm run build && npm run migrate-apply && npm start"
     networks:
       - appnet
   
