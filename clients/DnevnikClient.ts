@@ -44,7 +44,7 @@ export class DnevnikClient {
     return data
   }
 
-  public async refreshToken() {
+  public async refreshTokens() {
     return await this.fetch<TRefreshTokenBody, TRefreshTokenResult>('/auth/Token/Refresh', { refreshToken: this.dnevnikRefreshToken })
   }
 

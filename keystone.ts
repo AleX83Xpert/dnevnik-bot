@@ -6,8 +6,14 @@ import { Markup, Telegraf } from 'telegraf'
 import { message } from 'telegraf/filters'
 import express from 'express'
 import 'dotenv/config'
+import { DnevnikClient } from './clients/DnevnikClient'
 
 const logger = getLogger('main')
+
+type TDnevnikTokens = {
+  accessToken: string
+  refreshToken: string
+}
 
 export default withAuth(
   config({
@@ -34,6 +40,10 @@ export default withAuth(
 
         app.use('/static/', express.static('./public'))
 
+        setInterval(async () => {
+          logger.info({ msg: 'refresh tokens' })
+        }, 300000)
+
         const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN as string, {})
 
         bot.start(async (ctx) => {
@@ -51,8 +61,34 @@ export default withAuth(
           ctx.reply(`Здравствуйте, ${ctx.from.first_name ?? ctx.from.username ?? 'человек'}! Это бот для работы с дневником. Он подключается к дневнику, используя ваш аккаунт. Чтобы указать данные аккаунта, используйте команду /login.`)
         })
 
-        bot.on(message('web_app_data'), (ctx) => {
-          const data = ctx.webAppData?.data.json()
+        bot.on(message('web_app_data'), async (ctx) => {
+          const data: TDnevnikTokens = ctx.webAppData?.data.json()
+          const telegramId = String(ctx.from.id)
+
+          logger.info({ msg: 'check tokens', data })
+
+          let telegramUser = await godContext.db.TelegramUser.findOne({ where: { telegramId } })
+          if (!telegramUser) {
+            telegramUser = await godContext.db.TelegramUser.createOne({
+              data: {
+                telegramId,
+                meta: ctx.from,
+              }
+            })
+          }
+
+          // get new tokens data
+          const dnevnikClient = new DnevnikClient({ accessToken: data.accessToken, refreshToken: data.refreshToken })
+          const newTokens = await dnevnikClient.refreshTokens()
+          await godContext.db.TelegramUser.updateOne({
+            where: { telegramId },
+            data: {
+              dnevnikAccessToken: newTokens.accessToken,
+              dnevnikAccessTokenExpirationDate: newTokens.accessTokenExpirationDate,
+              dnevnikRefreshToken: newTokens.refreshToken,
+            }
+          })
+
           // TODO update and save tokens
           ctx.reply('Готово! Бот подключен к вашему аккаунту в дневнике. Чтобы отключить все это используйте команду /logout.', Markup.removeKeyboard())
         })
