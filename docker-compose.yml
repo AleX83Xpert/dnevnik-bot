@@ -5,6 +5,7 @@ services:
     build: ./infra/load-balancer
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - dnevnik-app-01
     networks:
