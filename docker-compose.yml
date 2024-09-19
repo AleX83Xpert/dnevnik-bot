@@ -8,6 +8,8 @@ services:
       - "443:443"
     depends_on:
       - dnevnik-app-01
+    volumes:
+      - /etc/letsencrypt/live/:/etc/letsencrypt/live/
     networks:
       - appnet
 
