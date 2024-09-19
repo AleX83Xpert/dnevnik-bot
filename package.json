@@ -5,6 +5,7 @@
   "scripts": {
     "migrate-create": "keystone migrate create",
     "migrate-apply": "keystone migrate apply",
+    "disable-telemetry": "keystone telemetry disable",
     "dev": "keystone dev",
     "build": "keystone build",
     "start": "keystone start"

@@ -7,7 +7,7 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
-    command: sh -c "npm ci && npm run build && npm start"
+    command: sh -c "npm ci && npm run build && npm run disable-telemetry && npm start"
     networks:
       - appnet
     ports:
