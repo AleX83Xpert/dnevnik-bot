@@ -9,7 +9,10 @@ services:
     depends_on:
       - dnevnik-app-01
     volumes:
-      - /etc/letsencrypt/live/:/etc/letsencrypt/live/
+    # how to get ssl cert:
+    # https://certbot.eff.org/instructions?ws=nginx&os=pip
+      - /etc/letsencrypt/live:/etc/letsencrypt/live:ro
+      - /etc/letsencrypt/archive:/etc/letsencrypt/archive:ro
     networks:
       - appnet
 
