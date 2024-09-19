@@ -4,13 +4,14 @@ services:
     image: library/node:lts-alpine
     depends_on:
       - postgresdb
-    user: "node"
     working_dir: /app
     volumes:
       - ./:/app
     command: sh -c "npm ci && npm run build && npm start"
     networks:
       - appnet
+    ports:
+      - "3000:3000"
   
   postgresdb:
     container_name: dnevnik-postgresdb

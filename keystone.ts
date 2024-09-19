@@ -4,6 +4,7 @@ import { withAuth, session } from './auth'
 import { getLogger } from './utils/logger'
 import { Markup, Telegraf } from 'telegraf'
 import { message } from 'telegraf/filters'
+import express from 'express'
 import 'dotenv/config'
 
 const logger = getLogger('main')
@@ -28,14 +29,26 @@ export default withAuth(
     },
     server: {
       extendExpressApp: async (app, context) => {
-        app.get('/loginPage', (req, res, next) => {
-          res.send('<h1>hello</h1>')
-        })
+        const godContext = context.sudo()
+        const loginPageUrl = `${process.env.SERVER_URL}/static/loginPage.html`
+
+        app.use('/static/', express.static('./public'))
 
         const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN as string, {})
 
-        bot.start((ctx) => {
-          ctx.reply('Здравствуйте! Это бот для работы с дневником. Он подключается к дневнику используя ваш аккаунт. Чтобы указать данные аккаунта, используйте команду /login.')
+        bot.start(async (ctx) => {
+          const telegramId = String(ctx.from.id)
+          let telegramUser = await godContext.db.TelegramUser.findOne({ where: { telegramId } })
+          if (!telegramUser) {
+            telegramUser = await godContext.db.TelegramUser.createOne({
+              data: {
+                telegramId,
+                meta: ctx.from,
+              }
+            })
+          }
+
+          ctx.reply(`Здравствуйте, ${ctx.from.first_name ?? ctx.from.username ?? 'человек'}! Это бот для работы с дневником. Он подключается к дневнику, используя ваш аккаунт. Чтобы указать данные аккаунта, используйте команду /login.`)
         })
 
         bot.on(message('web_app_data'), (ctx) => {
@@ -48,7 +61,7 @@ export default withAuth(
           // TODO check for already has dnevnik tokens
           ctx.reply(
             'Для подключения дневника нажмите кнопку "Подключить дневник" внизу. Там же откроется инструкция.',
-            Markup.keyboard([Markup.button.webApp('Подключить дневник', 'https://feathers.studio/telegraf/webapp/example')]).resize(),
+            Markup.keyboard([Markup.button.webApp('Подключить дневник', loginPageUrl)]).resize(),
           )
         })
 
