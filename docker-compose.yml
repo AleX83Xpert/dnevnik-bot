@@ -1,6 +1,19 @@
 services:
-  DnevnikApp:
-    container_name: dnevnik-app
+  load-balancer:
+    container_name: load-balancer
+    hostname: load-balancer
+    build: ./infra/load-balancer
+    ports:
+      - "80:80"
+    depends_on:
+      - dnevnik-app-01
+    networks:
+      - appnet
+
+  dnevnik-app-01:
+    restart: on-failure
+    container_name: dnevnik-app-01
+    hostname: dnevnik-app-01
     image: library/node:lts-alpine
     depends_on:
       - postgresdb
@@ -10,11 +23,12 @@ services:
     command: sh -c "npm ci && npm run build && npm run disable-telemetry && npm start"
     networks:
       - appnet
-    ports:
-      - "3000:3000"
+    # ports:
+    #   - "3001:3000"
   
   postgresdb:
     container_name: dnevnik-postgresdb
+    hostname: postgresdb
     image: postgres
     environment:
       POSTGRES_DB: main
@@ -25,8 +39,8 @@ services:
       - ./pgdata:/var/lib/postgresql/data
     networks:
       - appnet
-    ports:
-      - "5432:5432"
+    # ports:
+    #   - "5432:5432"
 
 volumes:
   pgdata:
