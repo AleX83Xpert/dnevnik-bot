@@ -20,11 +20,9 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
-    command: sh -c "npm ci && npm run build && npm run disable-telemetry && npm start"
+    command: sh -c "npm ci && npm run build && npm run disable-telemetry && npm run migrate-apply && npm start"
     networks:
       - appnet
-    # ports:
-    #   - "3001:3000"
   
   postgresdb:
     container_name: dnevnik-postgresdb
@@ -39,6 +37,7 @@ services:
       - ./pgdata:/var/lib/postgresql/data
     networks:
       - appnet
+    # do not need to open ports on prod
     # ports:
     #   - "5432:5432"
 
