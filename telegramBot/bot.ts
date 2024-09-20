@@ -3,12 +3,13 @@ import { Markup, Telegraf } from "telegraf"
 import { getLogger } from '../utils/logger'
 import { message } from 'telegraf/filters'
 import { onLogout, onSendTokens, onStart } from "./botHandlers"
-import { Update } from "@telegraf/types/update"
 
 export function prepareTelegramBot(godContext: KeystoneContext, botToken: string): Telegraf {
   const loginPageUrl = `${process.env.SERVER_URL}/static/loginPage.html`
   const logger = getLogger('telegramBot')
-  const bot = new Telegraf(botToken)
+  const bot = new Telegraf(botToken, {
+    handlerTimeout: 30_000,
+  })
 
   bot.start(async (ctx) => {
     await onStart(godContext, ctx)
