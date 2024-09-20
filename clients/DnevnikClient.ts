@@ -36,7 +36,7 @@ export class DnevnikClient {
     })
 
     if (result.status !== 200) {
-      throw new Error(`Error status: ${result.status}`)
+      throw new Error(`Error status: ${result.status}, ${result.statusText}`)
     }
 
     const data: TResult = await result.json()

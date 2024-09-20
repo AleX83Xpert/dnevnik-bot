@@ -5,7 +5,7 @@ import { getLogger } from './utils/logger'
 import express from 'express'
 import 'dotenv/config'
 import { startTokensRefresher } from './utils/dnevnikTokensRefresher'
-import { prepareTelegramBot } from './telegramBot'
+import { prepareTelegramBot } from './telegramBot/bot'
 
 const logger = getLogger('main')
 
@@ -33,7 +33,7 @@ export default withAuth(
 
         app.use('/static/', express.static('./public'))
 
-        startTokensRefresher(godContext)
+        startTokensRefresher(godContext, Number(process.env.TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC), Number(process.env.TELEGRAM_TOKENS_REFRESH_BEFORE_SEC))
 
         const bot = prepareTelegramBot(godContext, process.env.TELEGRAM_BOT_TOKEN as string)
         bot.launch()
