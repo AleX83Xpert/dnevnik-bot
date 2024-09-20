@@ -6,8 +6,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    depends_on:
-      - dnevnik-app-01
     volumes:
     # how to get ssl cert:
     # https://certbot.eff.org/instructions?ws=nginx&os=pip
@@ -21,8 +19,6 @@ services:
     container_name: dnevnik-app-01
     hostname: dnevnik-app-01
     image: library/node:lts-alpine
-    depends_on:
-      - postgresdb
     working_dir: /app
     volumes:
       - ./:/app
