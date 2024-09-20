@@ -27,7 +27,9 @@ model TelegramUser {
   dnevnikAccessToken               String    @default("")
   dnevnikAccessTokenExpirationDate DateTime?
   dnevnikRefreshToken              String    @default("")
+  dnevnikTokensUpdatedAt           DateTime?
   createdAt                        DateTime? @default(now())
 
   @@index([dnevnikAccessTokenExpirationDate])
+  @@index([dnevnikTokensUpdatedAt])
 }

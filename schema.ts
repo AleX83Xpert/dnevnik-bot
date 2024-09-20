@@ -59,6 +59,7 @@ export const lists = {
           dnevnikAccessToken: text({ validation: { isRequired: false }, ui: {} }),
           dnevnikAccessTokenExpirationDate: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
           dnevnikRefreshToken: text({ validation: { isRequired: false } }),
+          dnevnikTokensUpdatedAt: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
         },
       }),
       createdAt: timestamp({ defaultValue: { kind: 'now' } }),

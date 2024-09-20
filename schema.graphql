@@ -134,6 +134,7 @@ type TelegramUser {
   dnevnikAccessToken: String
   dnevnikAccessTokenExpirationDate: DateTime
   dnevnikRefreshToken: String
+  dnevnikTokensUpdatedAt: DateTime
   createdAt: DateTime
 }
 
@@ -151,6 +152,7 @@ input TelegramUserWhereInput {
   dnevnikAccessToken: StringFilter
   dnevnikAccessTokenExpirationDate: DateTimeNullableFilter
   dnevnikRefreshToken: StringFilter
+  dnevnikTokensUpdatedAt: DateTimeNullableFilter
   createdAt: DateTimeNullableFilter
 }
 
@@ -160,6 +162,7 @@ input TelegramUserOrderByInput {
   dnevnikAccessToken: OrderDirection
   dnevnikAccessTokenExpirationDate: OrderDirection
   dnevnikRefreshToken: OrderDirection
+  dnevnikTokensUpdatedAt: OrderDirection
   createdAt: OrderDirection
 }
 
@@ -169,6 +172,7 @@ input TelegramUserUpdateInput {
   dnevnikAccessToken: String
   dnevnikAccessTokenExpirationDate: DateTime
   dnevnikRefreshToken: String
+  dnevnikTokensUpdatedAt: DateTime
   createdAt: DateTime
 }
 
@@ -183,6 +187,7 @@ input TelegramUserCreateInput {
   dnevnikAccessToken: String
   dnevnikAccessTokenExpirationDate: DateTime
   dnevnikRefreshToken: String
+  dnevnikTokensUpdatedAt: DateTime
   createdAt: DateTime
 }
 
