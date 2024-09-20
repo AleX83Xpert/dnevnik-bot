@@ -16,7 +16,7 @@ export default withAuth(
       url: process.env.DATABASE_URL as string,
       shadowDatabaseUrl: process.env.SHADOW_DATABASE_URL as string,
       onConnect: async (context) => { logger.info({ msg: 'Connected to database' }) },
-      enableLogging: true,
+      enableLogging: process.env.ENABLE_DB_LOGS === 'true',
       idField: { kind: 'uuid' },
     },
     lists,
