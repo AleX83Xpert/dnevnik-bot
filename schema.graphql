@@ -136,6 +136,7 @@ type TelegramUser {
   dnevnikRefreshToken: String
   dnevnikTokensUpdatedAt: DateTime
   createdAt: DateTime
+  label: String
 }
 
 input TelegramUserWhereUniqueInput {
