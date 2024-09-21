@@ -35,7 +35,7 @@ export async function refreshAndSaveTokens(godContext: KeystoneContext, telegram
 
   const newTokens = await dnevnikClient.refreshTokens()
 
-  await godContext.db.TelegramUser.updateOne({
+  await godContext.query.TelegramUser.updateOne({
     where: { telegramId },
     data: {
       dnevnikAccessToken: newTokens.accessToken,
