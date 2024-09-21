@@ -13,11 +13,6 @@ export async function startTokensRefresher(godContext: KeystoneContext, interval
 
   refreshInterval = setInterval(async () => {
     logger.info({ msg: 'refresh tokens' })
-
-    
-// !!!!! query instead of db
-
-    
     const expiredSoonUsers = await godContext.query.TelegramUser.findMany({
       where: {
         dnevnikAccessTokenExpirationDate: { lte: dayjs().add(refreshBeforeSec, 'seconds').toISOString() },

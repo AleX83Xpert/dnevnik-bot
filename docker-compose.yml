@@ -19,8 +19,6 @@ services:
     container_name: dnevnik-app-01
     hostname: dnevnik-app-01
     image: library/node:lts-alpine
-    environment:
-      NODE_ENV: ${NODE_ENV}
     working_dir: /app
     volumes:
       - ./:/app

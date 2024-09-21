@@ -7,9 +7,7 @@ import { onLogout, onSendTokens, onStart } from "./botHandlers"
 export function prepareTelegramBot(godContext: KeystoneContext, botToken: string): Telegraf {
   const loginPageUrl = `${process.env.SERVER_URL}/static/loginPage.html`
   const logger = getLogger('telegramBot')
-  const bot = new Telegraf(botToken, {
-    handlerTimeout: 30_000,
-  })
+  const bot = new Telegraf(botToken)
 
   bot.start(async (ctx) => {
     await onStart(godContext, ctx)
