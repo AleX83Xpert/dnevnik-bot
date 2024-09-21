@@ -194,8 +194,27 @@ export class DnevnikClient {
     return await this.fetch<undefined, TStudentsResult>('/students')
   }
 
-  public async getSchedule(studentId: string, pageNumber: number) {
-    return await this.fetch<undefined, TScheduleResult>(`/schedule?pageNumber=${pageNumber}&studentId=${studentId}`)
+  /**
+   * date is YYYY-MM-DD
+   * if date is presend, pageNumber is ignoring
+   * @param data 
+   * @returns 
+   */
+  public async getSchedule(data:{studentId: string, pageNumber?: number, date?: string}) {
+    const urlParams = new URLSearchParams()
+
+    urlParams.append('studentId', data.studentId)
+
+
+    if (data.pageNumber) {
+      urlParams.append('pageNumber', String(data.pageNumber))
+    }
+
+    if (data.date) {
+      urlParams.append('date', String(data.date))
+    }
+
+    return await this.fetch<undefined, TScheduleResult>(`/schedule?${urlParams.toString()}`)
   }
 
   /**
@@ -208,15 +227,15 @@ export class DnevnikClient {
     return await this.fetch<undefined, THomeworkResult>(`/homework?date=${date}&studentId=${studentId}`)
   }
 
-  public async getYears(studentId: string) {
+  public async getEstimateYears(studentId: string) {
     return await this.fetch<undefined, TYearsResult>(`/estimate/years?studentId=${studentId}`)
   }
 
-  public async getPeriods(studentId: string, schoolYear: string) {
+  public async getEstimatePeriods(studentId: string, schoolYear: string) {
     return await this.fetch<undefined, TPeriodsResult>(`/periods?schoolYear=${schoolYear}&studentId=${studentId}`)
   }
 
-  public async getSubjects(studentId: string, schoolYear: string) {
+  public async getEstimateSubjects(studentId: string, schoolYear: string) {
     return await this.fetch<undefined, TSubjectsResult>(`/subjects?schoolYear=${schoolYear}&studentId=${studentId}`)
   }
 
@@ -224,7 +243,19 @@ export class DnevnikClient {
     return await this.fetch<undefined, TClassesResult>(`/classes?schoolYear=${schoolYear}&studentId=${studentId}`)
   }
 
-  public async getEstimate(studentId: string, schoolYear: string, periodId: string, classId: string, subjectId: string) {
-    return await this.fetch<undefined, TEstimateResult>(`/estimate?schoolYear=${schoolYear}&classId=${classId}&periodId=${periodId}&subjectId=${subjectId}&studentId=${studentId}`)
+  public async getEstimate(data: { studentId: string, schoolYear: string, periodId: string, weekNumber?: number, classId: string, subjectId: string }) {
+    const urlParams = new URLSearchParams()
+
+    urlParams.append('studentId', data.studentId)
+    urlParams.append('schoolYear', data.schoolYear)
+    urlParams.append('classId', data.classId)
+    urlParams.append('periodId', data.periodId)
+    urlParams.append('subjectId', data.subjectId)
+
+    if (data.weekNumber) {
+      urlParams.append('weekNumber', String(data.weekNumber))
+    }
+
+    return await this.fetch<undefined, TEstimateResult>(`/estimate?${urlParams.toString()}`)
   }
 }
