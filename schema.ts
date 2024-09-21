@@ -1,4 +1,4 @@
-import { list, group } from '@keystone-6/core'
+import { list, group, graphql } from '@keystone-6/core'
 
 import {
   text,
@@ -6,9 +6,12 @@ import {
   checkbox,
   password,
   timestamp,
+  virtual,
 } from '@keystone-6/core/fields'
 
 import { type Lists } from '.keystone/types'
+
+import get from 'lodash/get'
 
 type TSession = {
   data: {
@@ -63,6 +66,14 @@ export const lists = {
         },
       }),
       createdAt: timestamp({ defaultValue: { kind: 'now' } }),
+      label: virtual({
+        field: graphql.field({
+          type: graphql.String,
+          async resolve(item, args, context) {
+            return get(item, ['meta', 'username'], item.id)
+          }
+        }),
+      })
     },
   }),
 } satisfies Lists
