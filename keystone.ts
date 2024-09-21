@@ -37,6 +37,8 @@ export default withAuth(
 
         const bot = prepareTelegramBot(godContext, process.env.TELEGRAM_BOT_TOKEN as string)
         bot.launch()
+
+        // Enable graceful stop
         process.once('SIGINT', () => bot.stop('SIGINT'))
         process.once('SIGTERM', () => bot.stop('SIGTERM'))
       },
