@@ -9,6 +9,10 @@ export type TDnevnikTokens = {
 interface DnevnikSession extends Scenes.SceneSession {
 	students: TStudent[]
   selectedStudentId: string
+  estimate: {
+    schoolYear: string
+    classId: string
+  }
 }
 
 export interface DnevnikContext extends Context {

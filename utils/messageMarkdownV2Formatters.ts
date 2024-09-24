@@ -1,4 +1,4 @@
-import { TScheduleDay, TStudent } from "../clients/DnevnikClientTypes"
+import { THomework, THomeworkResult, TScheduleDay, TStudent } from "../clients/DnevnikClientTypes"
 
 const SPECIAL_CHARS = ['\\', '_', '*', '[', ']', '(', ')', '~', '`', '>', '<', '&', '#', '+', '-', '=', '|', '{', '}', '.', '!']
 
@@ -19,4 +19,8 @@ export function formatStudentMainMenuTitle(student: TStudent) {
 
 export function formatScheduleDay(day: TScheduleDay) {
   return escapeMarkdown(day.scheduleDayLessonModels.map((lesson) => `${lesson.number}. ${formatTime(lesson.beginHour, lesson.beginMinute)}..${formatTime(lesson.endHour, lesson.endMinute)} · ${lesson.lessonName}, ${lesson.room}`).join('\n'))
+}
+
+export function formatHomeworkItem(hw: THomework) {
+  return `${escapeMarkdown(`${hw.isDone ? '🟢' : '🔴'} Урок ${String(hw.lessonNumber)}`)}, *${escapeMarkdown(hw.lessonName)}*\n_${escapeMarkdown(hw.description)}_`
 }

@@ -1,3 +1,12 @@
+export type TEstimateParams = {
+  studentId: string
+  schoolYear: string
+  periodId: string
+  weekNumber?: number
+  classId: string
+  subjectId: string
+}
+
 type TPaginationData = {
   hasNextPage: boolean
   hasPreviousPage: boolean
@@ -10,9 +19,23 @@ type TPaginationData = {
 }
 
 export type TEstimateResult = {
-  periodGradesTable?: unknown
+  periodGradesTable?: {
+    days: { date: string }[]
+    disciplines: {
+      averageGrade: number
+      averageWeightedGrade: number
+      name: string
+      totalGrade?: unknown
+      grades: {
+        date: string
+        grades: string[][]
+        lessonId: string
+        presence?: unknown
+      }[]
+    }[]
+  }
   showAverageWeighted: boolean
-  weekGradesTable: {
+  weekGradesTable?: {
     beginDate: string
     endDate: string
     paginationData: TPaginationData
@@ -31,7 +54,24 @@ export type TEstimateResult = {
       }[]
     }[]
   }
-  yearGradesTable?: unknown
+  yearGradesTable?: {
+    lessonGrades: {
+      finallyGrade?: unknown
+      grades: {
+        averageGrade: number
+        averageWeightedGrade: number
+        finallygrade?: unknown
+        periodId: string
+      }[]
+      lesson: {
+        id: string
+        name: string
+      }
+      testGrade?: unknown
+      yearGrade?: unknown
+    }[]
+    periods: TEstimatePeriod[]
+  }
 }
 
 export type TDnevnikClientArgs = {
@@ -96,27 +136,44 @@ export type TScheduleResult = {
   }
 }
 
+export type THomework = {
+  description: string
+  endTime: string
+  homeWorkFiles: unknown[]
+  id: string
+  isDone: boolean
+  isHomeworkElectronicForm: boolean
+  lessonId: string
+  lessonName: string
+  lessonNumber: number
+  startTime: string
+}
+
+export type THomeworkParams = {
+  studentId: string
+  date: string
+}
+
 export type THomeworkResult = {
   date: string
   pagination: {
     nextDate: string
     previousDate: string
   }
-  homeworks: {
-    description: string
-    endTime: string
-    homeWorkFiles: unknown[]
-    id: string
-    isDone: boolean
-    isHomeworkElectronicForm: boolean
-    lessonId: string
-    lessonName: string
-    lessonNumber: number
-    startTime: string
-  }[]
+  homeworks: THomework[]
 }
 
-export type TYearsResult = {
+export type THomeworkDoneParams = {
+  studentId: string
+  homeworkId: string
+  isDone: boolean
+}
+
+export type THomeworkDoneResult = { isDone: boolean }
+
+export type TEstimateYearsParams = { studentId: string }
+
+export type TEstimateYearsResult = {
   currentYear: {
     id: string
     text: string
@@ -127,19 +184,27 @@ export type TYearsResult = {
   }[]
 }
 
-export type TPeriodsResult = {
-  periods: {
-    id: string
-    name: string
-  }[]
+export type TEstimatePeriodsParams = { studentId: string, schoolYear: string }
+
+export type TEstimatePeriod = {
+  id: string
+  name: string
 }
 
-export type TSubjectsResult = {
+export type TEstimatePeriodsResult = {
+  periods: TEstimatePeriod[]
+}
+
+export type TEstimateSubjectsParams = { studentId: string, schoolYear: string }
+
+export type TEstimateSubjectsResult = {
   subjects: {
     id: string
     name: string
   }[]
 }
+
+export type TClassesParams = { studentId: string, schoolYear: string }
 
 export type TClassesResult = {
   currentClass: {

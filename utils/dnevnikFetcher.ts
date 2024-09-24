@@ -1,6 +1,6 @@
 import { KeystoneContext } from "@keystone-6/core/types"
 import { DnevnikClient } from "../clients/DnevnikClient"
-import { TScheduleParams, TScheduleResult, TStudentsResult } from "../clients/DnevnikClientTypes"
+import { TClassesParams, TClassesResult, TEstimateParams, TEstimatePeriodsParams, TEstimatePeriodsResult, TEstimateResult, TEstimateYearsParams, TEstimateYearsResult, THomeworkParams, THomeworkResult, TScheduleParams, TScheduleResult, TStudentsResult } from "../clients/DnevnikClientTypes"
 import { DnevnikClientExternalServerError, DnevnikClientUnauthorizedError } from "../clients/DnevnikClientErrors"
 import dayjs from "dayjs"
 import { ALL_TELEGRAM_USER_FIELDS } from "../telegramBot/constants/fields"
@@ -11,10 +11,20 @@ import { Context } from "telegraf"
 type TDnevnikRequest =
   | { action: 'students', params?: any }
   | { action: 'schedule', params: TScheduleParams }
+  | { action: 'homework', params: THomeworkParams }
+  | { action: 'estimateYears', params: TEstimateYearsParams }
+  | { action: 'estimatePeriods', params: TEstimatePeriodsParams }
+  | { action: 'classes', params: TClassesParams }
+  | { action: 'estimate', params: TEstimateParams }
 
 type TActionToResponseMap = {
-  students: TStudentsResult,
-  schedule: TScheduleResult,
+  students: TStudentsResult
+  schedule: TScheduleResult
+  homework: THomeworkResult
+  estimateYears: TEstimateYearsResult
+  estimatePeriods: TEstimatePeriodsResult
+  classes: TClassesResult
+  estimate: TEstimateResult
 }
 
 const dnevnikClientMethodsMap: Record<
@@ -26,6 +36,11 @@ const dnevnikClientMethodsMap: Record<
 > = {
   students: (client) => client.getStudents(),
   schedule: (client, params) => client.getSchedule(params),
+  homework: (client, params) => client.getHomeWork(params),
+  estimateYears: (client, params) => client.getEstimateYears(params),
+  estimatePeriods: (client, params) => client.getEstimatePeriods(params),
+  classes: (client, params) => client.getClasses(params),
+  estimate: (client, params) => client.getEstimate(params),
 }
 
 const logger = getLogger('dnevnikFetcher')
