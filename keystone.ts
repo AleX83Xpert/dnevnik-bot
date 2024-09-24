@@ -6,6 +6,10 @@ import express from 'express'
 import 'dotenv/config'
 import { startTokensRefresher } from './utils/dnevnikTokensRefresher'
 import { prepareTelegramBot } from './telegramBot/bot'
+import 'dayjs/locale/ru'
+import dayjs from 'dayjs'
+
+dayjs.locale('ru')
 
 const logger = getLogger('main')
 

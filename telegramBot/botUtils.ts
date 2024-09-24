@@ -1,10 +1,14 @@
-import { KeystoneContext } from "@keystone-6/core/types";
-import { Markup } from "telegraf";
-import { ALL_TELEGRAM_USER_FIELDS } from "./constants/fields";
-import { DnevnikContext } from "./types";
+import { KeystoneContext } from "@keystone-6/core/types"
+import { Markup } from "telegraf"
+import { ALL_TELEGRAM_USER_FIELDS } from "./constants/fields"
+import { DnevnikContext } from "./types"
+
+export async function findTelegramUser(godContext: KeystoneContext, telegramId: string) {
+  return await godContext.query.TelegramUser.findOne({ where: { telegramId }, query: ALL_TELEGRAM_USER_FIELDS })
+}
 
 export async function findOrCreateTelegramUser(godContext: KeystoneContext, telegramId: string, meta: unknown) {
-  let telegramUser = await godContext.query.TelegramUser.findOne({ where: { telegramId }, query: ALL_TELEGRAM_USER_FIELDS })
+  let telegramUser = await findTelegramUser(godContext, telegramId)
 
   if (!telegramUser) {
     telegramUser = await godContext.query.TelegramUser.createOne({
