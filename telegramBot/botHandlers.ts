@@ -1,29 +1,79 @@
 import { KeystoneContext } from "@keystone-6/core/types"
 import { Context, Markup } from "telegraf"
-import { Message, Update } from "telegraf/typings/core/types/typegram";
-import { findOrCreateTelegramUser } from "./botUtils";
+import { Message, Update } from "telegraf/typings/core/types/typegram"
+import { findOrCreateTelegramUser, getKeyboardWithLoginButton } from "./botUtils"
 import { TDnevnikTokens } from "./types";
-import { DnevnikClient } from "../clients/DnevnikClient"
+import { ALL_TELEGRAM_USER_FIELDS } from "./constants/fields";
 import dayjs from "dayjs";
-import { refreshAndSaveTokens } from '../utils/dnevnikTokensRefresher'
+import { fetchFromDnevnik } from "../utils/dnevnikFetcher";
+import { DnevnikClient } from "../clients/DnevnikClient";
+import { DnevnikClientUnauthorizedError } from "../clients/DnevnikClientErrors";
 
-export async function onStart(godContext: KeystoneContext, ctx: Context<{ message: Update.New & Update.NonChannel & Message.TextMessage; update_id: number; }>): Promise<void> {
+export async function onStart(godContext: KeystoneContext, ctx: Context): Promise<void> {
   const telegramId = String(ctx.from.id)
 
-  await findOrCreateTelegramUser(godContext, telegramId, ctx.from)
+  const telegramUser = await findOrCreateTelegramUser(godContext, telegramId, ctx.from)
 
-  ctx.reply(`Здравствуйте, ${ctx.from.first_name ?? ctx.from.username ?? 'человек'}! Это бот для работы с дневником. Он подключается к дневнику, используя ваш аккаунт. Чтобы указать данные аккаунта, используйте команду /login.`)
+  if (telegramUser.dnevnikAccessToken && telegramUser.dnevnikRefreshToken) {
+    // User already registered and has tokens
+    const studentsResult = await fetchFromDnevnik({ telegramUser, godContext, ctx, request: { action: 'students' } })
+
+    if (studentsResult && studentsResult.isParent) {
+      ctx.session.students = studentsResult.students
+      ctx.scene.enter('select_student')
+    }
+  } else {
+    ctx.reply(`Здравствуйте, ${ctx.from.first_name ?? ctx.from.username ?? 'человек'}! Это бот для работы с дневником. Он подключается к дневнику, используя ваш аккаунт. Чтобы указать данные аккаунта, используйте команду /login.`)
+  }
 }
 
 export async function onSendTokens(godContext: KeystoneContext, ctx: Context<Update.MessageUpdate<Record<"web_app_data", {}> & Message.WebAppDataMessage>>) {
   const data = ctx.webAppData?.data.json() as TDnevnikTokens
   const telegramId = String(ctx.from.id)
 
-  await findOrCreateTelegramUser(godContext, telegramId, ctx.from)
+  const dnevnikClientWithUserTokens = new DnevnikClient({ accessToken: data.accessToken, refreshToken: data.refreshToken })
 
-  await refreshAndSaveTokens(godContext, telegramId, { accessToken: data.accessToken, refreshToken: data.refreshToken })
+  try {
+    const newTokens = await dnevnikClientWithUserTokens.refreshTokens()
 
-  ctx.reply('Готово! Бот подключен к вашему аккаунту в дневнике. Чтобы отключить все это используйте команду /logout.', Markup.removeKeyboard())
+    const telegramUserWithRefreshedTokens = await godContext.query.TelegramUser.updateOne({
+      where: { telegramId },
+      data: {
+        dnevnikAccessToken: newTokens.accessToken,
+        dnevnikAccessTokenExpirationDate: newTokens.accessTokenExpirationDate,
+        dnevnikRefreshToken: newTokens.refreshToken,
+        dnevnikTokensUpdatedAt: dayjs().toISOString(),
+      },
+      query: ALL_TELEGRAM_USER_FIELDS,
+    })
+
+    const studentsResult = await fetchFromDnevnik({ telegramUser: telegramUserWithRefreshedTokens, godContext, ctx, request: { action: 'students' } })
+
+    if (studentsResult) {
+      if (studentsResult.isParent) {
+        ctx.reply('Готово! Бот подключен к вашему аккаунту в дневнике. Чтобы отключить все это используйте команду /logout.')
+        ctx.session.students = studentsResult.students
+        ctx.scene.enter('select_student')
+      } else {
+        await godContext.query.TelegramUser.updateOne({
+          where: { telegramId },
+          data: {
+            dnevnikAccessToken: '',
+            dnevnikAccessTokenExpirationDate: null,
+            dnevnikRefreshToken: '',
+            dnevnikTokensUpdatedAt: null,
+          },
+        })
+        ctx.reply('Ой ой, кажется вы пытаетесь подключить не родительскую учетную запись. Я пока не умею работать с такими.', Markup.removeKeyboard())
+      }
+    }
+  } catch (err) {
+    if (err instanceof DnevnikClientUnauthorizedError) {
+      ctx.reply('Ммм, похоже что токены, которые вы только что отправили, уже устарели. Или вы их перепутали. Или взяли не из того места. Давайте попробуем еще разок.', getKeyboardWithLoginButton())
+    } else {
+      ctx.reply('Похоже что-то случилось с сервером дневника. Попробуйте позже. Кнопка на том же месте.', getKeyboardWithLoginButton())
+    }
+  }
 }
 
 export async function onLogout(godContext: KeystoneContext, ctx: Context<{ message: Update.New & Update.NonChannel & Message.TextMessage; update_id: number; }>) {
@@ -36,8 +86,8 @@ export async function onLogout(godContext: KeystoneContext, ctx: Context<{ messa
       dnevnikAccessTokenExpirationDate: null,
       dnevnikRefreshToken: '',
       dnevnikTokensUpdatedAt: null,
-    }
+    },
   })
 
-  ctx.reply('Good bye :\'(', Markup.removeKeyboard())
+  ctx.reply('Что ж, таков путь. Я удалил ваши токены и более не смогу получать данные. Но вы можете вернуть все обратно через команду /login', Markup.removeKeyboard())
 }

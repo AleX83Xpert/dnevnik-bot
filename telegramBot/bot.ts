@@ -1,13 +1,35 @@
 import { KeystoneContext } from "@keystone-6/core/types"
-import { Markup, Telegraf } from "telegraf"
+import { Context, Scenes, session, Telegraf } from "telegraf"
 import { getLogger } from '../utils/logger'
-import { message } from 'telegraf/filters'
+import { message, callbackQuery } from 'telegraf/filters'
 import { onLogout, onSendTokens, onStart } from "./botHandlers"
+import { getKeyboardWithLoginButton } from "./botUtils"
+import crypto from 'node:crypto'
+import { getSelectStudentScene } from "./scenes/selectStudentScene"
+import { getStudentScene } from "./scenes/studentScene"
+import { DnevnikContext } from "./types"
 
-export function prepareTelegramBot(godContext: KeystoneContext, botToken: string): Telegraf {
-  const loginPageUrl = `${process.env.SERVER_URL}/static/loginPage.html`
+export function prepareTelegramBot(godContext: KeystoneContext, botToken: string): Telegraf<DnevnikContext> {
   const logger = getLogger('telegramBot')
-  const bot = new Telegraf(botToken)
+  
+  const bot = new Telegraf<DnevnikContext>(botToken)
+  const stage = new Scenes.Stage<DnevnikContext>([getSelectStudentScene(godContext), getStudentScene(godContext)])
+
+  // Logger middleware. Must be first
+  bot.use((ctx, next) => {
+    const start = Date.now()
+    if (!ctx.reqId) {
+      ctx.reqId = crypto.randomUUID()
+    }
+    logger.info({ msg: 'requestStart', reqId: ctx.reqId, updateType: ctx.updateType, update: ctx.update })
+    return next().then(() => {
+      const duration = Date.now() - start
+      logger.info({ msg: 'requestEnd', reqId: ctx.reqId, duration })
+    })
+  })
+
+  bot.use(session())
+  bot.use(stage.middleware())
 
   bot.start(async (ctx) => {
     await onStart(godContext, ctx)
@@ -21,7 +43,7 @@ export function prepareTelegramBot(godContext: KeystoneContext, botToken: string
     // TODO check for already has actual dnevnik tokens
     ctx.reply(
       'Для подключения дневника нажмите кнопку "Подключить дневник" внизу. Там же откроется инструкция.',
-      Markup.keyboard([Markup.button.webApp('Подключить дневник', loginPageUrl)]).resize(),
+      getKeyboardWithLoginButton(),
     )
   })
 

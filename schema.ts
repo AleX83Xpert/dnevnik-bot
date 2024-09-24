@@ -12,6 +12,7 @@ import {
 import { type Lists } from '.keystone/types'
 
 import get from 'lodash/get'
+import dayjs from 'dayjs'
 
 type TSession = {
   data: {
@@ -63,6 +64,14 @@ export const lists = {
           dnevnikAccessTokenExpirationDate: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
           dnevnikRefreshToken: text({ validation: { isRequired: false } }),
           dnevnikTokensUpdatedAt: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
+          tokenStatus: virtual({
+            field: graphql.field({
+              type: graphql.String,
+              async resolve(item, args, context) {
+                return dayjs().isBefore(item.dnevnikAccessTokenExpirationDate) ? '✅' : '📛'
+              },
+            }),
+          }),
         },
       }),
       createdAt: timestamp({ defaultValue: { kind: 'now' } }),
@@ -70,10 +79,13 @@ export const lists = {
         field: graphql.field({
           type: graphql.String,
           async resolve(item, args, context) {
-            return get(item, ['meta', 'username'], item.id)
+            const username = get(item, ['meta', 'username'])
+            const telegramId = get(item, ['meta', 'id'])
+
+            return (username && telegramId) ? `${username}/${telegramId}` : item.id
           }
         }),
-      })
+      }),
     },
   }),
 } satisfies Lists

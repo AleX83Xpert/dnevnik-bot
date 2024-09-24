@@ -135,6 +135,7 @@ type TelegramUser {
   dnevnikAccessTokenExpirationDate: DateTime
   dnevnikRefreshToken: String
   dnevnikTokensUpdatedAt: DateTime
+  tokenStatus: String
   createdAt: DateTime
   label: String
 }

@@ -31,7 +31,7 @@ export default withAuth(
       extendExpressApp: async (app, context) => {
         const godContext = context.sudo()
 
-        app.use('/static/', express.static('./public'))
+        app.use('/static/', express.static('./public')) // TODO? move it to nginx load-balancer
 
         startTokensRefresher(godContext, Number(process.env.TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC), Number(process.env.TELEGRAM_TOKENS_REFRESH_BEFORE_SEC))
 

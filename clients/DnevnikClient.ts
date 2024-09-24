@@ -1,153 +1,6 @@
-import { isObject } from "lodash"
-
-type TDnevnikClientArgs = {
-  accessToken: string
-  refreshToken: string
-}
-
-type TRefreshTokenBody = {
-  refreshToken: string
-}
-
-type TRefreshTokenResult = {
-  accessToken: string
-  accessTokenExpirationDate: string
-  refreshToken: string
-}
-
-type TStudentsResult = {
-  isParent: boolean
-  students: {
-    id: string
-    avatarId?: string
-    orgName: string
-    className: string
-    firstName: string
-    lastName: string
-    surName: string
-  }[]
-}
-
-type TPaginationData = {
-  hasNextPage: boolean
-  hasPreviousPage: boolean
-  pageActionLink?: string
-  pageNumber: number
-  pageNumberOutOfRange: boolean
-  pageSize: number
-  totalCount: number
-  totalPages: number
-}
-
-type TScheduleResult = {
-  schoolYear: string
-  paginationData: TPaginationData
-  scheduleModel: {
-    beginDate: string
-    endDate: string
-    weekNumber: number
-    days: {
-      date: string
-      dayOfWeekName: string
-      isCelebration: boolean
-      isWeekend: boolean
-      scheduleDayLessonModels: {
-        beginHour: number
-        beginMinute: number
-        endHour: number
-        endMinute: number
-        groupName?: string
-        id: string
-        lessonName: string
-        lessonid: string
-        number: number
-        room: string
-      }[]
-    }[]
-  }
-
-}
-
-type THomeworkResult = {
-  date: string
-  pagination: {
-    nextDate: string
-    previousDate: string
-  }
-  homeworks: {
-    description: string
-    endTime: string
-    homeWorkFiles: unknown[]
-    id: string
-    isDone: boolean
-    isHomeworkElectronicForm: boolean
-    lessonId: string
-    lessonName: string
-    lessonNumber: number
-    startTime: string
-  }[]
-}
-
-type TYearsResult = {
-  currentYear: {
-    id: string
-    text: string
-  }
-  schoolYears: {
-    id: string
-    text: string
-  }[]
-}
-
-type TPeriodsResult = {
-  periods: {
-    id: string
-    name: string
-  }[]
-}
-
-type TSubjectsResult = {
-  subjects: {
-    id: string
-    name: string
-  }[]
-}
-
-type TClassesResult = {
-  currentClass: {
-    text: string
-    value: string
-  }
-  gradeItemModels: {
-    text: string
-    value: string
-  }[]
-}
-
-type TEstimateResult = {
-  periodGradesTable?: unknown
-  showAverageWeighted: boolean
-  weekGradesTable: {
-    beginDate: string
-    endDate: string
-    paginationData: TPaginationData
-    days: {
-      date: string
-      lessonGrades: {
-        beginHour: number
-        beginMinute: number
-        endHour: number
-        endMinute: number
-        grades: string[][]
-        lessonId: string
-        name: string
-        presence?: unknown
-        sequenceNumber: number
-      }[]
-    }[]
-  }
-  yearGradesTable?: unknown
-}
+import { isObject } from 'lodash'
+import { DnevnikClientExternalServerError, DnevnikClientHttpResponseError, DnevnikClientUnauthorizedError } from './DnevnikClientErrors'
+import { TClassesResult, TDnevnikClientArgs, TEstimateResult, THomeworkResult, TPeriodsResult, TRefreshTokenBody, TRefreshTokenResult, TScheduleParams, TScheduleResult, TStudentsResult, TSubjectsResult, TYearsResult } from './DnevnikClientTypes'
 
 export class DnevnikClient {
 
@@ -163,27 +16,26 @@ export class DnevnikClient {
   private async fetch<TBody = object, TResult = object>(path: string, body: TBody | undefined = undefined) {
     const options: RequestInit = {
       headers: {
-        accept: "application/json, text/plain, */*",
+        accept: 'application/json',
         authorization: `Bearer ${this.dnevnikAccessToken}`,
-        "content-type": "application/json",
+        'content-type': 'application/json',
       },
       method: 'GET',
     }
 
     if (isObject(body)) {
       options.body = JSON.stringify(body)
-      options.method = "POST"
+      options.method = 'POST'
     }
 
     const result = await fetch(`${this.apiUrl}${path}`, options)
 
-    if (result.status !== 200) {
-      throw new Error(`Error status: ${result.status}, ${result.statusText}`)
+    switch (result.status) {
+      case 200: return await result.json() as TResult
+      case 401: throw new DnevnikClientUnauthorizedError(result.status, result.statusText)
+      case 502: throw new DnevnikClientExternalServerError(result.status, result.statusText)
+      default: throw new DnevnikClientHttpResponseError(result.status, result.statusText)
     }
-
-    const data: TResult = await result.json()
-
-    return data
   }
 
   public async refreshTokens() {
@@ -194,13 +46,7 @@ export class DnevnikClient {
     return await this.fetch<undefined, TStudentsResult>('/students')
   }
 
-  /**
-   * date is YYYY-MM-DD
-   * if date is presend, pageNumber is ignoring
-   * @param data 
-   * @returns 
-   */
-  public async getSchedule(data:{studentId: string, pageNumber?: number, date?: string}) {
+  public async getSchedule(data: TScheduleParams) {
     const urlParams = new URLSearchParams()
 
     urlParams.append('studentId', data.studentId)
