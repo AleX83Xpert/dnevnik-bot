@@ -25,86 +25,122 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
 
   scene.enter(async (ctx) => {
     const student = getSelectedStudent(ctx)
-    await ctx.editMessageText(`*${student.firstName} ${student.lastName}* · Расписание`, { ...scheduleMenu(), parse_mode: 'MarkdownV2' })
+
+    if (student) {
+      await ctx.editMessageText(`*${student.firstName} ${student.lastName}* · Расписание`, { ...scheduleMenu(), parse_mode: 'MarkdownV2' })
+    } else {
+      await ctx.scene.enter('select_student')
+    }
   })
 
   scene.action('schedule_today', async (ctx) => {
     const student = getSelectedStudent(ctx)
-    const telegramUser = ctx.session.telegramUser
 
-    const scheduleResult = await fetchFromDnevnik({
-      godContext,
-      ctx,
-      telegramUser,
-      request: {
-        action: 'schedule',
-        params: { studentId: student.id, date: dayjs().add(1, 'day').format('YYYY-MM-DD') }
+    if (student) {
+      const telegramUser = ctx.session.telegramUser
+
+      const scheduleResult = await fetchFromDnevnik({
+        godContext,
+        ctx,
+        telegramUser,
+        request: {
+          action: 'schedule',
+          params: { studentId: student.id, date: dayjs().add(1, 'day').format('YYYY-MM-DD') }
+        }
+      })
+
+      if (scheduleResult) {
+        const day = scheduleResult.scheduleModel.days.find((day) => dayjs(day.date).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD'))
+
+        if (day) {
+          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на сегодня, ${escapeMarkdown(day.dayOfWeekName)}, ${escapeMarkdown(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`, { parse_mode: 'MarkdownV2' })
+        } else {
+          await ctx.reply('Сегодня уроков нет 🥵')
+        }
+      } else {
+        await ctx.reply('Не удалось получить данные')
       }
-    })
 
-    const day = scheduleResult.scheduleModel.days.find((day) => dayjs(day.date).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD'))
-
-    if (day) {
-      await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на сегодня, ${escapeMarkdown(day.dayOfWeekName)}, ${escapeMarkdown(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`, { parse_mode: 'MarkdownV2' })
+      await ctx.deleteMessage()
+      await ctx.scene.enter('student_scene', { needNewMessage: true })
     } else {
-      await ctx.reply('Сегодня уроков нет 🥵')
+      await ctx.scene.enter('select_student')
     }
-
-    await ctx.deleteMessage()
-    await ctx.scene.enter('student_scene', { isStart: true })
   })
 
   scene.action('schedule_tomorrow', async (ctx) => {
     const student = getSelectedStudent(ctx)
-    const telegramUser = ctx.session.telegramUser
 
-    const scheduleResult = await fetchFromDnevnik({
-      godContext,
-      ctx,
-      telegramUser,
-      request: {
-        action: 'schedule',
-        params: { studentId: student.id, date: dayjs().add(1, 'day').format('YYYY-MM-DD') }
+    if (student) {
+      const telegramUser = ctx.session.telegramUser
+
+      const scheduleResult = await fetchFromDnevnik({
+        godContext,
+        ctx,
+        telegramUser,
+        request: {
+          action: 'schedule',
+          params: { studentId: student.id, date: dayjs().add(1, 'day').format('YYYY-MM-DD') }
+        }
+      })
+
+      if (scheduleResult) {
+        const day = scheduleResult.scheduleModel.days.find((day) => dayjs(day.date).format('YYYY-MM-DD') === dayjs().add(1, 'day').format('YYYY-MM-DD'))
+
+        if (day) {
+          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на завтра, ${escapeMarkdown(day.dayOfWeekName)}, ${escapeMarkdown(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`, { parse_mode: 'MarkdownV2' })
+        } else {
+          await ctx.reply('Завтра уроков нет 🥵')
+        }
+      } else {
+        await ctx.reply('Не удалось получить данные')
       }
-    })
 
-    const day = scheduleResult.scheduleModel.days.find((day) => dayjs(day.date).format('YYYY-MM-DD') === dayjs().add(1, 'day').format('YYYY-MM-DD'))
-
-    if (day) {
-      await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на завтра, ${escapeMarkdown(day.dayOfWeekName)}, ${escapeMarkdown(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`, { parse_mode: 'MarkdownV2' })
+      await ctx.deleteMessage()
+      await ctx.scene.enter('student_scene', { needNewMessage: true })
     } else {
-      await ctx.reply('Завтра уроков нет 🥵')
+      await ctx.scene.enter('select_student')
     }
-
-    await ctx.deleteMessage()
-    await ctx.scene.enter('student_scene', { isStart: true })
   })
 
   scene.action('schedule_week', async (ctx) => {
     const student = getSelectedStudent(ctx)
-    const telegramUser = ctx.session.telegramUser
 
-    const scheduleResult = await fetchFromDnevnik({
-      godContext,
-      ctx,
-      telegramUser,
-      request: {
-        action: 'schedule',
-        params: { studentId: student.id, date: dayjs().format('YYYY-MM-DD') }
+    if (student) {
+      const telegramUser = ctx.session.telegramUser
+
+      const scheduleResult = await fetchFromDnevnik({
+        godContext,
+        ctx,
+        telegramUser,
+        request: {
+          action: 'schedule',
+          params: { studentId: student.id, date: dayjs().format('YYYY-MM-DD') }
+        }
+      })
+
+      if (scheduleResult) {
+        const days = scheduleResult.scheduleModel.days.filter((day) => dayjs(day.date).format('YYYY-MM-DD') >= dayjs().add(1, 'day').format('YYYY-MM-DD') && day.scheduleDayLessonModels && day.scheduleDayLessonModels.length > 0)
+
+        if (days.length > 0) {
+          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание до конца недели\n\n${days.map((day) => `${escapeMarkdown(day.dayOfWeekName)}, ${escapeMarkdown(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`).join('\n\n')}`, { parse_mode: 'MarkdownV2' })
+        } else {
+          await ctx.reply('На этой неделе уроков больше нет 🥵')
+        }
+      } else {
+        await ctx.reply('Не удалось получить данные')
       }
-    })
 
-    const days = scheduleResult.scheduleModel.days.filter((day) => dayjs(day.date).format('YYYY-MM-DD') >= dayjs().add(1, 'day').format('YYYY-MM-DD') && day.scheduleDayLessonModels && day.scheduleDayLessonModels.length > 0)
-
-    if (days.length > 0) {
-      await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание до конца недели\n\n${days.map((day) => `${escapeMarkdown(day.dayOfWeekName)}, ${escapeMarkdown(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`).join('\n\n')}`, { parse_mode: 'MarkdownV2' })
+      await ctx.deleteMessage()
+      await ctx.scene.enter('student_scene', { needNewMessage: true })
     } else {
-      await ctx.reply('На этой неделе уроков больше нет 🥵')
+      await ctx.scene.enter('select_student')
     }
+  })
 
-    await ctx.deleteMessage()
-    await ctx.scene.enter('student_scene', { isStart: true })
-  });
+  scene.action('menu_back', async (ctx) => {
+    await ctx.scene.enter('student_scene')
+  })
 
   return scene
 }

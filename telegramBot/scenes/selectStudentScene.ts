@@ -1,7 +1,7 @@
 import { BaseScene } from "telegraf/typings/scenes"
 import { DnevnikContext } from "../types"
-import { KeystoneContext } from "@keystone-6/core/types"
 import { Scenes, Markup } from 'telegraf'
+import { fmt, bold, italic, underline } from "telegraf/format"
 
 export function getSelectStudentScene(): BaseScene<DnevnikContext> {
   const selectStudentScene = new Scenes.BaseScene<DnevnikContext>('select_student')
@@ -14,9 +14,9 @@ export function getSelectStudentScene(): BaseScene<DnevnikContext> {
         students.map((student) => [Markup.button.callback(`${student.firstName} ${student.lastName}, ${student.orgName}, ${student.className}`, `select_${student.id}`)])
       )
       // Need to reply with markdown because this message will be edited within student scene
-      await ctx.replyWithMarkdownV2('Выберите ученика:', studentKeyboard)
+      await ctx.reply(fmt`Выберите ученика`, studentKeyboard)
     } else {
-      await ctx.reply('🙀 Не удалось получить список учеников. Попробуйте начать сначала /start.')
+      await ctx.reply(fmt`🙀 Не удалось получить список учеников. Попробуйте начать сначала /start.`)
     }
   });
 
@@ -30,7 +30,7 @@ export function getSelectStudentScene(): BaseScene<DnevnikContext> {
         ctx.session.selectedStudentId = selectedStudent.id
         await ctx.scene.enter('student_scene')
     } else {
-      await ctx.reply('🙀 Не удалось выбрать ученика из полученного списка. Это крайне странно О_о. Попробуйте начать сначала /start.')
+      await ctx.reply(fmt`🙀 Не удалось выбрать ученика из полученного списка. Это крайне странно О_о. Попробуйте начать сначала /start.`)
     }
   })
 

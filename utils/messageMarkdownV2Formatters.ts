@@ -1,3 +1,4 @@
+import { bold, fmt, quote } from "telegraf/format"
 import { THomework, THomeworkResult, TScheduleDay, TStudent } from "../clients/DnevnikClientTypes"
 
 const SPECIAL_CHARS = ['\\', '_', '*', '[', ']', '(', ')', '~', '`', '>', '<', '&', '#', '+', '-', '=', '|', '{', '}', '.', '!']
@@ -14,7 +15,7 @@ function formatTime(hour: number, minute: number) {
 }
 
 export function formatStudentMainMenuTitle(student: TStudent) {
-  return `*${student.firstName} ${student.lastName}* · ${student.orgName}, ${student.className}`
+  return fmt`${bold`${student.firstName} ${student.lastName}`} · ${student.orgName}, ${student.className}`
 }
 
 export function formatScheduleDay(day: TScheduleDay) {
