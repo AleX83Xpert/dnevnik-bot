@@ -95,6 +95,7 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
       })))).filter((res) => res && res.homeworks.length > 0)
 
       if (homeworkResults.length > 0) {
+        // @ts-ignore NOTE the possibly undefined `res` variables were filtered out
         ctx.reply(`*${getSelectedStudentName(ctx)}*\nДомашнее задание на эту неделю:\n\n${homeworkResults.map((res) => `🗓 ${escapeMarkdown(dayjs(res.date).format('dddd, D MMM'))}\n${res.homeworks.map((hw) => formatHomeworkItem(hw)).join('\n')}`).join('\n\n')}`, { parse_mode: 'MarkdownV2' })
       } else {
         ctx.reply('На этой неделе домашнего задания нет 🥵')
@@ -134,6 +135,7 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
       })))).filter((res) => res && res.homeworks.length > 0)
 
       if (homeworkResults.length > 0) {
+        // @ts-ignore NOTE the possibly undefined `res` variables were filtered out
         await ctx.reply(`*${getSelectedStudentName(ctx)}*\nДомашнее задание на следующую неделю:\n\n${homeworkResults.map((res) => `🗓 ${escapeMarkdown(dayjs(res.date).format('dddd, D MMM'))}\n${res.homeworks.map((hw) => formatHomeworkItem(hw)).join('\n')}`).join('\n\n')}`, { parse_mode: 'MarkdownV2' })
       } else {
         await ctx.reply('На следующей неделе домашнего задания нет 🥵')

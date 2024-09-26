@@ -26,6 +26,7 @@ export function getStudentScene(godContext: KeystoneContext): BaseScene<DnevnikC
 
     if (student) {
       const msg = formatStudentMainMenuTitle(student)
+      // @ts-ignore NOTE the state's type is an `object` without ability to override
       if (ctx.scene.state.needNewMessage) {
         await ctx.reply(msg, mainMenu())
       } else {
