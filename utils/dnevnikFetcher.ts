@@ -53,7 +53,7 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
   request: TReq,
 }): Promise<TResMap[TReq['action']] | undefined> {
   if (!options.telegramUser.dnevnikAccessToken || !options.telegramUser.dnevnikRefreshToken) {
-    logger.error({ msg: 'TelegramUser contains no tokens', telegramUser: options.telegramUser })
+    logger.error({ msg: 'TelegramUser contains no tokens', reqId: options.ctx.reqId, request: options.request, telegramId: options.telegramUser.telegramId })
     throw new Error('TelegramUser contains no tokens')
   }
 
@@ -61,6 +61,7 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
 
   try {
     const method = dnevnikClientMethodsMap[options.request.action]
+    logger.info({ msg: 'request', reqId: options.ctx.reqId, request: options.request, telegramId: options.telegramUser.telegramId })
     return await method(dnevnikClient, options.request.params)
   } catch (err) {
     if (err instanceof DnevnikClientUnauthorizedError) {
@@ -68,13 +69,13 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
       try {
         const newTokens = await dnevnikClient.refreshTokens()
         if (newTokens) {
-          logger.info({ msg: 'tokens refreshed', telegramId: options.telegramUser.telegramId })
+          logger.info({ msg: 'tokens refreshed', telegramId: options.telegramUser.telegramId, reqId: options.ctx.reqId })
 
           const telegramUserWithRefreshedTokens = await options.godContext.query.TelegramUser.updateOne({
             where: { telegramId: options.telegramUser.telegramId },
             data: {
               dnevnikAccessToken: newTokens.accessToken,
-              dnevnikAccessTokenExpirationDate: newTokens.accessTokenExpirationDate,
+              dnevnikAccessTokenExpirationDate: dayjs().add(10, 'minutes').toISOString(), //newTokens.accessTokenExpirationDate,
               dnevnikRefreshToken: newTokens.refreshToken,
               dnevnikTokensUpdatedAt: dayjs().toISOString(),
             },
@@ -84,7 +85,7 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
           return fetchFromDnevnik({ ...options, telegramUser: telegramUserWithRefreshedTokens })
         }
       } catch (err) {
-        logger.warn({ msg: 'tokens refresh failde', err })
+        logger.warn({ msg: 'tokens refresh failde', reqId: options.ctx.reqId, err })
         // Retry after tokens were refreshed unsuccessfully
         // Clear tokens
         await options.godContext.query.TelegramUser.updateOne({
