@@ -45,7 +45,7 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
         telegramUser,
         request: {
           action: 'schedule',
-          params: { studentId: student.id, date: dayjs().add(1, 'day').format('YYYY-MM-DD') }
+          params: { studentId: student.id, date: dayjs().format('YYYY-MM-DD') }
         }
       })
 
