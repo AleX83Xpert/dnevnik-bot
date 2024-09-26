@@ -4,9 +4,8 @@ import { DnevnikContext } from "../types"
 import { Scenes, Markup } from 'telegraf'
 import { getSelectedStudent, getSelectedStudentName } from "../botUtils"
 import { fetchFromDnevnik } from "../../utils/dnevnikFetcher"
-import { escapeMarkdown, formatHomeworkItem, formatScheduleDay } from "../../utils/messageMarkdownV2Formatters"
+import { escMd, formatHomeworkItem } from "../../utils/messageMarkdownV2Formatters"
 import dayjs from "dayjs"
-import { fmt, bold, italic, underline, quote } from "telegraf/format"
 
 function homeworkMenu() {
   return Markup.inlineKeyboard([
@@ -56,7 +55,7 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
       })
 
       if (homeworkResult && homeworkResult.homeworks && homeworkResult.homeworks.length > 0) {
-        await ctx.reply(`*${getSelectedStudentName(ctx)}*\nДомашнее задание на завтра, ${escapeMarkdown(tomorow.format('dddd, D MMM'))}:\n\n${homeworkResult?.homeworks.map((hw) => formatHomeworkItem(hw)).join('\n')}`, { parse_mode: 'MarkdownV2' })
+        await ctx.reply(`*${getSelectedStudentName(ctx)}*\nДомашнее задание на завтра, ${escMd(tomorow.format('dddd, D MMM'))}:\n\n${homeworkResult?.homeworks.map((hw) => formatHomeworkItem(hw)).join('\n')}`, { parse_mode: 'MarkdownV2' })
       } else {
         await ctx.reply('На завтра домашнего задания нет 🥵')
       }
@@ -96,7 +95,7 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
 
       if (homeworkResults.length > 0) {
         // @ts-ignore NOTE the possibly undefined `res` variables were filtered out
-        ctx.reply(`*${getSelectedStudentName(ctx)}*\nДомашнее задание на эту неделю:\n\n${homeworkResults.map((res) => `🗓 ${escapeMarkdown(dayjs(res.date).format('dddd, D MMM'))}\n${res.homeworks.map((hw) => formatHomeworkItem(hw)).join('\n')}`).join('\n\n')}`, { parse_mode: 'MarkdownV2' })
+        ctx.reply(`*${getSelectedStudentName(ctx)}*\nДомашнее задание на эту неделю:\n\n${homeworkResults.map((res) => `🗓 ${escMd(dayjs(res.date).format('dddd, D MMM'))}\n${res.homeworks.map((hw) => formatHomeworkItem(hw)).join('\n')}`).join('\n\n')}`, { parse_mode: 'MarkdownV2' })
       } else {
         ctx.reply('На этой неделе домашнего задания нет 🥵')
       }
@@ -136,7 +135,7 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
 
       if (homeworkResults.length > 0) {
         // @ts-ignore NOTE the possibly undefined `res` variables were filtered out
-        await ctx.reply(`*${getSelectedStudentName(ctx)}*\nДомашнее задание на следующую неделю:\n\n${homeworkResults.map((res) => `🗓 ${escapeMarkdown(dayjs(res.date).format('dddd, D MMM'))}\n${res.homeworks.map((hw) => formatHomeworkItem(hw)).join('\n')}`).join('\n\n')}`, { parse_mode: 'MarkdownV2' })
+        await ctx.reply(`*${getSelectedStudentName(ctx)}*\nДомашнее задание на следующую неделю:\n\n${homeworkResults.map((res) => `🗓 ${escMd(dayjs(res.date).format('dddd, D MMM'))}\n${res.homeworks.map((hw) => formatHomeworkItem(hw)).join('\n')}`).join('\n\n')}`, { parse_mode: 'MarkdownV2' })
       } else {
         await ctx.reply('На следующей неделе домашнего задания нет 🥵')
       }

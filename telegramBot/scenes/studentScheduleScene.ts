@@ -4,7 +4,7 @@ import { DnevnikContext } from "../types"
 import { Scenes, Markup } from 'telegraf'
 import { getSelectedStudent, getSelectedStudentName } from "../botUtils"
 import { fetchFromDnevnik } from "../../utils/dnevnikFetcher"
-import { escapeMarkdown, formatScheduleDay } from "../../utils/messageMarkdownV2Formatters"
+import { escMd, formatScheduleDay } from "../../utils/messageMarkdownV2Formatters"
 import dayjs from "dayjs"
 
 function scheduleMenu() {
@@ -53,7 +53,7 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
         const day = scheduleResult.scheduleModel.days.find((day) => dayjs(day.date).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD'))
 
         if (day) {
-          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на сегодня, ${escapeMarkdown(day.dayOfWeekName)}, ${escapeMarkdown(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`, { parse_mode: 'MarkdownV2' })
+          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на сегодня, ${escMd(day.dayOfWeekName)}, ${escMd(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`, { parse_mode: 'MarkdownV2' })
         } else {
           await ctx.reply('Сегодня уроков нет 🥵')
         }
@@ -88,7 +88,7 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
         const day = scheduleResult.scheduleModel.days.find((day) => dayjs(day.date).format('YYYY-MM-DD') === dayjs().add(1, 'day').format('YYYY-MM-DD'))
 
         if (day) {
-          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на завтра, ${escapeMarkdown(day.dayOfWeekName)}, ${escapeMarkdown(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`, { parse_mode: 'MarkdownV2' })
+          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на завтра, ${escMd(day.dayOfWeekName)}, ${escMd(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`, { parse_mode: 'MarkdownV2' })
         } else {
           await ctx.reply('Завтра уроков нет 🥵')
         }
@@ -123,7 +123,7 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
         const days = scheduleResult.scheduleModel.days.filter((day) => dayjs(day.date).format('YYYY-MM-DD') >= dayjs().add(1, 'day').format('YYYY-MM-DD') && day.scheduleDayLessonModels && day.scheduleDayLessonModels.length > 0)
 
         if (days.length > 0) {
-          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание до конца недели\n\n${days.map((day) => `${escapeMarkdown(day.dayOfWeekName)}, ${escapeMarkdown(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`).join('\n\n')}`, { parse_mode: 'MarkdownV2' })
+          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание до конца недели\n\n${days.map((day) => `${escMd(day.dayOfWeekName)}, ${escMd(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`).join('\n\n')}`, { parse_mode: 'MarkdownV2' })
         } else {
           await ctx.reply('На этой неделе уроков больше нет 🥵')
         }
