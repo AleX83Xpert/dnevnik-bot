@@ -2,12 +2,13 @@ import { KeystoneContext } from "@keystone-6/core/types"
 import { Context, Markup, Scenes } from "telegraf"
 import { Message, Update } from "telegraf/typings/core/types/typegram"
 import { findOrCreateTelegramUser, getKeyboardWithLoginButton } from "./botUtils"
-import { DnevnikContext, TDnevnikTokens } from "./types";
-import { ALL_TELEGRAM_USER_FIELDS } from "./constants/fields";
-import dayjs from "dayjs";
-import { fetchFromDnevnik } from "../utils/dnevnikFetcher";
-import { DnevnikClient } from "../clients/DnevnikClient";
-import { DnevnikClientUnauthorizedError } from "../clients/DnevnikClientErrors";
+import { DnevnikContext, TDnevnikTokens } from "./types"
+import { ALL_TELEGRAM_USER_FIELDS } from "./constants/fields"
+import dayjs from "dayjs"
+import { fetchFromDnevnik } from "../utils/dnevnikFetcher"
+import { DnevnikClient } from "../clients/DnevnikClient"
+import { DnevnikClientUnauthorizedError } from "../clients/DnevnikClientErrors"
+import { Lists } from '.keystone/types'
 
 export async function onStart(godContext: KeystoneContext, ctx: DnevnikContext): Promise<void> {
   const telegramId = String(ctx.from.id)
@@ -47,7 +48,7 @@ export async function onSendTokens(godContext: KeystoneContext, ctx: DnevnikCont
         dnevnikTokensUpdatedAt: dayjs().toISOString(),
       },
       query: ALL_TELEGRAM_USER_FIELDS,
-    })
+    }) as Lists.TelegramUser.Item
 
     const studentsResult = await fetchFromDnevnik({ telegramUser: telegramUserWithRefreshedTokens, godContext, ctx, request: { action: 'students' } })
 

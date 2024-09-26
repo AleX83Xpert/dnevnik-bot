@@ -39,6 +39,7 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
 
     if (student) {
       const telegramUser = ctx.session.telegramUser
+
       const tomorow = dayjs().add(1, 'day')
 
       const homeworkResult = await fetchFromDnevnik({

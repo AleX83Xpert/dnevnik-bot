@@ -6,7 +6,7 @@ import dayjs from "dayjs"
 import { ALL_TELEGRAM_USER_FIELDS } from "../telegramBot/constants/fields"
 import { getLogger } from "./logger"
 import { getKeyboardWithLoginButton } from "../telegramBot/botUtils"
-import { Context } from "telegraf"
+import { Lists } from '.keystone/types'
 import { DnevnikContext } from "../telegramBot/types"
 
 type TDnevnikRequest =
@@ -49,9 +49,14 @@ const logger = getLogger('dnevnikFetcher')
 export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap extends TActionToResponseMap>(options: {
   godContext: KeystoneContext,
   ctx: DnevnikContext,
-  telegramUser: unknown,
+  telegramUser: Partial<Lists.TelegramUser.Item>,
   request: TReq,
 }): Promise<TResMap[TReq['action']] | undefined> {
+  if (!options.telegramUser.dnevnikAccessToken || !options.telegramUser.dnevnikRefreshToken) {
+    logger.error({ msg: 'TelegramUser contains no tokens', telegramUser: options.telegramUser })
+    throw new Error('TelegramUser contains no tokens')
+  }
+
   const dnevnikClient = new DnevnikClient({ accessToken: options.telegramUser.dnevnikAccessToken, refreshToken: options.telegramUser.dnevnikRefreshToken })
 
   try {
@@ -74,7 +79,7 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
               dnevnikTokensUpdatedAt: dayjs().toISOString(),
             },
             query: ALL_TELEGRAM_USER_FIELDS,
-          })
+          }) as Lists.TelegramUser.Item
 
           return fetchFromDnevnik({ ...options, telegramUser: telegramUserWithRefreshedTokens })
         }

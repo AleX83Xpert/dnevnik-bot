@@ -1,14 +1,15 @@
 import { Context, Scenes } from "telegraf"
 import { TStudent } from "../clients/DnevnikClientTypes"
-import { Message, Update } from "telegraf/typings/core/types/typegram"
+import { Lists } from '.keystone/types'
 
 export type TDnevnikTokens = {
   accessToken: string
   refreshToken: string
 }
 
+// Session stores data between requests
 interface DnevnikSession extends Scenes.SceneSession {
-  telegramUser: unknown // TODO Type from keystone
+  telegramUser: Partial<Lists.TelegramUser.Item>
   students: TStudent[]
   selectedStudentId?: string
   estimate?: {

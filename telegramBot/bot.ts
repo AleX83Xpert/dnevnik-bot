@@ -37,7 +37,7 @@ export function prepareTelegramBot(godContext: KeystoneContext, botToken: string
     })
   })
 
-  bot.use(session({ defaultSession: () => ({ students: [], telegramUser: null }) }))
+  bot.use(session({ defaultSession: () => ({ students: [], telegramUser: {} }) }))
   bot.use(stage.middleware())
 
   bot.start(async (ctx) => {
