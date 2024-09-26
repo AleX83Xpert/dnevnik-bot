@@ -6,6 +6,7 @@ import { getSelectedStudent, getSelectedStudentName } from "../botUtils"
 import { fetchFromDnevnik } from "../../utils/dnevnikFetcher"
 import { escMd, formatScheduleDay } from "../../utils/messageMarkdownV2Formatters"
 import dayjs from "dayjs"
+import { lowerCase } from 'lodash'
 
 function scheduleMenu() {
   return Markup.inlineKeyboard([
@@ -38,6 +39,7 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
 
     if (student) {
       const telegramUser = ctx.session.telegramUser
+      const todayDateStr = dayjs().format('YYYY-MM-DD')
 
       const scheduleResult = await fetchFromDnevnik({
         godContext,
@@ -45,15 +47,15 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
         telegramUser,
         request: {
           action: 'schedule',
-          params: { studentId: student.id, date: dayjs().format('YYYY-MM-DD') }
+          params: { studentId: student.id, date: todayDateStr }
         }
       })
 
       if (scheduleResult) {
-        const day = scheduleResult.scheduleModel.days.find((day) => dayjs(day.date).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD'))
+        const day = scheduleResult.scheduleModel.days.find((day) => dayjs(day.date.split('T', 2)[0]).format('YYYY-MM-DD') === todayDateStr && day.scheduleDayLessonModels.length > 0)
 
         if (day) {
-          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на сегодня, ${escMd(day.dayOfWeekName)}, ${escMd(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`, { parse_mode: 'MarkdownV2' })
+          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на сегодня, ${escMd(lowerCase(day.dayOfWeekName))}, ${escMd(dayjs(day.date.split('T', 2)[0]).format('D MMM'))}:\n${formatScheduleDay(day)}`, { parse_mode: 'MarkdownV2' })
         } else {
           await ctx.reply('Сегодня уроков нет 🥵')
         }
@@ -73,6 +75,7 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
 
     if (student) {
       const telegramUser = ctx.session.telegramUser
+      const tomorowDateStr = dayjs().add(1, 'day').format('YYYY-MM-DD')
 
       const scheduleResult = await fetchFromDnevnik({
         godContext,
@@ -80,15 +83,15 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
         telegramUser,
         request: {
           action: 'schedule',
-          params: { studentId: student.id, date: dayjs().add(1, 'day').format('YYYY-MM-DD') }
+          params: { studentId: student.id, date: tomorowDateStr }
         }
       })
 
       if (scheduleResult) {
-        const day = scheduleResult.scheduleModel.days.find((day) => dayjs(day.date).format('YYYY-MM-DD') === dayjs().add(1, 'day').format('YYYY-MM-DD'))
+        const day = scheduleResult.scheduleModel.days.find((day) => dayjs(day.date.split('T', 2)[0]).format('YYYY-MM-DD') === tomorowDateStr && day.scheduleDayLessonModels.length > 0)
 
         if (day) {
-          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на завтра, ${escMd(day.dayOfWeekName)}, ${escMd(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`, { parse_mode: 'MarkdownV2' })
+          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на завтра, ${escMd(lowerCase(day.dayOfWeekName))}, ${escMd(dayjs(day.date.split('T', 2)[0]).format('D MMM'))}:\n${formatScheduleDay(day)}`, { parse_mode: 'MarkdownV2' })
         } else {
           await ctx.reply('Завтра уроков нет 🥵')
         }
@@ -120,7 +123,7 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
       })
 
       if (scheduleResult) {
-        const days = scheduleResult.scheduleModel.days.filter((day) => dayjs(day.date).format('YYYY-MM-DD') >= dayjs().add(1, 'day').format('YYYY-MM-DD') && day.scheduleDayLessonModels && day.scheduleDayLessonModels.length > 0)
+        const days = scheduleResult.scheduleModel.days.filter((day) => dayjs(day.date.split('T', 2)[0]).format('YYYY-MM-DD') >= dayjs().add(1, 'day').format('YYYY-MM-DD') && day.scheduleDayLessonModels && day.scheduleDayLessonModels.length > 0)
 
         if (days.length > 0) {
           await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание до конца недели\n\n${days.map((day) => `${escMd(day.dayOfWeekName)}, ${escMd(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`).join('\n\n')}`, { parse_mode: 'MarkdownV2' })
