@@ -38,7 +38,7 @@ export function getStudentGradesScene(godContext: KeystoneContext): BaseScene<Dn
   })
 
 
-  scene.action(/period_(.+)/, async (ctx: DnevnikContext) => {
+  scene.action(/period_(.+)/, async (ctx) => {
     const student = getSelectedStudent(ctx)
     const telegramUser = ctx.session.telegramUser
     const periodId = ctx.match[1]

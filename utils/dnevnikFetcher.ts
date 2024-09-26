@@ -7,6 +7,7 @@ import { ALL_TELEGRAM_USER_FIELDS } from "../telegramBot/constants/fields"
 import { getLogger } from "./logger"
 import { getKeyboardWithLoginButton } from "../telegramBot/botUtils"
 import { Context } from "telegraf"
+import { DnevnikContext } from "../telegramBot/types"
 
 type TDnevnikRequest =
   | { action: 'students', params?: any }
@@ -47,7 +48,7 @@ const logger = getLogger('dnevnikFetcher')
 
 export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap extends TActionToResponseMap>(options: {
   godContext: KeystoneContext,
-  ctx: Context,
+  ctx: DnevnikContext,
   telegramUser: unknown,
   request: TReq,
 }): Promise<TResMap[TReq['action']] | undefined> {
@@ -78,6 +79,7 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
           return fetchFromDnevnik({ ...options, telegramUser: telegramUserWithRefreshedTokens })
         }
       } catch (err) {
+        logger.warn({ msg: 'tokens refresh failde', err })
         // Retry after tokens were refreshed unsuccessfully
         // Clear tokens
         await options.godContext.query.TelegramUser.updateOne({
@@ -98,6 +100,8 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
       }
     } else if (err instanceof DnevnikClientExternalServerError) {
       options.ctx.reply('Да что ж такое! На сайте дневника сейчас идут технические работы. Ничего не могу поделать 😥')
+    } else {
+      throw err
     }
   }
 }

@@ -57,7 +57,7 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
     await ctx.scene.enter('student_scene', { isStart: true })
   })
 
-  scene.action('homework_this_week', async (ctx: DnevnikContext) => {
+  scene.action('homework_this_week', async (ctx) => {
     const student = getSelectedStudent(ctx)
     const telegramUser = ctx.session.telegramUser
 
@@ -91,7 +91,7 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
     await ctx.scene.enter('student_scene', { isStart: true })
   })
 
-  scene.action('homework_next_week', async (ctx: DnevnikContext) => {
+  scene.action('homework_next_week', async (ctx) => {
     const student = getSelectedStudent(ctx)
     const telegramUser = ctx.session.telegramUser
 

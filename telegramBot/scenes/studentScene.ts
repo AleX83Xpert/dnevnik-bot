@@ -47,25 +47,25 @@ export function getStudentScene(godContext: KeystoneContext): BaseScene<DnevnikC
   //
   // Homework
   //
-  mainScene.action('menu_homework', async (ctx: DnevnikContext) => {
+  mainScene.action('menu_homework', async (ctx) => {
     await ctx.scene.enter('student_homework_scene')
   })
 
   //
   // grades
   //
-  mainScene.action('menu_grades', async (ctx: DnevnikContext) => {
+  mainScene.action('menu_grades', async (ctx) => {
     await ctx.scene.enter('student_grades_scene')
   })
 
   // Возврат к главному меню
-  mainScene.action('menu_back', async (ctx: DnevnikContext) => {
+  mainScene.action('menu_back', async (ctx) => {
     const student = getSelectedStudent(ctx)
     await ctx.editMessageText(formatStudentMainMenuTitle(student), { ...mainMenu(), parse_mode: 'MarkdownV2' })
   });
 
   // Обработчик для кнопки "Выбрать другого ученика"
-  mainScene.action('menu_select_student', (ctx: DnevnikContext) => {
+  mainScene.action('menu_select_student', (ctx) => {
     ctx.deleteMessage().then(async () => {
       await ctx.scene.enter('select_student')
     })

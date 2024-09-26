@@ -22,10 +22,10 @@ export async function onStart(godContext: KeystoneContext, ctx: DnevnikContext):
 
     if (studentsResult && studentsResult.isParent) {
       ctx.session.students = studentsResult.students
-      ctx.scene.enter('select_student')
+      await ctx.scene.enter('select_student')
     }
   } else {
-    ctx.reply(`Здравствуйте, ${ctx.from.first_name ?? ctx.from.username ?? 'человек'}! Это бот для работы с дневником. Он подключается к дневнику, используя ваш аккаунт. Чтобы указать данные аккаунта, используйте команду /login.`)
+    await ctx.reply(`Здравствуйте, ${ctx.from.first_name ?? ctx.from.username ?? 'человек'}! Это бот для работы с дневником. Он подключается к дневнику, используя ваш аккаунт. Чтобы указать данные аккаунта, используйте команду /login.`)
   }
 }
 
@@ -54,9 +54,9 @@ export async function onSendTokens(godContext: KeystoneContext, ctx: DnevnikCont
     if (studentsResult) {
       ctx.session.telegramUser = telegramUserWithRefreshedTokens
       if (studentsResult.isParent) {
-        ctx.reply('Готово! Бот подключен к вашему аккаунту в дневнике. Чтобы отключить все это используйте команду /logout.')
+        await ctx.reply('Готово! Бот подключен к вашему аккаунту в дневнике. Чтобы отключить все это используйте команду /logout.')
         ctx.session.students = studentsResult.students
-        ctx.scene.enter('select_student')
+        await ctx.scene.enter('select_student')
       } else {
         await godContext.query.TelegramUser.updateOne({
           where: { telegramId },
@@ -67,14 +67,14 @@ export async function onSendTokens(godContext: KeystoneContext, ctx: DnevnikCont
             dnevnikTokensUpdatedAt: null,
           },
         })
-        ctx.reply('Ой ой, кажется вы пытаетесь подключить не родительскую учетную запись. Я пока не умею работать с такими.', Markup.removeKeyboard())
+        await ctx.reply('Ой ой, кажется вы пытаетесь подключить не родительскую учетную запись. Я пока не умею работать с такими.', Markup.removeKeyboard())
       }
     }
   } catch (err) {
     if (err instanceof DnevnikClientUnauthorizedError) {
-      ctx.reply('Ммм, похоже что токены, которые вы только что отправили, уже устарели. Или вы их перепутали. Или взяли не из того места. Давайте попробуем еще разок.', getKeyboardWithLoginButton())
+      await ctx.reply('Ммм, похоже что токены, которые вы только что отправили, уже устарели. Или вы их перепутали. Или взяли не из того места. Давайте попробуем еще разок.', getKeyboardWithLoginButton())
     } else {
-      ctx.reply('Похоже что-то случилось с сервером дневника. Попробуйте позже. Кнопка на том же месте.', getKeyboardWithLoginButton())
+      await ctx.reply('Похоже что-то случилось с сервером дневника. Попробуйте позже. Кнопка на том же месте.', getKeyboardWithLoginButton())
     }
   }
 }
@@ -92,5 +92,5 @@ export async function onLogout(godContext: KeystoneContext, ctx: Context<{ messa
     },
   })
 
-  ctx.reply('Что ж, таков путь. Я удалил ваши токены и более не смогу получать данные. Но вы можете вернуть все обратно через команду /login', Markup.removeKeyboard())
+  await ctx.reply('Что ж, таков путь. Я удалил ваши токены и более не смогу получать данные. Но вы можете вернуть все обратно через команду /login', Markup.removeKeyboard())
 }

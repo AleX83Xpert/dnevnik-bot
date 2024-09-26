@@ -6,34 +6,31 @@ import { Scenes, Markup } from 'telegraf'
 export function getSelectStudentScene(): BaseScene<DnevnikContext> {
   const selectStudentScene = new Scenes.BaseScene<DnevnikContext>('select_student')
 
-  selectStudentScene.enter((ctx) => {
+  selectStudentScene.enter(async (ctx) => {
     const students = ctx.session.students
 
-    // if (students) {
+    if (students) {
       const studentKeyboard = Markup.inlineKeyboard(
         students.map((student) => [Markup.button.callback(`${student.firstName} ${student.lastName}, ${student.orgName}, ${student.className}`, `select_${student.id}`)])
       )
       // Need to reply with markdown because this message will be edited within student scene
-      ctx.replyWithMarkdownV2('Выберите ученика:', studentKeyboard)
-    // } else {
-      // TODO go to /start
-    // }
+      await ctx.replyWithMarkdownV2('Выберите ученика:', studentKeyboard)
+    } else {
+      await ctx.reply('🙀 Не удалось получить список учеников. Попробуйте начать сначала /start.')
+    }
   });
 
-  selectStudentScene.action(/select_(.+)/, (ctx) => {
+  selectStudentScene.action(/select_(.+)/, async (ctx) => {
     const selectedStudentId = ctx.match[1]
     const students = ctx.session.students
 
     const selectedStudent = students.find((student) => student.id === selectedStudentId)
 
     if (selectedStudent) {
-      if (ctx.session) {
         ctx.session.selectedStudentId = selectedStudent.id
-        // ctx.answerCbQuery()
-        ctx.scene.enter('student_scene')
-      }
+        await ctx.scene.enter('student_scene')
     } else {
-      ctx.reply('Ошибка: Ученик не найден')
+      await ctx.reply('🙀 Не удалось выбрать ученика из полученного списка. Это крайне странно О_о. Попробуйте начать сначала /start.')
     }
   })
 

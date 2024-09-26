@@ -28,7 +28,7 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
     await ctx.editMessageText(`*${student.firstName} ${student.lastName}* · Расписание`, { ...scheduleMenu(), parse_mode: 'MarkdownV2' })
   })
 
-  scene.action('schedule_today', async (ctx: DnevnikContext) => {
+  scene.action('schedule_today', async (ctx) => {
     const student = getSelectedStudent(ctx)
     const telegramUser = ctx.session.telegramUser
 
@@ -54,7 +54,7 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
     await ctx.scene.enter('student_scene', { isStart: true })
   })
 
-  scene.action('schedule_tomorrow', async (ctx: DnevnikContext) => {
+  scene.action('schedule_tomorrow', async (ctx) => {
     const student = getSelectedStudent(ctx)
     const telegramUser = ctx.session.telegramUser
 
@@ -80,7 +80,7 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
     await ctx.scene.enter('student_scene', { isStart: true })
   })
 
-  scene.action('schedule_week', async (ctx: DnevnikContext) => {
+  scene.action('schedule_week', async (ctx) => {
     const student = getSelectedStudent(ctx)
     const telegramUser = ctx.session.telegramUser
 
