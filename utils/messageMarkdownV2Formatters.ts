@@ -23,5 +23,5 @@ export function formatScheduleDay(day: TScheduleDay) {
 }
 
 export function formatHomeworkItem(hw: THomework) {
-  return `${escapeMarkdown(`${hw.isDone ? '🟢' : '🔴'} Урок ${String(hw.lessonNumber)}`)}, *${escapeMarkdown(hw.lessonName)}*\n_${escapeMarkdown(hw.description)}_`
+  return `${escapeMarkdown(`${hw.isDone ? '🟢' : '🔴'} Урок ${String(hw.lessonNumber)}`)}, *${escapeMarkdown(hw.lessonName)}*\n>${escapeMarkdown(hw.description)}||`
 }
