@@ -5,17 +5,22 @@ import { Scenes, Markup } from 'telegraf'
 import { KeystoneContext } from "@keystone-6/core/types"
 import { formatStudentMainMenuTitle } from "../../utils/messageMarkdownV2Formatters"
 
-function mainMenu() {
-  return Markup.inlineKeyboard([
+function mainMenu(chooseAnother = true) {
+  const kbArr = [
     [
       Markup.button.callback('📅 Расписание', 'menu_schedule'),
       Markup.button.callback('📚 ДЗ', 'menu_homework'),
       Markup.button.callback('📊 Оценки', 'menu_grades')
-    ],
-    [
+    ]
+  ]
+
+  if (chooseAnother) {
+    kbArr.push([
       Markup.button.callback('◀️ Выбрать другого ученика', 'menu_select_student')
-    ],
-  ])
+    ])
+  }
+
+  return Markup.inlineKeyboard(kbArr)
 }
 
 export function getStudentScene(godContext: KeystoneContext): BaseScene<DnevnikContext> {
@@ -28,9 +33,9 @@ export function getStudentScene(godContext: KeystoneContext): BaseScene<DnevnikC
       const msg = formatStudentMainMenuTitle(student)
       // @ts-ignore NOTE the state's type is an `object` without ability to override
       if (ctx.scene.state.needNewMessage) {
-        await ctx.reply(msg, { ...mainMenu(), parse_mode: 'MarkdownV2' })
+        await ctx.reply(msg, { ...mainMenu(ctx.session.students.length > 1), parse_mode: 'MarkdownV2' })
       } else {
-        await ctx.editMessageText(msg, { ...mainMenu(), parse_mode: 'MarkdownV2' })
+        await ctx.editMessageText(msg, { ...mainMenu(ctx.session.students.length > 1), parse_mode: 'MarkdownV2' })
       }
     } else {
       await ctx.scene.enter('select_student')
