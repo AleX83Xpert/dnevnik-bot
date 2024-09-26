@@ -85,7 +85,7 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
           return fetchFromDnevnik({ ...options, telegramUser: telegramUserWithRefreshedTokens })
         }
       } catch (err) {
-        logger.warn({ msg: 'tokens refresh failde', reqId: options.ctx.reqId, err })
+        logger.warn({ msg: 'tokens refresh failed', reqId: options.ctx.reqId, err })
         // Retry after tokens were refreshed unsuccessfully
         // Clear tokens
         await options.godContext.query.TelegramUser.updateOne({
