@@ -39,6 +39,10 @@ export default withAuth(
 
         startTokensRefresher(godContext, Number(process.env.TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC), Number(process.env.TELEGRAM_TOKENS_REFRESH_BEFORE_SEC))
 
+        if (!process.env.TELEGRAM_BOT_TOKEN) {
+          throw new Error('TELEGRAM_BOT_TOKEN must be provided!')
+        }
+        
         const bot = prepareTelegramBot(godContext, process.env.TELEGRAM_BOT_TOKEN as string)
         bot.launch()
 

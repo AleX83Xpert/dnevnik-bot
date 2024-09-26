@@ -8,12 +8,21 @@ import crypto from 'node:crypto'
 import { getSelectStudentScene } from "./scenes/selectStudentScene"
 import { getStudentScene } from "./scenes/studentScene"
 import { DnevnikContext } from "./types"
+import { getStudentScheduleScene } from "./scenes/studentScheduleScene"
+import { getStudentHomeworkScene } from "./scenes/studentHomeworkScene"
+import { getStudentGradesScene } from "./scenes/studentGradesScene"
 
 export function prepareTelegramBot(godContext: KeystoneContext, botToken: string): Telegraf<DnevnikContext> {
   const logger = getLogger('telegramBot')
-  
+
   const bot = new Telegraf<DnevnikContext>(botToken)
-  const stage = new Scenes.Stage<DnevnikContext>([getSelectStudentScene(godContext), getStudentScene(godContext)])
+  const stage = new Scenes.Stage<DnevnikContext>([
+    getSelectStudentScene(),
+    getStudentScene(godContext),
+    getStudentScheduleScene(godContext),
+    getStudentHomeworkScene(godContext),
+    getStudentGradesScene(godContext),
+  ])
 
   // Logger middleware. Must be first
   bot.use((ctx, next) => {
@@ -28,7 +37,7 @@ export function prepareTelegramBot(godContext: KeystoneContext, botToken: string
     })
   })
 
-  bot.use(session())
+  bot.use(session({ defaultSession: () => ({ students: [], telegramUser: null }) }))
   bot.use(stage.middleware())
 
   bot.start(async (ctx) => {

@@ -29,10 +29,14 @@ export function getKeyboardWithLoginButton() {
 }
 
 export function getSelectedStudent(ctx: DnevnikContext) {
-  return ctx.session?.students.find((student) => student.id === ctx.session?.selectedStudentId)
+  return ctx.session.students.find((student) => student.id === ctx.session.selectedStudentId)
 }
 
 export function getSelectedStudentName(ctx: DnevnikContext) {
   const student = getSelectedStudent(ctx)
-  return `${student?.firstName} ${student?.lastName}`
+  if (!!student) {
+    return `${student.firstName} ${student.lastName}`
+  } else {
+    return '??? В контексте нет выбранного ученика'
+  }
 }
