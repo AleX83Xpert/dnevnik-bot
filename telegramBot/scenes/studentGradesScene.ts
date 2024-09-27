@@ -18,7 +18,7 @@ export function getStudentGradesScene(godContext: KeystoneContext): BaseScene<Dn
     const student = getSelectedStudent(ctx)
     const telegramUser = ctx.session.telegramUser
 
-    if (student) {
+    if (student && telegramUser) {
       const yearsResult = await fetchFromDnevnik({ godContext, ctx, telegramUser, request: { action: 'estimateYears', params: { studentId: student.id } } })
       if (yearsResult) {
         const schoolYear = yearsResult.currentYear.id
@@ -52,9 +52,9 @@ export function getStudentGradesScene(godContext: KeystoneContext): BaseScene<Dn
 
   scene.action(/period_(.+)/, async (ctx) => {
     const student = getSelectedStudent(ctx)
+    const telegramUser = ctx.session.telegramUser
 
-    if (student) {
-      const telegramUser = ctx.session.telegramUser
+    if (student && telegramUser) {
       const periodId = ctx.match[1]
       const periodName = lowerCase(gPeriods.find(({ id }) => id === periodId)?.name)
 

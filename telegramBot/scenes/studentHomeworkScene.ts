@@ -35,10 +35,9 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
 
   scene.action('homework_tomorrow', async (ctx: DnevnikContext) => {
     const student = getSelectedStudent(ctx)
+    const telegramUser = ctx.session.telegramUser
 
-    if (student) {
-      const telegramUser = ctx.session.telegramUser
-
+    if (student && telegramUser) {
       const tomorow = dayjs().add(1, 'day')
 
       const homeworkResult = await fetchFromDnevnik({
@@ -69,10 +68,9 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
 
   scene.action('homework_this_week', async (ctx) => {
     const student = getSelectedStudent(ctx)
+    const telegramUser = ctx.session.telegramUser
 
-    if (student) {
-      const telegramUser = ctx.session.telegramUser
-
+    if (student && telegramUser) {
       const dates: string[] = []
       let startDayNumber = 1
       const currentWeekDay = dayjs().day()
@@ -109,10 +107,9 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
 
   scene.action('homework_next_week', async (ctx) => {
     const student = getSelectedStudent(ctx)
+    const telegramUser = ctx.session.telegramUser
 
-    if (student) {
-      const telegramUser = ctx.session.telegramUser
-
+    if (student && telegramUser) {
       const dates: string[] = []
       let startDayNumber = 0
       const currentWeekDay = 0

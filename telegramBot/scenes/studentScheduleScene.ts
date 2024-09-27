@@ -36,9 +36,9 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
 
   scene.action('schedule_today', async (ctx) => {
     const student = getSelectedStudent(ctx)
+    const telegramUser = ctx.session.telegramUser
 
-    if (student) {
-      const telegramUser = ctx.session.telegramUser
+    if (student && telegramUser) {
       const todayDateStr = dayjs().format('YYYY-MM-DD')
 
       const scheduleResult = await fetchFromDnevnik({
@@ -72,9 +72,9 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
 
   scene.action('schedule_tomorrow', async (ctx) => {
     const student = getSelectedStudent(ctx)
+    const telegramUser = ctx.session.telegramUser
 
-    if (student) {
-      const telegramUser = ctx.session.telegramUser
+    if (student && telegramUser) {
       const tomorowDateStr = dayjs().add(1, 'day').format('YYYY-MM-DD')
 
       const scheduleResult = await fetchFromDnevnik({
@@ -108,10 +108,9 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
 
   scene.action('schedule_week', async (ctx) => {
     const student = getSelectedStudent(ctx)
+    const telegramUser = ctx.session.telegramUser
 
-    if (student) {
-      const telegramUser = ctx.session.telegramUser
-
+    if (student && telegramUser) {
       const scheduleResult = await fetchFromDnevnik({
         godContext,
         ctx,

@@ -49,7 +49,7 @@ const logger = getLogger('dnevnikFetcher')
 export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap extends TActionToResponseMap>(options: {
   godContext: KeystoneContext,
   ctx: DnevnikContext,
-  telegramUser: Partial<Lists.TelegramUser.Item>,
+  telegramUser: Lists.TelegramUser.Item,
   request: TReq,
 }): Promise<TResMap[TReq['action']] | undefined> {
   if (!options.telegramUser.dnevnikAccessToken || !options.telegramUser.dnevnikRefreshToken) {
@@ -81,6 +81,8 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
             },
             query: ALL_TELEGRAM_USER_FIELDS,
           }) as Lists.TelegramUser.Item
+
+          options.ctx.session.telegramUser = telegramUserWithRefreshedTokens
 
           return fetchFromDnevnik({ ...options, telegramUser: telegramUserWithRefreshedTokens })
         }

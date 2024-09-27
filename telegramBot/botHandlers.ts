@@ -22,6 +22,7 @@ export async function onStart(godContext: KeystoneContext, ctx: Context<{
     // User already registered and has tokens
 
     ctx.session.telegramUser = telegramUser
+    // TODO move to select_student scene
     const studentsResult = await fetchFromDnevnik({ telegramUser, godContext, ctx, request: { action: 'students' } })
 
     if (studentsResult && studentsResult.isParent) {
@@ -37,6 +38,7 @@ export async function onSendTokens(godContext: KeystoneContext, ctx: NarrowedCon
   if (ctx.webAppData) {
     const data = ctx.webAppData.data.json() as TDnevnikTokens
     const telegramId = String(ctx.from.id)
+    const telegramUser = await findOrCreateTelegramUser(godContext, telegramId, ctx.from)
 
     const dnevnikClientWithUserTokens = new DnevnikClient({ accessToken: data.accessToken, refreshToken: data.refreshToken })
 
@@ -44,7 +46,7 @@ export async function onSendTokens(godContext: KeystoneContext, ctx: NarrowedCon
       const newTokens = await dnevnikClientWithUserTokens.refreshTokens()
 
       const telegramUserWithRefreshedTokens = await godContext.query.TelegramUser.updateOne({
-        where: { telegramId },
+        where: { telegramId: telegramUser.telegramId },
         data: {
           dnevnikAccessToken: newTokens.accessToken,
           dnevnikAccessTokenExpirationDate: dayjs().add(15, 'minutes').toISOString(), //newTokens.accessTokenExpirationDate,
@@ -54,6 +56,7 @@ export async function onSendTokens(godContext: KeystoneContext, ctx: NarrowedCon
         query: ALL_TELEGRAM_USER_FIELDS,
       }) as Lists.TelegramUser.Item
 
+      // TODO move to select_student scene
       const studentsResult = await fetchFromDnevnik({ telegramUser: telegramUserWithRefreshedTokens, godContext, ctx, request: { action: 'students' } })
 
       if (studentsResult) {

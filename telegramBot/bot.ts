@@ -3,7 +3,7 @@ import { Context, Scenes, session, Telegraf } from "telegraf"
 import { getLogger } from '../utils/logger'
 import { message, callbackQuery } from 'telegraf/filters'
 import { onLogout, onSendTokens, onStart } from "./botHandlers"
-import { getKeyboardWithLoginButton } from "./botUtils"
+import { findTelegramUser, getKeyboardWithLoginButton } from "./botUtils"
 import crypto from 'node:crypto'
 import { getSelectStudentScene } from "./scenes/selectStudentScene"
 import { getStudentScene } from "./scenes/studentScene"
@@ -11,6 +11,7 @@ import { DnevnikContext } from "./types"
 import { getStudentScheduleScene } from "./scenes/studentScheduleScene"
 import { getStudentHomeworkScene } from "./scenes/studentHomeworkScene"
 import { getStudentGradesScene } from "./scenes/studentGradesScene"
+import { Lists } from '.keystone/types'
 
 export function prepareTelegramBot(godContext: KeystoneContext, botToken: string): Telegraf<DnevnikContext> {
   const logger = getLogger('telegramBot')
@@ -37,7 +38,20 @@ export function prepareTelegramBot(godContext: KeystoneContext, botToken: string
     })
   })
 
-  bot.use(session({ defaultSession: () => ({ students: [], telegramUser: {} }) }))
+  // Add session
+  bot.use(session({ defaultSession: () => ({ students: [] }) }))
+
+  // Init session
+  bot.use(async (ctx) => {
+    let telegramUser: Lists.TelegramUser.Item | undefined
+    if (ctx.from?.id) {
+      telegramUser = await findTelegramUser(godContext, String(ctx.from.id)) as Lists.TelegramUser.Item
+    }
+
+    ctx.session.telegramUser = telegramUser
+  })
+
+  // Use scenes
   bot.use(stage.middleware())
 
   bot.start(async (ctx) => {

@@ -9,7 +9,7 @@ export type TDnevnikTokens = {
 
 // Session stores data between requests
 interface DnevnikSession extends Scenes.SceneSession {
-  telegramUser: Partial<Lists.TelegramUser.Item>
+  telegramUser?: Lists.TelegramUser.Item
   students: TStudent[]
   selectedStudentId?: string
   estimate?: {
