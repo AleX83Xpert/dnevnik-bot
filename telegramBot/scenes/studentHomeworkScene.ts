@@ -10,7 +10,10 @@ import dayjs from "dayjs"
 function homeworkMenu() {
   return Markup.inlineKeyboard([
     [
+      Markup.button.callback('😳 Сегодня', 'homework_today'),
       Markup.button.callback('😲 Завтра', 'homework_tomorrow'),
+    ],
+    [
       Markup.button.callback('🫣 Эта неделя', 'homework_this_week'),
       Markup.button.callback('😵 След. неделя', 'homework_next_week'),
     ],
@@ -28,6 +31,39 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
     if (student) {
       // TODO move scene title to common place
       await ctx.editMessageText(`*${student.firstName} ${student.lastName}* · Домашнее задание`, { ...homeworkMenu(), parse_mode: 'MarkdownV2' })
+    } else {
+      await ctx.scene.enter('select_student')
+    }
+  })
+
+  scene.action('homework_today', async (ctx: DnevnikContext) => {
+    const student = getSelectedStudent(ctx)
+    const telegramUser = ctx.session.telegramUser
+
+    if (student && telegramUser) {
+      const today = dayjs()
+
+      const homeworkResult = await fetchFromDnevnik({
+        godContext,
+        ctx,
+        telegramUser,
+        request: {
+          action: 'homework',
+          params: {
+            studentId: student.id,
+            date: today.format('YYYY-MM-DD')
+          },
+        },
+      })
+
+      if (homeworkResult && homeworkResult.homeworks && homeworkResult.homeworks.length > 0) {
+        await ctx.reply(`*${getSelectedStudentName(ctx)}*\nДомашнее задание на сегодня, ${escMd(today.format('dddd, D MMM'))}:\n\n${homeworkResult?.homeworks.map((hw) => formatHomeworkItem(hw)).join('\n')}`, { parse_mode: 'MarkdownV2' })
+      } else {
+        await ctx.reply('На сегодня домашнего задания нет 🥵')
+      }
+
+      await ctx.deleteMessage()
+      await ctx.scene.enter('student_scene', { needNewMessage: true })
     } else {
       await ctx.scene.enter('select_student')
     }
