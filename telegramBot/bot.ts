@@ -42,13 +42,14 @@ export function prepareTelegramBot(godContext: KeystoneContext, botToken: string
   bot.use(session({ defaultSession: () => ({ students: [] }) }))
 
   // Init session
-  bot.use(async (ctx) => {
+  bot.use(async (ctx, next) => {
     let telegramUser: Lists.TelegramUser.Item | undefined
     if (ctx.from?.id) {
       telegramUser = await findTelegramUser(godContext, String(ctx.from.id)) as Lists.TelegramUser.Item
     }
 
     ctx.session.telegramUser = telegramUser
+    next()
   })
 
   // Use scenes
