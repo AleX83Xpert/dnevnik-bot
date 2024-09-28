@@ -8,14 +8,10 @@ export type TDnevnikTokens = {
 }
 
 // Session stores data between requests
-interface DnevnikSession extends Scenes.SceneSession {
+export interface DnevnikSession extends Scenes.SceneSession {
   telegramUser?: Lists.TelegramUser.Item
   students: TStudent[]
   selectedStudentId?: string
-  estimate?: {
-    schoolYear: string
-    classId: string
-  }
 }
 
 // Context is new on every request

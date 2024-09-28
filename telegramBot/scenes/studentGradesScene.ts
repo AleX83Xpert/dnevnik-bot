@@ -12,7 +12,10 @@ import { TEstimatePeriod } from "../../clients/DnevnikClientTypes"
 export function getStudentGradesScene(godContext: KeystoneContext): BaseScene<DnevnikContext> {
   const scene = new Scenes.BaseScene<DnevnikContext>('student_grades_scene')
 
-  let gPeriods: TEstimatePeriod[] // TODO move to scene init
+  // Some global variables for current scene
+  // TODO  try to move to the scene init
+  let gPeriods: TEstimatePeriod[]
+  let gEstimate: { schoolYear: string, classId: string } | undefined = undefined
 
   scene.enter(async (ctx) => {
     const student = getSelectedStudent(ctx)
@@ -33,10 +36,8 @@ export function getStudentGradesScene(godContext: KeystoneContext): BaseScene<Dn
           const classId = data[1].currentClass.value
           gPeriods = periods
 
-          if (ctx.session && !ctx.session.estimate) {
-            ctx.session.estimate = { schoolYear, classId }
-          }
-
+          gEstimate = { schoolYear, classId }
+          
           await ctx.editMessageText(`*${student.firstName} ${student.lastName}* · Оценки`, { ...Markup.inlineKeyboard([...chunk<TEstimatePeriod>(periods, 2).map((periods2) => periods2.map((p) => Markup.button.callback(p.name, `period_${p.id}`))), [Markup.button.callback('◀️ Назад', 'menu_back')]]), parse_mode: 'MarkdownV2' })
         } else {
           await ctx.scene.enter('select_student')
@@ -58,8 +59,8 @@ export function getStudentGradesScene(godContext: KeystoneContext): BaseScene<Dn
       const periodId = ctx.match[1]
       const periodName = lowerCase(gPeriods.find(({ id }) => id === periodId)?.name)
 
-      if (ctx.session && ctx.session.estimate) {
-        const { schoolYear, classId } = ctx.session.estimate
+      if (gEstimate) {
+        const { schoolYear, classId } = gEstimate
 
         const estimateResult = await fetchFromDnevnik({
           godContext, ctx, telegramUser, request: {

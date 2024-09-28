@@ -63,6 +63,16 @@ services:
     # ports:
     #   - "5432:5432"
 
+  redis:
+    container_name: dnevnik-redis
+    hostname: redis
+    image: redis
+    networks:
+      - appnet
+    # do not need to open ports on prod
+    # ports:
+    #   - "6379:6379"
+
 volumes:
   pgdata:
     driver: local

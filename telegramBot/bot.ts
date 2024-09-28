@@ -1,17 +1,18 @@
 import { KeystoneContext } from "@keystone-6/core/types"
-import { Context, Scenes, session, Telegraf } from "telegraf"
+import { Scenes, session, Telegraf } from "telegraf"
 import { getLogger } from '../utils/logger'
-import { message, callbackQuery } from 'telegraf/filters'
+import { message } from 'telegraf/filters'
 import { onLogout, onSendTokens, onStart } from "./botHandlers"
 import { findTelegramUser, getKeyboardWithLoginButton } from "./botUtils"
 import crypto from 'node:crypto'
 import { getSelectStudentScene } from "./scenes/selectStudentScene"
 import { getStudentScene } from "./scenes/studentScene"
-import { DnevnikContext } from "./types"
+import { DnevnikContext, DnevnikSession } from "./types"
 import { getStudentScheduleScene } from "./scenes/studentScheduleScene"
 import { getStudentHomeworkScene } from "./scenes/studentHomeworkScene"
 import { getStudentGradesScene } from "./scenes/studentGradesScene"
 import { Lists } from '.keystone/types'
+import { Redis } from '@telegraf/session/redis'
 
 export function prepareTelegramBot(godContext: KeystoneContext, botToken: string): Telegraf<DnevnikContext> {
   const logger = getLogger('telegramBot')
@@ -39,7 +40,14 @@ export function prepareTelegramBot(godContext: KeystoneContext, botToken: string
   })
 
   // Add session
-  bot.use(session({ defaultSession: () => ({ students: [] }) }))
+  if (!process.env.REDIS_URL) {
+    throw new Error('REDIS_URL must be provided!')
+  }
+  const sessionStore = Redis<DnevnikSession>({
+    url: process.env.REDIS_URL,
+    prefix: 'dnevnik:',
+  })
+  bot.use(session({ store: sessionStore, defaultSession: () => ({ students: [] }) }))
 
   // Init session
   bot.use(async (ctx, next) => {
@@ -49,7 +57,7 @@ export function prepareTelegramBot(godContext: KeystoneContext, botToken: string
     }
 
     ctx.session.telegramUser = telegramUser
-    next()
+    return next()
   })
 
   // Use scenes
