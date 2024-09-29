@@ -64,10 +64,9 @@ export function getStudentScene(godContext: KeystoneContext): BaseScene<DnevnikC
   })
 
   // Обработчик для кнопки "Выбрать другого ученика"
-  mainScene.action('menu_select_student', (ctx) => {
-    ctx.deleteMessage().then(async () => {
-      await ctx.scene.enter('select_student')
-    })
+  mainScene.action('menu_select_student', async (ctx) => {
+    await ctx.deleteMessage()
+    await ctx.scene.enter('select_student')
   })
 
   return mainScene
