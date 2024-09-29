@@ -62,7 +62,7 @@ export async function onSendTokens(godContext: KeystoneContext, ctx: NarrowedCon
       if (studentsResult) {
         ctx.session.telegramUser = telegramUserWithRefreshedTokens
         if (studentsResult.isParent) {
-          await ctx.reply('Готово! Бот подключен к вашему аккаунту в дневнике. Чтобы отключить все это используйте команду /logout.')
+          await ctx.reply('Готово! Бот подключен к вашему аккаунту в дневнике. Чтобы отключить все это используйте команду /logout.', Markup.removeKeyboard())
           ctx.session.students = studentsResult.students
           await ctx.scene.enter('select_student')
         } else {
