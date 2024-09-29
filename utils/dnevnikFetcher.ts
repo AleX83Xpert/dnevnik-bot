@@ -1,7 +1,7 @@
 import { KeystoneContext } from "@keystone-6/core/types"
 import { DnevnikClient } from "../clients/DnevnikClient"
 import { TClassesParams, TClassesResult, TEstimateParams, TEstimatePeriodsParams, TEstimatePeriodsResult, TEstimateResult, TEstimateYearsParams, TEstimateYearsResult, THomeworkParams, THomeworkResult, TScheduleParams, TScheduleResult, TStudentsResult } from "../clients/DnevnikClientTypes"
-import { DnevnikClientExternalServerError, DnevnikClientUnauthorizedError } from "../clients/DnevnikClientErrors"
+import { DnevnikClientExternalServerError, DnevnikClientHttpResponseError, DnevnikClientUnauthorizedError } from "../clients/DnevnikClientErrors"
 import dayjs from "dayjs"
 import { ALL_TELEGRAM_USER_FIELDS } from "../telegramBot/constants/fields"
 import { getLogger } from "./logger"
@@ -110,7 +110,8 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
     } else if (err instanceof DnevnikClientExternalServerError) {
       options.ctx.reply('Да что ж такое! На сайте дневника сейчас идут технические работы. Ничего не могу поделать 😥')
     } else {
-      throw err
+      const { status, statusText } = err as DnevnikClientHttpResponseError
+      options.ctx.reply(`Какие-то проблемы с сервером дневника. Получил код ответа ${status} ${statusText}.`)
     }
   }
 }
