@@ -3,7 +3,8 @@ import { getLogger } from "./logger"
 import dayjs from "dayjs"
 import { DnevnikClient } from "../clients/DnevnikClient"
 import { ALL_TELEGRAM_USER_FIELDS } from "../telegramBot/constants/fields"
-import { DnevnikClientUnauthorizedError } from "../clients/DnevnikClientErrors"
+import { get } from "lodash"
+import { DEFAULT_TELEGRAM_TOKENS_TTL_SEC } from "./constants"
 
 const logger = getLogger('dnevnikTokensRefresher')
 
@@ -31,7 +32,7 @@ export async function startTokensRefresher(godContext: KeystoneContext, interval
 
     for (const telegramUser of expiredSoonUsers) {
       const telegramId = telegramUser.telegramId
-      
+
       try {
         const dnevnikClient = new DnevnikClient({ accessToken: telegramUser.dnevnikAccessToken, refreshToken: telegramUser.dnevnikRefreshToken })
 
@@ -42,7 +43,8 @@ export async function startTokensRefresher(godContext: KeystoneContext, interval
             where: { telegramId },
             data: {
               dnevnikAccessToken: newTokens.accessToken,
-              dnevnikAccessTokenExpirationDate: dayjs().add(10, 'minutes').toISOString(), //newTokens.accessTokenExpirationDate,
+              //NOTE newTokens.accessTokenExpirationDate contains the NOW timestamp ¯\_(ツ)_/¯
+              dnevnikAccessTokenExpirationDate: dayjs().add(Number(get(process.env, 'TELEGRAM_TOKENS_TTL_SEC', DEFAULT_TELEGRAM_TOKENS_TTL_SEC)), 'seconds').toISOString(),
               dnevnikRefreshToken: newTokens.refreshToken,
               dnevnikTokensUpdatedAt: dayjs().toISOString(),
             }
@@ -51,17 +53,16 @@ export async function startTokensRefresher(godContext: KeystoneContext, interval
           logger.info({ msg: 'tokens refreshed', telegramId: telegramUser.telegramId })
         }
       } catch (err) {
-        if (err instanceof DnevnikClientUnauthorizedError) {
-          await godContext.query.TelegramUser.updateOne({
-            where: { telegramId },
-            data: {
-              dnevnikAccessToken: '',
-              dnevnikAccessTokenExpirationDate: null,
-              dnevnikRefreshToken: '',
-              dnevnikTokensUpdatedAt: dayjs().toISOString(),
-            }
-          })
-        }
+        await godContext.query.TelegramUser.updateOne({
+          where: { telegramId },
+          data: {
+            dnevnikAccessToken: '',
+            dnevnikAccessTokenExpirationDate: null,
+            dnevnikRefreshToken: '',
+            dnevnikTokensUpdatedAt: dayjs().toISOString(),
+          }
+        })
+
         logger.error({ msg: 'tokens refresh error', telegramId: telegramUser.telegramId, err })
       }
     }

@@ -8,6 +8,8 @@ import { getLogger } from "./logger"
 import { getKeyboardWithLoginButton } from "../telegramBot/botUtils"
 import { Lists } from '.keystone/types'
 import { DnevnikContext } from "../telegramBot/types"
+import { get } from "lodash"
+import { DEFAULT_TELEGRAM_TOKENS_TTL_SEC } from "./constants"
 
 type TDnevnikRequest =
   | { action: 'students', params?: any }
@@ -75,7 +77,8 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
             where: { telegramId: options.telegramUser.telegramId },
             data: {
               dnevnikAccessToken: newTokens.accessToken,
-              dnevnikAccessTokenExpirationDate: dayjs().add(10, 'minutes').toISOString(), //newTokens.accessTokenExpirationDate,
+              //NOTE newTokens.accessTokenExpirationDate contains the NOW timestamp ¯\_(ツ)_/¯
+              dnevnikAccessTokenExpirationDate: dayjs().add(Number(get(process.env, 'TELEGRAM_TOKENS_TTL_SEC', DEFAULT_TELEGRAM_TOKENS_TTL_SEC)), 'seconds').toISOString(),
               dnevnikRefreshToken: newTokens.refreshToken,
               dnevnikTokensUpdatedAt: dayjs().toISOString(),
             },
@@ -111,7 +114,7 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
       options.ctx.reply('Да что ж такое! На сайте дневника сейчас идут технические работы. Ничего не могу поделать 😥')
     } else {
       const { status, statusText } = err as DnevnikClientHttpResponseError
-      options.ctx.reply(`Какие-то проблемы с сервером дневника. Получил код ответа ${status} ${statusText}.`)
+      options.ctx.reply(`Какие-то проблемы с сервером дневника. Получил код ответа ${status} ${statusText}. Попробуйте немного позже. Если ошибка повторяется, то воспользуйтесь командой /login.`)
     }
   }
 }
