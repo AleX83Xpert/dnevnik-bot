@@ -56,7 +56,10 @@ export function prepareTelegramBot(godContext: KeystoneContext, botToken: string
       telegramUser = await findTelegramUser(godContext, String(ctx.from.id)) as Lists.TelegramUser.Item
     }
 
-    ctx.session.telegramUser = telegramUser
+    if (telegramUser) {
+      ctx.telegramUser = telegramUser
+    }
+    
     return next()
   })
 

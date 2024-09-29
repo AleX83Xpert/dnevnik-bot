@@ -21,7 +21,7 @@ export async function onStart(godContext: KeystoneContext, ctx: Context<{
   if (telegramUser.dnevnikAccessToken && telegramUser.dnevnikRefreshToken) {
     // User already registered and has tokens
 
-    ctx.session.telegramUser = telegramUser
+    ctx.telegramUser = telegramUser
     // TODO move to select_student scene
     const studentsResult = await fetchFromDnevnik({ telegramUser, godContext, ctx, request: { action: 'students' } })
 
@@ -60,7 +60,7 @@ export async function onSendTokens(godContext: KeystoneContext, ctx: NarrowedCon
       const studentsResult = await fetchFromDnevnik({ telegramUser: telegramUserWithRefreshedTokens, godContext, ctx, request: { action: 'students' } })
 
       if (studentsResult) {
-        ctx.session.telegramUser = telegramUserWithRefreshedTokens
+        ctx.telegramUser = telegramUserWithRefreshedTokens
         if (studentsResult.isParent) {
           await ctx.reply('Готово! Бот подключен к вашему аккаунту в дневнике. Чтобы отключить все это используйте команду /logout.', Markup.removeKeyboard())
           ctx.session.students = studentsResult.students

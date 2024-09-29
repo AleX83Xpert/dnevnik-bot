@@ -85,7 +85,7 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
             query: ALL_TELEGRAM_USER_FIELDS,
           }) as Lists.TelegramUser.Item
 
-          options.ctx.session.telegramUser = telegramUserWithRefreshedTokens
+          options.ctx.telegramUser = telegramUserWithRefreshedTokens
 
           return fetchFromDnevnik({ ...options, telegramUser: telegramUserWithRefreshedTokens })
         }
