@@ -19,7 +19,7 @@ export function prepareTelegramBot(godContext: KeystoneContext, botToken: string
 
   const bot = new Telegraf<DnevnikContext>(botToken)
   const stage = new Scenes.Stage<DnevnikContext>([
-    getSelectStudentScene(),
+    getSelectStudentScene(godContext),
     getStudentScene(godContext),
     getStudentScheduleScene(godContext),
     getStudentHomeworkScene(godContext),

@@ -8,17 +8,21 @@ export async function findTelegramUser(godContext: KeystoneContext, telegramId: 
   return await godContext.query.TelegramUser.findOne({ where: { telegramId }, query: ALL_TELEGRAM_USER_FIELDS })
 }
 
+export async function createTelegramUser(godContext: KeystoneContext, telegramId: string, meta: unknown) {
+  return await godContext.query.TelegramUser.createOne({
+    data: {
+      telegramId,
+      meta,
+    },
+    query: ALL_TELEGRAM_USER_FIELDS,
+  }) as Lists.TelegramUser.Item
+}
+
 export async function findOrCreateTelegramUser(godContext: KeystoneContext, telegramId: string, meta: unknown): Promise<Lists.TelegramUser.Item> {
   let telegramUser = await findTelegramUser(godContext, telegramId) as Lists.TelegramUser.Item
 
   if (!telegramUser) {
-    telegramUser = await godContext.query.TelegramUser.createOne({
-      data: {
-        telegramId,
-        meta,
-      },
-      query: ALL_TELEGRAM_USER_FIELDS,
-    }) as Lists.TelegramUser.Item
+    telegramUser = await createTelegramUser(godContext, telegramId, meta)
   }
 
   return telegramUser

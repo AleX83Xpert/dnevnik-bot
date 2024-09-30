@@ -1,7 +1,7 @@
 import { KeystoneContext } from "@keystone-6/core/types"
 import { Context, Markup, NarrowedContext, Scenes } from "telegraf"
 import { Message, Update } from "telegraf/typings/core/types/typegram"
-import { findOrCreateTelegramUser, getKeyboardWithLoginButton } from "./botUtils"
+import { createTelegramUser, findOrCreateTelegramUser, findTelegramUser, getKeyboardWithLoginButton } from "./botUtils"
 import { DnevnikContext, TDnevnikTokens } from "./types"
 import { ALL_TELEGRAM_USER_FIELDS } from "./constants/fields"
 import dayjs from "dayjs"
@@ -16,20 +16,17 @@ export async function onStart(godContext: KeystoneContext, ctx: Context<{
 }> & DnevnikContext): Promise<void> {
   const telegramId = String(ctx.from.id)
 
-  const telegramUser = await findOrCreateTelegramUser(godContext, telegramId, ctx.from)
+  const telegramUser = await findTelegramUser(godContext, telegramId)
 
-  if (telegramUser.dnevnikAccessToken && telegramUser.dnevnikRefreshToken) {
-    // User already registered and has tokens
-
-    ctx.telegramUser = telegramUser
-    // TODO move to select_student scene
-    const studentsResult = await fetchFromDnevnik({ telegramUser, godContext, ctx, request: { action: 'students' } })
-
-    if (studentsResult && studentsResult.isParent) {
-      ctx.session.students = studentsResult.students
+  if (telegramUser) {
+    if (telegramUser.dnevnikAccessToken && telegramUser.dnevnikRefreshToken) {
+      // User already registered and has tokens
       await ctx.scene.enter('select_student')
+    } else {
+      await ctx.reply(`Снова здравствуйте! Нужно повторно подключить дневник. Кнопка для этого уже внизу 👇`, getKeyboardWithLoginButton())
     }
   } else {
+    await createTelegramUser(godContext, telegramId, ctx.from)
     await ctx.reply(`Здравствуйте, ${ctx.from.first_name ?? ctx.from.username ?? 'человек'}! Это бот для работы с дневником. Он подключается к дневнику, используя ваш аккаунт. Чтобы указать данные аккаунта, используйте команду /login.`)
   }
 }
@@ -45,7 +42,7 @@ export async function onSendTokens(godContext: KeystoneContext, ctx: NarrowedCon
     try {
       const newTokens = await dnevnikClientWithUserTokens.refreshTokens()
 
-      const telegramUserWithRefreshedTokens = await godContext.query.TelegramUser.updateOne({
+      await godContext.query.TelegramUser.updateOne({
         where: { telegramId: telegramUser.telegramId },
         data: {
           dnevnikAccessToken: newTokens.accessToken,
@@ -53,31 +50,10 @@ export async function onSendTokens(godContext: KeystoneContext, ctx: NarrowedCon
           dnevnikRefreshToken: newTokens.refreshToken,
           dnevnikTokensUpdatedAt: dayjs().toISOString(),
         },
-        query: ALL_TELEGRAM_USER_FIELDS,
-      }) as Lists.TelegramUser.Item
+      })
 
-      // TODO move to select_student scene
-      const studentsResult = await fetchFromDnevnik({ telegramUser: telegramUserWithRefreshedTokens, godContext, ctx, request: { action: 'students' } })
-
-      if (studentsResult) {
-        ctx.telegramUser = telegramUserWithRefreshedTokens
-        if (studentsResult.isParent) {
-          await ctx.reply('Готово! Бот подключен к вашему аккаунту в дневнике. Чтобы отключить все это используйте команду /logout.', Markup.removeKeyboard())
-          ctx.session.students = studentsResult.students
-          await ctx.scene.enter('select_student')
-        } else {
-          await godContext.query.TelegramUser.updateOne({
-            where: { telegramId },
-            data: {
-              dnevnikAccessToken: '',
-              dnevnikAccessTokenExpirationDate: null,
-              dnevnikRefreshToken: '',
-              dnevnikTokensUpdatedAt: null,
-            },
-          })
-          await ctx.reply('Ой ой, кажется вы пытаетесь подключить не родительскую учетную запись. Я пока не умею работать с такими.', Markup.removeKeyboard())
-        }
-      }
+      await ctx.reply('Готово! Бот подключен к вашему аккаунту в дневнике. Чтобы отключить все это используйте команду /logout.', Markup.removeKeyboard())
+      await ctx.scene.enter('select_student')
     } catch (err) {
       if (err instanceof DnevnikClientUnauthorizedError) {
         await ctx.reply('Ммм, похоже что токены, которые вы только что отправили, уже устарели. Или вы их перепутали. Или взяли не из того места. Давайте попробуем еще разок.', getKeyboardWithLoginButton())
@@ -86,7 +62,7 @@ export async function onSendTokens(godContext: KeystoneContext, ctx: NarrowedCon
       }
     }
   } else {
-    ctx.reply('Не удалось получить данные (токены), которые вы отправили. Попробуйте еще раз.', getKeyboardWithLoginButton())
+    await ctx.reply('Не удалось получить данные (токены), которые вы отправили. Попробуйте еще раз.', getKeyboardWithLoginButton())
   }
 }
 

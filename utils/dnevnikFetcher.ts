@@ -55,7 +55,7 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
   request: TReq,
 }): Promise<TResMap[TReq['action']] | undefined> {
   if (!options.telegramUser.dnevnikAccessToken || !options.telegramUser.dnevnikRefreshToken) {
-    logger.error({ msg: 'TelegramUser contains no tokens', reqId: options.ctx.reqId, request: options.request, telegramId: options.telegramUser.telegramId })
+    logger.warn({ msg: 'TelegramUser contains no tokens', reqId: options.ctx.reqId, request: options.request, telegramId: options.telegramUser.telegramId })
     throw new Error('TelegramUser contains no tokens')
   }
 
