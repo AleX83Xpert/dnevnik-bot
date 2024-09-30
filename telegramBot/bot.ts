@@ -49,7 +49,7 @@ export function prepareTelegramBot(godContext: KeystoneContext, botToken: string
   })
   bot.use(session({ store: sessionStore, defaultSession: () => ({ students: [] }) }))
 
-  // Init session
+  // Init context
   bot.use(async (ctx, next) => {
     let telegramUser: Lists.TelegramUser.Item | undefined
     if (ctx.from?.id) {
@@ -84,6 +84,11 @@ export function prepareTelegramBot(godContext: KeystoneContext, botToken: string
 
   bot.command('logout', async (ctx) => {
     await onLogout(godContext, ctx)
+  })
+
+  bot.catch(async (err, ctx) => {
+    logger.error({ msg: 'uncatched error', reqId: ctx.reqId, telegramId: ctx.telegramUser?.id, err })
+    await ctx.reply('Сейчас произошла ошибка, которую мой разработчик не обработал 😤. Ему отправлено сообщение, а вам нужно начать сначала: /start.')
   })
 
   return bot
