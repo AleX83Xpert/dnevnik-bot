@@ -5,12 +5,13 @@ import { DnevnikClient } from "../clients/DnevnikClient"
 import { ALL_TELEGRAM_USER_FIELDS } from "../telegramBot/constants/fields"
 import { get } from "lodash"
 import { DEFAULT_TELEGRAM_TOKENS_TTL_SEC } from "./constants"
+import { DnevnikClientUnauthorizedError } from "../clients/DnevnikClientErrors"
 
 const logger = getLogger('dnevnikTokensRefresher')
 
 let refreshInterval: NodeJS.Timeout
 
-export async function startTokensRefresher(godContext: KeystoneContext, intervalSec: number = 60, refreshBeforeSec: number = 600) {
+export async function startTokensRefresher (godContext: KeystoneContext, intervalSec: number = 60, refreshBeforeSec: number = 600) {
   if (refreshInterval) {
     clearInterval(refreshInterval)
   }
@@ -53,15 +54,17 @@ export async function startTokensRefresher(godContext: KeystoneContext, interval
           logger.info({ msg: 'tokens refreshed', telegramId: telegramUser.telegramId })
         }
       } catch (err) {
-        await godContext.query.TelegramUser.updateOne({
-          where: { telegramId },
-          data: {
-            dnevnikAccessToken: '',
-            dnevnikAccessTokenExpirationDate: null,
-            dnevnikRefreshToken: '',
-            dnevnikTokensUpdatedAt: dayjs().toISOString(),
-          }
-        })
+        if (err instanceof DnevnikClientUnauthorizedError) {
+          await godContext.query.TelegramUser.updateOne({
+            where: { telegramId },
+            data: {
+              dnevnikAccessToken: '',
+              dnevnikAccessTokenExpirationDate: null,
+              dnevnikRefreshToken: '',
+              dnevnikTokensUpdatedAt: dayjs().toISOString(),
+            }
+          })
+        }
 
         logger.error({ msg: 'tokens refresh error', telegramId: telegramUser.telegramId, err })
       }
