@@ -7,7 +7,7 @@ import { ALL_TELEGRAM_USER_FIELDS } from "./constants/fields"
 import dayjs from "dayjs"
 import { fetchFromDnevnik } from "../utils/dnevnikFetcher"
 import { DnevnikClient } from "../clients/DnevnikClient"
-import { DnevnikClientUnauthorizedError } from "../clients/DnevnikClientErrors"
+import { DnevnikClientExternalServerError, DnevnikClientUnauthorizedError } from "../clients/DnevnikClientErrors"
 import { Lists } from '.keystone/types'
 
 export async function onStart(godContext: KeystoneContext, ctx: Context<{
@@ -57,8 +57,10 @@ export async function onSendTokens(godContext: KeystoneContext, ctx: NarrowedCon
     } catch (err) {
       if (err instanceof DnevnikClientUnauthorizedError) {
         await ctx.reply('Ммм, похоже что токены, которые вы только что отправили, уже устарели. Или вы их перепутали. Или взяли не из того места. Давайте попробуем еще разок.', getKeyboardWithLoginButton())
-      } else {
+      } else if (err instanceof DnevnikClientExternalServerError) {
         await ctx.reply('Похоже что-то случилось с сервером дневника. Попробуйте позже. Кнопка на том же месте.', getKeyboardWithLoginButton())
+      } else {
+        await ctx.reply('По моему вы отправили не токены. Попробуйте еще раз.', getKeyboardWithLoginButton())
       }
     }
   } else {
