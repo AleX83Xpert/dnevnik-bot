@@ -6,10 +6,12 @@ import express from 'express'
 import 'dotenv/config'
 import { startTokensRefresher } from './utils/dnevnikTokensRefresher'
 import { prepareTelegramBot } from './telegramBot/bot'
-import 'dayjs/locale/ru'
 import dayjs from 'dayjs'
+import 'dayjs/locale/ru'
+import localeData from 'dayjs/plugin/localeData'
 
 dayjs.locale('ru')
+dayjs.extend(localeData)
 
 const logger = getLogger('main')
 
@@ -36,6 +38,14 @@ export default withAuth(
         const godContext = context.sudo()
 
         app.use('/static/', express.static('./public')) // TODO? move it to nginx load-balancer
+
+        if (!process.env.TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC) {
+          throw new Error('TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC must be provided!')
+        }
+
+        if (!process.env.TELEGRAM_TOKENS_REFRESH_BEFORE_SEC) {
+          throw new Error('TELEGRAM_TOKENS_REFRESH_BEFORE_SEC must be provided!')
+        }
 
         startTokensRefresher(godContext, Number(process.env.TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC), Number(process.env.TELEGRAM_TOKENS_REFRESH_BEFORE_SEC))
 
