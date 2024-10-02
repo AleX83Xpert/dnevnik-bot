@@ -48,7 +48,7 @@ const dnevnikClientMethodsMap: Record<
 
 const logger = getLogger('dnevnikFetcher')
 
-export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap extends TActionToResponseMap>(options: {
+export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap extends TActionToResponseMap> (options: {
   godContext: KeystoneContext,
   ctx: DnevnikContext,
   telegramUser: Lists.TelegramUser.Item,
@@ -68,6 +68,7 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
   } catch (err) {
     if (err instanceof DnevnikClientUnauthorizedError) {
       // Unauthorized! Try to refresh tokens and retry.
+      logger.warn({ msg: 'token expired', telegramId: options.telegramUser.telegramId, reqId: options.ctx.reqId })
       try {
         const newTokens = await dnevnikClient.refreshTokens()
         if (newTokens) {
@@ -87,28 +88,30 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
 
           options.ctx.telegramUser = telegramUserWithRefreshedTokens
 
-          return fetchFromDnevnik({ ...options, telegramUser: telegramUserWithRefreshedTokens })
+          return await fetchFromDnevnik({ ...options, telegramUser: telegramUserWithRefreshedTokens })
         }
       } catch (err) {
         logger.warn({ msg: 'tokens refresh failed', reqId: options.ctx.reqId, err })
         // Retry after tokens were refreshed unsuccessfully
 
-        // Clear tokens
-        await options.godContext.query.TelegramUser.updateOne({
-          where: { telegramId: options.telegramUser.telegramId },
-          data: {
-            dnevnikAccessToken: '',
-            dnevnikAccessTokenExpirationDate: null,
-            dnevnikRefreshToken: '',
-            dnevnikTokensUpdatedAt: null,
-          },
-          query: ALL_TELEGRAM_USER_FIELDS,
-        })
+        if (err instanceof DnevnikClientUnauthorizedError) {
+          // Clear tokens
+          await options.godContext.query.TelegramUser.updateOne({
+            where: { telegramId: options.telegramUser.telegramId },
+            data: {
+              dnevnikAccessToken: '',
+              dnevnikAccessTokenExpirationDate: null,
+              dnevnikRefreshToken: '',
+              dnevnikTokensUpdatedAt: null,
+            },
+            query: ALL_TELEGRAM_USER_FIELDS,
+          })
 
-        options.ctx.reply(
-          'К сожалению, случилось так что я потерял доступ к вашему аккаунту в дневнике. Причины могут быть разными и даже не зависящими от меня. Но, что есть - то есть. Нам нужно снова получить доступ к вашему аккаунту в дневнике. Кнопка снова внизу, вы знаете что делать.',
-          getKeyboardWithLoginButton(),
-        )
+          options.ctx.reply(
+            'К сожалению, случилось так что я потерял доступ к вашему аккаунту в дневнике. Причины могут быть разными и даже не зависящими от меня. Но, что есть - то есть. Нам нужно снова получить доступ к вашему аккаунту в дневнике. Кнопка снова внизу, вы знаете что делать.',
+            getKeyboardWithLoginButton(),
+          )
+        }
       }
     } else if (err instanceof DnevnikClientExternalServerError) {
       options.ctx.reply('Да что ж такое! На сайте дневника сейчас идут технические работы. Ничего не могу поделать 😥')
