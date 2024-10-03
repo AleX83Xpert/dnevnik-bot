@@ -19,16 +19,15 @@ export function getStudentGradesScene(godContext: KeystoneContext): BaseScene<Dn
 
   scene.enter(async (ctx) => {
     const student = getSelectedStudent(ctx)
-    const telegramUser = ctx.telegramUser
 
-    if (student && telegramUser) {
-      const yearsResult = await fetchFromDnevnik({ godContext, ctx, telegramUser, request: { action: 'estimateYears', params: { studentId: student.id } } })
+    if (student) {
+      const yearsResult = await fetchFromDnevnik({ godContext, ctx, request: { action: 'estimateYears', params: { studentId: student.id } } })
       if (yearsResult) {
         const schoolYear = yearsResult.currentYear.id
 
         const data = await Promise.all([
-          fetchFromDnevnik({ godContext, ctx, telegramUser, request: { action: 'estimatePeriods', params: { studentId: student.id, schoolYear } } }),
-          fetchFromDnevnik({ godContext, ctx, telegramUser, request: { action: 'classes', params: { studentId: student.id, schoolYear } } }),
+          fetchFromDnevnik({ godContext, ctx, request: { action: 'estimatePeriods', params: { studentId: student.id, schoolYear } } }),
+          fetchFromDnevnik({ godContext, ctx, request: { action: 'classes', params: { studentId: student.id, schoolYear } } }),
         ])
 
         if (data && data[0] && data[1] && data[0].periods && data[1].currentClass) {
@@ -57,16 +56,15 @@ export function getStudentGradesScene(godContext: KeystoneContext): BaseScene<Dn
     }
 
     const student = getSelectedStudent(ctx)
-    const telegramUser = ctx.telegramUser
 
-    if (student && telegramUser) {
+    if (student) {
       const periodId = ctx.match[1]
       const periodName = lowerCase(gPeriods.find(({ id }) => id === periodId)?.name)
 
       const { schoolYear, classId } = gEstimate
 
       const estimateResult = await fetchFromDnevnik({
-        godContext, ctx, telegramUser, request: {
+        godContext, ctx, request: {
           action: 'estimate', params: {
             studentId: student.id,
             schoolYear,

@@ -38,15 +38,13 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
 
   scene.action('homework_today', async (ctx: DnevnikContext) => {
     const student = getSelectedStudent(ctx)
-    const telegramUser = ctx.telegramUser
 
-    if (student && telegramUser) {
+    if (student) {
       const today = dayjs()
 
       const homeworkResult = await fetchFromDnevnik({
         godContext,
         ctx,
-        telegramUser,
         request: {
           action: 'homework',
           params: {
@@ -71,15 +69,13 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
 
   scene.action('homework_tomorrow', async (ctx: DnevnikContext) => {
     const student = getSelectedStudent(ctx)
-    const telegramUser = ctx.telegramUser
 
-    if (student && telegramUser) {
+    if (student) {
       const tomorow = dayjs().add(1, 'day')
 
       const homeworkResult = await fetchFromDnevnik({
         godContext,
         ctx,
-        telegramUser,
         request: {
           action: 'homework',
           params: {
@@ -104,9 +100,8 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
 
   scene.action('homework_this_week', async (ctx) => {
     const student = getSelectedStudent(ctx)
-    const telegramUser = ctx.telegramUser
 
-    if (student && telegramUser) {
+    if (student) {
       const dates: string[] = []
       let startDayNumber = 1
       const currentWeekDay = dayjs().day()
@@ -117,7 +112,6 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
       const homeworkResults = (await Promise.all(dates.map((date) => fetchFromDnevnik({
         godContext,
         ctx,
-        telegramUser,
         request: {
           action: 'homework',
           params: {
@@ -143,9 +137,8 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
 
   scene.action('homework_next_week', async (ctx) => {
     const student = getSelectedStudent(ctx)
-    const telegramUser = ctx.telegramUser
 
-    if (student && telegramUser) {
+    if (student) {
       const dates: string[] = []
       let startDayNumber = 0
       const currentWeekDay = 0
@@ -156,7 +149,6 @@ export function getStudentHomeworkScene(godContext: KeystoneContext): BaseScene<
       const homeworkResults = (await Promise.all(dates.map((date) => fetchFromDnevnik({
         godContext,
         ctx,
-        telegramUser,
         request: {
           action: 'homework',
           params: {

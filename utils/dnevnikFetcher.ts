@@ -5,11 +5,12 @@ import { DnevnikClientExternalServerError, DnevnikClientHttpResponseError, Dnevn
 import dayjs from "dayjs"
 import { ALL_TELEGRAM_USER_FIELDS } from "../telegramBot/constants/fields"
 import { getLogger } from "./logger"
-import { getKeyboardWithLoginButton } from "../telegramBot/botUtils"
+import { cutToken, getKeyboardWithLoginButton } from "../telegramBot/botUtils"
 import { Lists } from '.keystone/types'
 import { DnevnikContext } from "../telegramBot/types"
 import { get } from "lodash"
 import { DEFAULT_TELEGRAM_TOKENS_TTL_SEC } from "./constants"
+import { DnevnikFetcherNoTelegramUserError, DnevnikFetcherNoTokensError } from "./dnevnikFetcherErrors"
 
 type TDnevnikRequest =
   | { action: 'students', params?: any }
@@ -51,31 +52,47 @@ const logger = getLogger('dnevnikFetcher')
 export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap extends TActionToResponseMap> (options: {
   godContext: KeystoneContext,
   ctx: DnevnikContext,
-  telegramUser: Lists.TelegramUser.Item,
   request: TReq,
 }): Promise<TResMap[TReq['action']] | undefined> {
-  if (!options.telegramUser.dnevnikAccessToken || !options.telegramUser.dnevnikRefreshToken) {
-    logger.warn({ msg: 'TelegramUser contains no tokens', reqId: options.ctx.reqId, request: options.request, telegramId: options.telegramUser.telegramId })
-    throw new Error('TelegramUser contains no tokens')
+  const { godContext, ctx, request } = options
+  const { telegramUser, reqId } = ctx
+
+  if (!telegramUser) {
+    logger.error({ msg: 'No telegramUser', reqId: reqId, request: request })
+    throw new DnevnikFetcherNoTelegramUserError('No telegramUser')
   }
 
-  const dnevnikClient = new DnevnikClient({ accessToken: options.telegramUser.dnevnikAccessToken, refreshToken: options.telegramUser.dnevnikRefreshToken })
+  if (!telegramUser.dnevnikAccessToken || !telegramUser.dnevnikRefreshToken) {
+    logger.error({ msg: 'TelegramUser contains no tokens', reqId: reqId, request: request, telegramId: telegramUser.telegramId })
+    throw new DnevnikFetcherNoTokensError('TelegramUser contains no tokens')
+  }
+
+  const dnevnikClient = new DnevnikClient({ accessToken: telegramUser.dnevnikAccessToken, refreshToken: telegramUser.dnevnikRefreshToken })
 
   try {
-    const method = dnevnikClientMethodsMap[options.request.action]
-    logger.info({ msg: 'request', reqId: options.ctx.reqId, request: options.request, telegramId: options.telegramUser.telegramId })
-    return await method(dnevnikClient, options.request.params)
+    const method = dnevnikClientMethodsMap[request.action]
+
+    logger.info({
+      msg: 'request',
+      reqId,
+      request,
+      telegramId: telegramUser.telegramId,
+      accessToken: cutToken(telegramUser.dnevnikAccessToken),
+      refreshToken: cutToken(telegramUser.dnevnikRefreshToken),
+    })
+
+    return await method(dnevnikClient, request.params)
   } catch (err) {
     if (err instanceof DnevnikClientUnauthorizedError) {
       // Unauthorized! Try to refresh tokens and retry.
-      logger.warn({ msg: 'token expired', telegramId: options.telegramUser.telegramId, reqId: options.ctx.reqId })
+      logger.warn({ msg: 'token expired', telegramId: telegramUser.telegramId, reqId, accessToken: cutToken(dnevnikClient.dnevnikAccessToken), refreshToken: cutToken(dnevnikClient.dnevnikRefreshToken) })
       try {
         const newTokens = await dnevnikClient.refreshTokens()
         if (newTokens) {
-          logger.info({ msg: 'tokens refreshed', telegramId: options.telegramUser.telegramId, reqId: options.ctx.reqId })
+          logger.info({ msg: 'tokens refreshed', telegramId: telegramUser.telegramId, reqId, accessToken: cutToken(newTokens.accessToken), refreshToken: cutToken(newTokens.refreshToken), accessTokenExpirationDate: newTokens.accessTokenExpirationDate })
 
-          const telegramUserWithRefreshedTokens = await options.godContext.query.TelegramUser.updateOne({
-            where: { telegramId: options.telegramUser.telegramId },
+          const telegramUserWithRefreshedTokens = await godContext.query.TelegramUser.updateOne({
+            where: { telegramId: telegramUser.telegramId },
             data: {
               dnevnikAccessToken: newTokens.accessToken,
               //NOTE newTokens.accessTokenExpirationDate contains the NOW timestamp ¯\_(ツ)_/¯
@@ -86,18 +103,18 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
             query: ALL_TELEGRAM_USER_FIELDS,
           }) as Lists.TelegramUser.Item
 
-          options.ctx.telegramUser = telegramUserWithRefreshedTokens
+          ctx.telegramUser = { ...telegramUserWithRefreshedTokens }
 
-          return await fetchFromDnevnik({ ...options, telegramUser: telegramUserWithRefreshedTokens })
+          return await fetchFromDnevnik({ ...options })
         }
       } catch (err) {
-        logger.warn({ msg: 'tokens refresh failed', reqId: options.ctx.reqId, err })
+        logger.warn({ msg: 'tokens refresh failed', reqId, err })
         // Retry after tokens were refreshed unsuccessfully
 
         if (err instanceof DnevnikClientUnauthorizedError) {
           // Clear tokens
-          await options.godContext.query.TelegramUser.updateOne({
-            where: { telegramId: options.telegramUser.telegramId },
+          await godContext.query.TelegramUser.updateOne({
+            where: { telegramId: telegramUser.telegramId },
             data: {
               dnevnikAccessToken: '',
               dnevnikAccessTokenExpirationDate: null,
@@ -107,17 +124,17 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
             query: ALL_TELEGRAM_USER_FIELDS,
           })
 
-          options.ctx.reply(
+          await ctx.reply(
             'К сожалению, случилось так что я потерял доступ к вашему аккаунту в дневнике. Причины могут быть разными и даже не зависящими от меня. Но, что есть - то есть. Нам нужно снова получить доступ к вашему аккаунту в дневнике. Кнопка снова внизу, вы знаете что делать.',
             getKeyboardWithLoginButton(),
           )
         }
       }
-    } else if (err instanceof DnevnikClientExternalServerError) {
-      options.ctx.reply('Да что ж такое! На сайте дневника сейчас идут технические работы. Ничего не могу поделать 😥')
+    } else if (err instanceof DnevnikClientExternalServerError) { // TODO throw DnevnikFetcherError
+      await ctx.reply('Да что ж такое! На сайте дневника сейчас идут технические работы. Ничего не могу поделать 😥')
     } else {
       const { status, statusText } = err as DnevnikClientHttpResponseError
-      options.ctx.reply(`Какие-то проблемы с сервером дневника. Получил код ответа ${status} ${statusText}. Попробуйте немного позже. Если ошибка повторяется, то воспользуйтесь командой /login.`)
+      await ctx.reply(`Какие-то проблемы с сервером дневника. Получил код ответа ${status} ${statusText}. Попробуйте немного позже. Если ошибка повторяется, то воспользуйтесь командой /login.`)
     }
   }
 }

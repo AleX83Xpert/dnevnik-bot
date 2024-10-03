@@ -1,19 +1,23 @@
 import { isObject } from 'lodash'
 import { DnevnikClientExternalServerError, DnevnikClientHttpResponseError, DnevnikClientUnauthorizedError } from './DnevnikClientErrors'
 import { TClassesResult, TDnevnikClientArgs, TEstimateResult, THomeworkDoneParams, THomeworkDoneResult, THomeworkParams, THomeworkResult, TEstimatePeriodsResult, TRefreshTokenBody, TRefreshTokenResult, TScheduleParams, TScheduleResult, TStudentsResult, TEstimateSubjectsResult, TEstimateYearsParams, TEstimateYearsResult, TEstimatePeriodsParams, TEstimateSubjectsParams, TClassesParams, TEstimateParams } from './DnevnikClientTypes'
+import { getLogger } from '../utils/logger'
+import { cutToken } from '../telegramBot/botUtils'
 
 export class DnevnikClient {
+  private logger
 
   private apiUrl = 'https://dnevnik.egov66.ru/api'
-  private dnevnikAccessToken: string
-  private dnevnikRefreshToken: string
+  public readonly dnevnikAccessToken: string
+  public readonly dnevnikRefreshToken: string
 
   constructor(args: TDnevnikClientArgs) {
+    this.logger = getLogger('DnevnikClient')
     this.dnevnikAccessToken = args.accessToken
     this.dnevnikRefreshToken = args.refreshToken
   }
 
-  private async fetch<TBody = object, TResult = object>(path: string, body: TBody | undefined = undefined) {
+  private async fetch<TBody = object, TResult = object> (path: string, body: TBody | undefined = undefined) {
     const options: RequestInit = {
       headers: {
         accept: 'application/json',
@@ -28,7 +32,11 @@ export class DnevnikClient {
       options.method = 'POST'
     }
 
+    const start = Date.now()
+    this.logger.info({ msg: 'fetchStart', apiUrl: this.apiUrl, path, accessToken: cutToken(this.dnevnikAccessToken), refreshToken: cutToken(this.dnevnikRefreshToken) })
     const result = await fetch(`${this.apiUrl}${path}`, options)
+    const duration = Date.now() - start
+    this.logger.info({ msg: 'fetchEnd', duration, status: result.status })
 
     switch (result.status) {
       case 200: return await result.json() as TResult
@@ -38,20 +46,20 @@ export class DnevnikClient {
 
       case 502:
       case 504: throw new DnevnikClientExternalServerError(result.status, result.statusText)
-      
+
       default: throw new DnevnikClientHttpResponseError(result.status, result.statusText)
     }
   }
 
-  public async refreshTokens() {
+  public async refreshTokens () {
     return await this.fetch<TRefreshTokenBody, TRefreshTokenResult>('/auth/Token/Refresh', { refreshToken: this.dnevnikRefreshToken })
   }
 
-  public async getStudents() {
+  public async getStudents () {
     return await this.fetch<undefined, TStudentsResult>('/students')
   }
 
-  public async getSchedule(params: TScheduleParams) {
+  public async getSchedule (params: TScheduleParams) {
     const urlParams = new URLSearchParams()
 
     urlParams.append('studentId', params.studentId)
@@ -74,32 +82,32 @@ export class DnevnikClient {
    * @param date YYYY-MM-DD
    * @returns 
    */
-  public async getHomeWork(params: THomeworkParams) {
+  public async getHomeWork (params: THomeworkParams) {
     return await this.fetch<undefined, THomeworkResult>(`/homework?date=${params.date}&studentId=${params.studentId}`)
   }
 
-  public async setHomeworkDone(params: THomeworkDoneParams) {
+  public async setHomeworkDone (params: THomeworkDoneParams) {
     return await this.fetch<THomeworkDoneParams, THomeworkDoneResult>('/homework/done', params)
   }
 
-  public async getEstimateYears(params: TEstimateYearsParams) {
+  public async getEstimateYears (params: TEstimateYearsParams) {
     return await this.fetch<undefined, TEstimateYearsResult>(`/estimate/years?studentId=${params.studentId}`)
   }
 
-  public async getEstimatePeriods(params: TEstimatePeriodsParams) {
+  public async getEstimatePeriods (params: TEstimatePeriodsParams) {
     // Also exists url `/periods` for periods. It returns only 4 quarters.
     return await this.fetch<undefined, TEstimatePeriodsResult>(`/estimate/periods?schoolYear=${params.schoolYear}&studentId=${params.studentId}`)
   }
 
-  public async getEstimateSubjects(params: TEstimateSubjectsParams) {
+  public async getEstimateSubjects (params: TEstimateSubjectsParams) {
     return await this.fetch<undefined, TEstimateSubjectsResult>(`/subjects?schoolYear=${params.schoolYear}&studentId=${params.studentId}`)
   }
 
-  public async getClasses(params: TClassesParams) {
+  public async getClasses (params: TClassesParams) {
     return await this.fetch<undefined, TClassesResult>(`/classes?schoolYear=${params.schoolYear}&studentId=${params.studentId}`)
   }
 
-  public async getEstimate(params: TEstimateParams) {
+  public async getEstimate (params: TEstimateParams) {
     const urlParams = new URLSearchParams()
 
     urlParams.append('studentId', params.studentId)

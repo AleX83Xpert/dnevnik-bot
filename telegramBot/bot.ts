@@ -13,8 +13,9 @@ import { getStudentHomeworkScene } from "./scenes/studentHomeworkScene"
 import { getStudentGradesScene } from "./scenes/studentGradesScene"
 import { Lists } from '.keystone/types'
 import { Redis } from '@telegraf/session/redis'
+import { DnevnikFetcherNoTelegramUserError, DnevnikFetcherNoTokensError } from "../utils/dnevnikFetcherErrors"
 
-export function prepareTelegramBot(godContext: KeystoneContext, botToken: string): Telegraf<DnevnikContext> {
+export function prepareTelegramBot (godContext: KeystoneContext, botToken: string): Telegraf<DnevnikContext> {
   const logger = getLogger('telegramBot')
 
   const bot = new Telegraf<DnevnikContext>(botToken)
@@ -32,7 +33,7 @@ export function prepareTelegramBot(godContext: KeystoneContext, botToken: string
     if (!ctx.reqId) {
       ctx.reqId = crypto.randomUUID()
     }
-    logger.info({ msg: 'requestStart', reqId: ctx.reqId, updateType: ctx.updateType, update: ctx.update })
+    logger.info({ msg: 'requestStart', reqId: ctx.reqId, updateType: ctx.updateType, data: ctx.update })
     return next().then(() => {
       const duration = Date.now() - start
       logger.info({ msg: 'requestEnd', reqId: ctx.reqId, duration })
@@ -59,7 +60,7 @@ export function prepareTelegramBot(godContext: KeystoneContext, botToken: string
     if (telegramUser) {
       ctx.telegramUser = telegramUser
     }
-    
+
     return next()
   })
 
@@ -87,8 +88,17 @@ export function prepareTelegramBot(godContext: KeystoneContext, botToken: string
   })
 
   bot.catch(async (err, ctx) => {
-    logger.error({ msg: 'uncatched error', reqId: ctx.reqId, telegramId: ctx.telegramUser?.id, err })
-    await ctx.reply('Сейчас произошла ошибка, которую мой разработчик не обработал 😤. Ему отправлено сообщение, а вам нужно начать сначала: /start.')
+    if (err instanceof DnevnikFetcherNoTelegramUserError) {
+      await ctx.reply('Вам нужно начать сначала: /start.')
+    } else if (err instanceof DnevnikFetcherNoTokensError) {
+      await ctx.reply(
+        'Увы, связь с дневником потеряна :( Нам нужно снова получить доступ к вашему аккаунту. Кнопка снова внизу.',
+        getKeyboardWithLoginButton(),
+      )
+    } else {
+      logger.error({ msg: 'uncatched error', reqId: ctx.reqId, telegramId: ctx.telegramUser?.id, err })
+      await ctx.reply('Сейчас произошла ошибка, которую мой разработчик не обработал 😤. Ему отправлено сообщение, а вам нужно начать сначала: /start.')
+    }
   })
 
   return bot

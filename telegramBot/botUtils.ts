@@ -45,3 +45,7 @@ export function getSelectedStudentName(ctx: DnevnikContext) {
     return '??? В контексте нет выбранного ученика'
   }
 }
+
+export function cutToken (str: string) {
+  return `${str.substring(0, 10)}...${str.substring(str.length - 10)}`
+}
