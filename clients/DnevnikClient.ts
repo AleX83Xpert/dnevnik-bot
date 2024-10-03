@@ -3,6 +3,7 @@ import { DnevnikClientExternalServerError, DnevnikClientHttpResponseError, Dnevn
 import { TClassesResult, TDnevnikClientArgs, TEstimateResult, THomeworkDoneParams, THomeworkDoneResult, THomeworkParams, THomeworkResult, TEstimatePeriodsResult, TRefreshTokenBody, TRefreshTokenResult, TScheduleParams, TScheduleResult, TStudentsResult, TEstimateSubjectsResult, TEstimateYearsParams, TEstimateYearsResult, TEstimatePeriodsParams, TEstimateSubjectsParams, TClassesParams, TEstimateParams } from './DnevnikClientTypes'
 import { getLogger } from '../utils/logger'
 import { cutToken } from '../telegramBot/botUtils'
+import crypto from 'node:crypto'
 
 export class DnevnikClient {
   private logger
@@ -32,11 +33,12 @@ export class DnevnikClient {
       options.method = 'POST'
     }
 
+    const fetchId = crypto.randomUUID()
     const start = Date.now()
-    this.logger.info({ msg: 'fetchStart', apiUrl: this.apiUrl, path, accessToken: cutToken(this.dnevnikAccessToken), refreshToken: cutToken(this.dnevnikRefreshToken) })
+    this.logger.info({ msg: 'fetchStart', fetchId, apiUrl: this.apiUrl, path, accessToken: cutToken(this.dnevnikAccessToken), refreshToken: cutToken(this.dnevnikRefreshToken) })
     const result = await fetch(`${this.apiUrl}${path}`, options)
     const duration = Date.now() - start
-    this.logger.info({ msg: 'fetchEnd', duration, status: result.status })
+    this.logger.info({ msg: 'fetchEnd', fetchId, duration, status: result.status })
 
     switch (result.status) {
       case 200: return await result.json() as TResult
