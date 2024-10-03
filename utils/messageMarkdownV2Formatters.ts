@@ -1,3 +1,4 @@
+import { isNil } from "lodash"
 import { THomework, TScheduleDay, TStudent } from "../clients/DnevnikClientTypes"
 
 const SPECIAL_CHARS = ['\\', '_', '*', '[', ']', '(', ')', '~', '`', '>', '<', '&', '#', '+', '-', '=', '|', '{', '}', '.', '!']
@@ -8,7 +9,7 @@ export function escMd(text: string) {
   return text
 }
 
-function formatTime(hour: number, minute: number) {
+export function formatTime(hour: number, minute: number) {
   const formattedHour = String(hour).toString().padStart(2, '0')
   const formattedMinute = String(minute).toString().padStart(2, '0')
   return `${formattedHour}:${formattedMinute}`
@@ -19,7 +20,7 @@ export function formatStudentMainMenuTitle(student: TStudent) {
 }
 
 export function formatScheduleDay(day: TScheduleDay) {
-  return escMd(day.scheduleDayLessonModels.map((lesson) => `${lesson.number}. ${(lesson.beginHour && lesson.beginMinute && lesson.endHour && lesson.endMinute) ? `${formatTime(lesson.beginHour, lesson.beginMinute)}..${formatTime(lesson.endHour, lesson.endMinute)} · ` : ``}${lesson.lessonName}, ${lesson.room}`).join('\n'))
+  return escMd(day.scheduleDayLessonModels.map((lesson) => `${lesson.number}. ${(!isNil(lesson.beginHour) && !isNil(lesson.beginMinute) && !isNil(lesson.endHour) && !isNil(lesson.endMinute)) ? `${formatTime(lesson.beginHour, lesson.beginMinute)}..${formatTime(lesson.endHour, lesson.endMinute)} · ` : ``}${lesson.lessonName}, ${lesson.room}`).join('\n'))
 }
 
 export function formatHomeworkItem(hw: THomework) {

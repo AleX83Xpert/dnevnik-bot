@@ -106,23 +106,25 @@ export type TStudentsResult = {
 
 export type TScheduleParams = { studentId: string, pageNumber?: number, date?: string }
 
+export type TSheduleDayLessonModel =  {
+  beginHour: number | null
+  beginMinute: number | null
+  endHour: number | null
+  endMinute: number | null
+  groupName?: string
+  id: string
+  lessonName: string
+  lessonid: string
+  number: number
+  room: string
+}
+
 export type TScheduleDay = {
   date: string
   dayOfWeekName: string
   isCelebration: boolean
   isWeekend: boolean
-  scheduleDayLessonModels: {
-    beginHour: number
-    beginMinute: number
-    endHour: number
-    endMinute: number
-    groupName?: string
-    id: string
-    lessonName: string
-    lessonid: string
-    number: number
-    room: string
-  }[]
+  scheduleDayLessonModels: TSheduleDayLessonModel[]
 }
 
 export type TScheduleResult = {
