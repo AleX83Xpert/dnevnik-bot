@@ -3,14 +3,14 @@ import { THomework, TScheduleDay, TSheduleDayLessonModel } from '../clients/dnev
 
 export function createTestHomeworkItem (attrs: Partial<THomework> = {}): THomework {
   return {
-    description: faker.word.noun(),
+    description: faker.string.alphanumeric({ length: { min: 10, max: 20 } }),
     endTime: faker.date.soon().toISOString(),
     homeWorkFiles: [],
     id: faker.string.uuid(),
     isDone: false,
     isHomeworkElectronicForm: false,
     lessonId: faker.string.uuid(),
-    lessonName: faker.word.noun(),
+    lessonName: faker.string.alphanumeric({ length: { min: 10, max: 20 } }),
     lessonNumber: 1,
     startTime: faker.date.future().toISOString(),
     ...attrs,
@@ -24,7 +24,7 @@ export function createTestScheduleDayLessonModel (attrs: Partial<TSheduleDayLess
     endHour: 8,
     endMinute: 40,
     id: faker.string.uuid(),
-    lessonName: faker.word.noun(),
+    lessonName: faker.string.alphanumeric({ length: { min: 10, max: 20 } }),
     lessonid: faker.string.uuid(),
     number: 1,
     room: faker.string.alphanumeric(3),
