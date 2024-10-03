@@ -1,6 +1,5 @@
-import { THomework } from "../clients/DnevnikClientTypes"
-import { createTestHomeworkItem, createTestScheduleDay, createTestScheduleDayLessonModel } from "../testUtils/messageMarkdownV2Formatters.test.util"
-import { formatHomeworkItem, formatScheduleDay, formatTime } from "./messageMarkdownV2Formatters"
+import { createTestHomeworkItem, createTestScheduleDay, createTestScheduleDayLessonModel } from "../testUtils/messageMdV2Formatters.test.util"
+import { formatHomeworkItem, formatScheduleDay, formatTime } from "./messageMdV2Formatters"
 
 describe('messageMarkdownV2Formatters', () => {
   test('formatHomeworkItem', () => {

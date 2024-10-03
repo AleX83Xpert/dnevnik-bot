@@ -3,7 +3,7 @@ import { DnevnikContext } from "../types"
 import { getSelectedStudent } from "../botUtils"
 import { Scenes, Markup } from 'telegraf'
 import { KeystoneContext } from "@keystone-6/core/types"
-import { formatStudentMainMenuTitle } from "../../utils/messageMarkdownV2Formatters"
+import { formatStudentMainMenuTitle } from "../../utils/messageMdV2Formatters"
 
 function mainMenu(chooseAnother = true) {
   const kbArr = [

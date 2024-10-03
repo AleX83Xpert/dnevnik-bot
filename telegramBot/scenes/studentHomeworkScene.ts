@@ -4,7 +4,7 @@ import { DnevnikContext } from "../types"
 import { Scenes, Markup } from 'telegraf'
 import { getSelectedStudent, getSelectedStudentName } from "../botUtils"
 import { fetchFromDnevnik } from "../../utils/dnevnikFetcher"
-import { escMd, formatHomeworkItem } from "../../utils/messageMarkdownV2Formatters"
+import { escMd, formatHomeworkItem } from "../../utils/messageMdV2Formatters"
 import dayjs from "dayjs"
 
 function homeworkMenu() {

@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { THomework, TScheduleDay, TSheduleDayLessonModel } from '../clients/DnevnikClientTypes';
+import { THomework, TScheduleDay, TSheduleDayLessonModel } from '../clients/dnevnik/DnevnikClientTypes'
 
 export function createTestHomeworkItem (attrs: Partial<THomework> = {}): THomework {
   return {

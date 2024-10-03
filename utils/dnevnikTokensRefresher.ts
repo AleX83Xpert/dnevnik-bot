@@ -1,11 +1,11 @@
 import { KeystoneContext } from "@keystone-6/core/types"
 import { getLogger } from "./logger"
 import dayjs from "dayjs"
-import { DnevnikClient } from "../clients/DnevnikClient"
+import { DnevnikClient } from "../clients/dnevnik/DnevnikClient"
 import { ALL_TELEGRAM_USER_FIELDS } from "../telegramBot/constants/fields"
 import { get } from "lodash"
 import { DEFAULT_TELEGRAM_TOKENS_TTL_SEC } from "./constants"
-import { DnevnikClientUnauthorizedError } from "../clients/DnevnikClientErrors"
+import { DnevnikClientUnauthorizedError } from "../clients/dnevnik/DnevnikClientErrors"
 
 const logger = getLogger('dnevnikTokensRefresher')
 

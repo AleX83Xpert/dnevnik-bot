@@ -1,5 +1,5 @@
 import { Context, Scenes } from "telegraf"
-import { TStudent } from "../clients/DnevnikClientTypes"
+import { TStudent } from "../clients/dnevnik/DnevnikClientTypes"
 import { Lists } from '.keystone/types'
 
 export type TDnevnikTokens = {

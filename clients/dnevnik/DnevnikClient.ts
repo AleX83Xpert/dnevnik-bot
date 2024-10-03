@@ -1,8 +1,8 @@
 import { isObject } from 'lodash'
 import { DnevnikClientExternalServerError, DnevnikClientHttpResponseError, DnevnikClientUnauthorizedError } from './DnevnikClientErrors'
 import { TClassesResult, TDnevnikClientArgs, TEstimateResult, THomeworkDoneParams, THomeworkDoneResult, THomeworkParams, THomeworkResult, TEstimatePeriodsResult, TRefreshTokenBody, TRefreshTokenResult, TScheduleParams, TScheduleResult, TStudentsResult, TEstimateSubjectsResult, TEstimateYearsParams, TEstimateYearsResult, TEstimatePeriodsParams, TEstimateSubjectsParams, TClassesParams, TEstimateParams } from './DnevnikClientTypes'
-import { getLogger } from '../utils/logger'
-import { cutToken } from '../telegramBot/botUtils'
+import { getLogger } from '../../utils/logger'
+import { cutToken } from '../../telegramBot/botUtils'
 import crypto from 'node:crypto'
 
 export class DnevnikClient {

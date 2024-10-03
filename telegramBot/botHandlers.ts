@@ -1,14 +1,11 @@
 import { KeystoneContext } from "@keystone-6/core/types"
-import { Context, Markup, NarrowedContext, Scenes } from "telegraf"
+import { Context, Markup, NarrowedContext } from "telegraf"
 import { Message, Update } from "telegraf/typings/core/types/typegram"
 import { createTelegramUser, findOrCreateTelegramUser, findTelegramUser, getKeyboardWithLoginButton } from "./botUtils"
 import { DnevnikContext, TDnevnikTokens } from "./types"
-import { ALL_TELEGRAM_USER_FIELDS } from "./constants/fields"
 import dayjs from "dayjs"
-import { fetchFromDnevnik } from "../utils/dnevnikFetcher"
-import { DnevnikClient } from "../clients/DnevnikClient"
-import { DnevnikClientExternalServerError, DnevnikClientUnauthorizedError } from "../clients/DnevnikClientErrors"
-import { Lists } from '.keystone/types'
+import { DnevnikClient } from "../clients/dnevnik/DnevnikClient"
+import { DnevnikClientExternalServerError, DnevnikClientUnauthorizedError } from "../clients/dnevnik/DnevnikClientErrors"
 
 export async function onStart(godContext: KeystoneContext, ctx: Context<{
   message: Update.New & Update.NonChannel & Message.TextMessage;

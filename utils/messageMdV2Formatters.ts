@@ -1,5 +1,5 @@
 import { isNil } from "lodash"
-import { THomework, TScheduleDay, TStudent } from "../clients/DnevnikClientTypes"
+import { THomework, TScheduleDay, TStudent } from "../clients/dnevnik/DnevnikClientTypes"
 
 const SPECIAL_CHARS = ['\\', '_', '*', '[', ']', '(', ')', '~', '`', '>', '<', '&', '#', '+', '-', '=', '|', '{', '}', '.', '!']
 

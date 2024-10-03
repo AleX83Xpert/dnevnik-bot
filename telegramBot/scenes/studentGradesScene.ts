@@ -4,10 +4,10 @@ import { DnevnikContext } from "../types"
 import { Scenes, Markup } from 'telegraf'
 import { getSelectedStudent, getSelectedStudentName } from "../botUtils"
 import { fetchFromDnevnik } from "../../utils/dnevnikFetcher"
-import { escMd } from "../../utils/messageMarkdownV2Formatters"
+import { escMd } from "../../utils/messageMdV2Formatters"
 import dayjs from "dayjs"
 import { chunk, lowerCase, round } from "lodash"
-import { TEstimatePeriod } from "../../clients/DnevnikClientTypes"
+import { TEstimatePeriod } from "../../clients/dnevnik/DnevnikClientTypes"
 
 export function getStudentGradesScene(godContext: KeystoneContext): BaseScene<DnevnikContext> {
   const scene = new Scenes.BaseScene<DnevnikContext>('student_grades_scene')
