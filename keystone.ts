@@ -37,8 +37,6 @@ export default withAuth(
       extendExpressApp: async (app, context) => {
         const godContext = context.sudo()
 
-        app.use('/static/', express.static('./public')) // TODO? move it to nginx load-balancer
-
         if (!process.env.TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC) {
           throw new Error('TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC must be provided!')
         }

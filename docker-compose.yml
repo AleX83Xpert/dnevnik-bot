@@ -11,6 +11,7 @@ services:
     # https://certbot.eff.org/instructions?ws=nginx&os=pip
       - /etc/letsencrypt/live:/etc/letsencrypt/live:ro
       - /etc/letsencrypt/archive:/etc/letsencrypt/archive:ro
+      - ./static:/app/static
     networks:
       - appnet
 
