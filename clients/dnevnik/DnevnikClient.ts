@@ -43,13 +43,14 @@ export class DnevnikClient {
     switch (result.status) {
       case 200: return await result.json() as TResult
 
+      case 400:
       case 401:
-      case 403: throw new DnevnikClientUnauthorizedError(result.status, result.statusText)
+      case 403: throw new DnevnikClientUnauthorizedError({ path, status: result.status, statusText: result.statusText })
 
       case 502:
-      case 504: throw new DnevnikClientExternalServerError(result.status, result.statusText)
+      case 504: throw new DnevnikClientExternalServerError({ path, status: result.status, statusText: result.statusText })
 
-      default: throw new DnevnikClientHttpResponseError(result.status, result.statusText)
+      default: throw new DnevnikClientHttpResponseError({ path, status: result.status, statusText: result.statusText })
     }
   }
 

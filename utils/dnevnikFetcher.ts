@@ -8,9 +8,8 @@ import { getLogger } from "./logger"
 import { cutToken, getKeyboardWithLoginButton } from "../telegramBot/botUtils"
 import { Lists } from '.keystone/types'
 import { DnevnikContext } from "../telegramBot/types"
-import { get } from "lodash"
-import { DEFAULT_TELEGRAM_TOKENS_TTL_SEC } from "./constants"
 import { DnevnikFetcherNoTelegramUserError, DnevnikFetcherNoTokensError } from "./dnevnikFetcherErrors"
+import { getTokenExpirationDate } from "./jwt"
 
 type TDnevnikRequest =
   | { action: 'students', params?: any }
@@ -85,18 +84,18 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
   } catch (err) {
     if (err instanceof DnevnikClientUnauthorizedError) {
       // Unauthorized! Try to refresh tokens and retry.
-      logger.warn({ msg: 'token expired', telegramId: telegramUser.telegramId, reqId, accessToken: cutToken(dnevnikClient.dnevnikAccessToken), refreshToken: cutToken(dnevnikClient.dnevnikRefreshToken) })
+      logger.warn({ msg: 'token expired', telegramId: telegramUser.telegramId, reqId, accessToken: cutToken(dnevnikClient.dnevnikAccessToken), refreshToken: cutToken(dnevnikClient.dnevnikRefreshToken), accessTokenExpirationDate: telegramUser.dnevnikAccessTokenExpirationDate })
       try {
         const newTokens = await dnevnikClient.refreshTokens()
         if (newTokens) {
-          logger.info({ msg: 'tokens refreshed', telegramId: telegramUser.telegramId, reqId, accessToken: cutToken(newTokens.accessToken), refreshToken: cutToken(newTokens.refreshToken), accessTokenExpirationDate: newTokens.accessTokenExpirationDate })
+          const dnevnikAccessTokenExpirationDate = getTokenExpirationDate(newTokens.accessToken)
+          logger.info({ msg: 'tokens refreshed', telegramId: telegramUser.telegramId, reqId, accessToken: cutToken(newTokens.accessToken), refreshToken: cutToken(newTokens.refreshToken), accessTokenExpirationDate: dnevnikAccessTokenExpirationDate })
 
           const telegramUserWithRefreshedTokens = await godContext.query.TelegramUser.updateOne({
             where: { telegramId: telegramUser.telegramId },
             data: {
               dnevnikAccessToken: newTokens.accessToken,
-              //NOTE newTokens.accessTokenExpirationDate contains the NOW timestamp ¯\_(ツ)_/¯
-              dnevnikAccessTokenExpirationDate: dayjs().add(Number(get(process.env, 'TELEGRAM_TOKENS_TTL_SEC', DEFAULT_TELEGRAM_TOKENS_TTL_SEC)), 'seconds').toISOString(),
+              dnevnikAccessTokenExpirationDate,
               dnevnikRefreshToken: newTokens.refreshToken,
               dnevnikTokensUpdatedAt: dayjs().toISOString(),
             },

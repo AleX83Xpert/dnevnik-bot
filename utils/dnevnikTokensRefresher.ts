@@ -3,9 +3,9 @@ import { getLogger } from "./logger"
 import dayjs from "dayjs"
 import { DnevnikClient } from "../clients/dnevnik/DnevnikClient"
 import { ALL_TELEGRAM_USER_FIELDS } from "../telegramBot/constants/fields"
-import { get } from "lodash"
-import { DEFAULT_TELEGRAM_TOKENS_TTL_SEC } from "./constants"
 import { DnevnikClientUnauthorizedError } from "../clients/dnevnik/DnevnikClientErrors"
+import { getTokenExpirationDate } from "./jwt"
+import { cutToken } from "../telegramBot/botUtils"
 
 const logger = getLogger('dnevnikTokensRefresher')
 
@@ -40,18 +40,19 @@ export async function startTokensRefresher (godContext: KeystoneContext, interva
         const newTokens = await dnevnikClient.refreshTokens()
 
         if (newTokens) {
+          const dnevnikAccessTokenExpirationDate = getTokenExpirationDate(newTokens.accessToken)
+
           await godContext.query.TelegramUser.updateOne({
             where: { telegramId },
             data: {
               dnevnikAccessToken: newTokens.accessToken,
-              //NOTE newTokens.accessTokenExpirationDate contains the NOW timestamp ¯\_(ツ)_/¯
-              dnevnikAccessTokenExpirationDate: dayjs().add(Number(get(process.env, 'TELEGRAM_TOKENS_TTL_SEC', DEFAULT_TELEGRAM_TOKENS_TTL_SEC)), 'seconds').toISOString(),
+              dnevnikAccessTokenExpirationDate,
               dnevnikRefreshToken: newTokens.refreshToken,
               dnevnikTokensUpdatedAt: dayjs().toISOString(),
             }
           })
 
-          logger.info({ msg: 'tokens refreshed', telegramId: telegramUser.telegramId })
+          logger.info({ msg: 'tokens refreshed', telegramId: telegramUser.telegramId, accessToken: cutToken(newTokens.accessToken), refreshToken: cutToken(newTokens.refreshToken), accessTokenExpirationDate: dnevnikAccessTokenExpirationDate })
         }
       } catch (err) {
         if (err instanceof DnevnikClientUnauthorizedError) {

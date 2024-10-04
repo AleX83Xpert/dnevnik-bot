@@ -1,11 +1,19 @@
+type TDnevnikClientError = {
+  path: string
+  status: number
+  statusText: string
+}
+
 export class DnevnikClientHttpResponseError extends Error {
+  path: string
   status: number
   statusText: string
   
-  constructor(status: number, statusText: string) {
+  constructor(args: TDnevnikClientError) {
     super()
-    this.status = status
-    this.statusText = statusText
+    this.path = args.path
+    this.status = args.status
+    this.statusText = args.statusText
   }
 }
 

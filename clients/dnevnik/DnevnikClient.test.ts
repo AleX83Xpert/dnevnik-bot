@@ -28,6 +28,7 @@ describe('DnevnikClient', () => {
 
   describe('should throw error if status !=200', () => {
     const cases = [
+      { status: 400, errType: DnevnikClientUnauthorizedError },
       { status: 401, errType: DnevnikClientUnauthorizedError },
       { status: 403, errType: DnevnikClientUnauthorizedError },
       { status: 502, errType: DnevnikClientExternalServerError },

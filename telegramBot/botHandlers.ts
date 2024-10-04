@@ -6,8 +6,7 @@ import { DnevnikContext, TDnevnikTokens } from "./types"
 import dayjs from "dayjs"
 import { DnevnikClient } from "../clients/dnevnik/DnevnikClient"
 import { DnevnikClientExternalServerError, DnevnikClientUnauthorizedError } from "../clients/dnevnik/DnevnikClientErrors"
-import { DEFAULT_TELEGRAM_TOKENS_TTL_SEC } from "../utils/constants"
-import { get } from "lodash"
+import { getTokenExpirationDate } from "../utils/jwt"
 
 export async function onStart(godContext: KeystoneContext, ctx: Context<{
   message: Update.New & Update.NonChannel & Message.TextMessage;
@@ -40,12 +39,13 @@ export async function onSendTokens(godContext: KeystoneContext, ctx: NarrowedCon
 
     try {
       const newTokens = await dnevnikClientWithUserTokens.refreshTokens()
+      const dnevnikAccessTokenExpirationDate = getTokenExpirationDate(newTokens.accessToken)
 
       await godContext.query.TelegramUser.updateOne({
         where: { telegramId: telegramUser.telegramId },
         data: {
           dnevnikAccessToken: newTokens.accessToken,
-          dnevnikAccessTokenExpirationDate: dayjs().add(Number(get(process.env, 'TELEGRAM_TOKENS_TTL_SEC', DEFAULT_TELEGRAM_TOKENS_TTL_SEC)), 'seconds').toISOString(), //newTokens.accessTokenExpirationDate,
+          dnevnikAccessTokenExpirationDate,
           dnevnikRefreshToken: newTokens.refreshToken,
           dnevnikTokensUpdatedAt: dayjs().toISOString(),
         },
