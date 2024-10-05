@@ -56,10 +56,10 @@ export const lists = {
         field: graphql.field({
           type: graphql.String,
           async resolve (item, args, context) {
-            const username = get(item, ['meta', 'username'])
             const telegramId = get(item, ['meta', 'id'])
+            const title = get(item, ['meta', 'username'], get(item, ['meta', 'first_name']))
 
-            return (username && telegramId) ? `${username}/${telegramId}` : item.id
+            return title ? `${title}/${telegramId}` : item.id
           }
         }),
       }),
