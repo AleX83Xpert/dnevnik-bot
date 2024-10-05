@@ -129,15 +129,15 @@ input UserCreateInput {
 
 type TelegramUser {
   id: ID!
+  label: String
   telegramId: String
-  meta: JSON
+  isTokenActual: Boolean
   dnevnikAccessToken: String
   dnevnikAccessTokenExpirationDate: DateTime
   dnevnikRefreshToken: String
   dnevnikTokensUpdatedAt: DateTime
-  tokenStatus: String
+  meta: JSON
   createdAt: DateTime
-  label: String
 }
 
 input TelegramUserWhereUniqueInput {
@@ -170,11 +170,11 @@ input TelegramUserOrderByInput {
 
 input TelegramUserUpdateInput {
   telegramId: String
-  meta: JSON
   dnevnikAccessToken: String
   dnevnikAccessTokenExpirationDate: DateTime
   dnevnikRefreshToken: String
   dnevnikTokensUpdatedAt: DateTime
+  meta: JSON
   createdAt: DateTime
 }
 
@@ -185,11 +185,11 @@ input TelegramUserUpdateArgs {
 
 input TelegramUserCreateInput {
   telegramId: String
-  meta: JSON
   dnevnikAccessToken: String
   dnevnikAccessTokenExpirationDate: DateTime
   dnevnikRefreshToken: String
   dnevnikTokensUpdatedAt: DateTime
+  meta: JSON
   createdAt: DateTime
 }
 

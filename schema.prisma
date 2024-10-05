@@ -23,11 +23,11 @@ model User {
 model TelegramUser {
   id                               String    @id @default(uuid()) @postgresql.Uuid
   telegramId                       String    @unique @default("")
-  meta                             Json?
   dnevnikAccessToken               String    @default("")
   dnevnikAccessTokenExpirationDate DateTime?
   dnevnikRefreshToken              String    @default("")
   dnevnikTokensUpdatedAt           DateTime?
+  meta                             Json?
   createdAt                        DateTime? @default(now())
 
   @@index([dnevnikAccessTokenExpirationDate])

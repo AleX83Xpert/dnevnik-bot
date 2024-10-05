@@ -52,33 +52,10 @@ export const lists = {
   TelegramUser: list({
     access: isAdmin,
     fields: {
-      telegramId: text({
-        validation: { isRequired: true },
-        isIndexed: 'unique',
-      }),
-      meta: json(),
-      ...group({
-        label: 'Dnevnik token set',
-        fields: {
-          dnevnikAccessToken: text({ validation: { isRequired: false }, ui: {} }),
-          dnevnikAccessTokenExpirationDate: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
-          dnevnikRefreshToken: text({ validation: { isRequired: false } }),
-          dnevnikTokensUpdatedAt: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
-          tokenStatus: virtual({
-            field: graphql.field({
-              type: graphql.String,
-              async resolve(item, args, context) {
-                return dayjs().isBefore(item.dnevnikAccessTokenExpirationDate) ? '✅' : '📛'
-              },
-            }),
-          }),
-        },
-      }),
-      createdAt: timestamp({ defaultValue: { kind: 'now' } }),
       label: virtual({
         field: graphql.field({
           type: graphql.String,
-          async resolve(item, args, context) {
+          async resolve (item, args, context) {
             const username = get(item, ['meta', 'username'])
             const telegramId = get(item, ['meta', 'id'])
 
@@ -86,6 +63,29 @@ export const lists = {
           }
         }),
       }),
+      telegramId: text({
+        validation: { isRequired: true },
+        isIndexed: 'unique',
+      }),
+      ...group({
+        label: 'Dnevnik token set',
+        fields: {
+          isTokenActual: virtual({
+            field: graphql.field({
+              type: graphql.Boolean,
+              async resolve (item, args, context) {
+                return dayjs().isBefore(item.dnevnikAccessTokenExpirationDate)
+              },
+            }),
+          }),
+          dnevnikAccessToken: text({ validation: { isRequired: false }, ui: {} }),
+          dnevnikAccessTokenExpirationDate: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
+          dnevnikRefreshToken: text({ validation: { isRequired: false } }),
+          dnevnikTokensUpdatedAt: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
+        },
+      }),
+      meta: json(),
+      createdAt: timestamp({ defaultValue: { kind: 'now' } }),
     },
   }),
 } satisfies Lists
