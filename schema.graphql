@@ -8,6 +8,7 @@ type User {
   password: PasswordState
   isAdmin: Boolean
   createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type PasswordState {
@@ -30,6 +31,7 @@ input UserWhereInput {
   email: StringFilter
   isAdmin: BooleanFilter
   createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
 }
 
 input IDFilter {
@@ -99,6 +101,7 @@ input UserOrderByInput {
   email: OrderDirection
   isAdmin: OrderDirection
   createdAt: OrderDirection
+  updatedAt: OrderDirection
 }
 
 enum OrderDirection {
@@ -112,6 +115,7 @@ input UserUpdateInput {
   password: String
   isAdmin: Boolean
   createdAt: DateTime
+  updatedAt: DateTime
 }
 
 input UserUpdateArgs {
@@ -125,6 +129,7 @@ input UserCreateInput {
   password: String
   isAdmin: Boolean
   createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type TelegramUser {
@@ -136,8 +141,10 @@ type TelegramUser {
   dnevnikAccessTokenExpirationDate: DateTime
   dnevnikRefreshToken: String
   dnevnikTokensUpdatedAt: DateTime
+  isBlocked: Boolean
   meta: JSON
   createdAt: DateTime
+  updatedAt: DateTime
 }
 
 input TelegramUserWhereUniqueInput {
@@ -155,7 +162,9 @@ input TelegramUserWhereInput {
   dnevnikAccessTokenExpirationDate: DateTimeNullableFilter
   dnevnikRefreshToken: StringFilter
   dnevnikTokensUpdatedAt: DateTimeNullableFilter
+  isBlocked: BooleanFilter
   createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
 }
 
 input TelegramUserOrderByInput {
@@ -165,7 +174,9 @@ input TelegramUserOrderByInput {
   dnevnikAccessTokenExpirationDate: OrderDirection
   dnevnikRefreshToken: OrderDirection
   dnevnikTokensUpdatedAt: OrderDirection
+  isBlocked: OrderDirection
   createdAt: OrderDirection
+  updatedAt: OrderDirection
 }
 
 input TelegramUserUpdateInput {
@@ -174,8 +185,10 @@ input TelegramUserUpdateInput {
   dnevnikAccessTokenExpirationDate: DateTime
   dnevnikRefreshToken: String
   dnevnikTokensUpdatedAt: DateTime
+  isBlocked: Boolean
   meta: JSON
   createdAt: DateTime
+  updatedAt: DateTime
 }
 
 input TelegramUserUpdateArgs {
@@ -189,8 +202,10 @@ input TelegramUserCreateInput {
   dnevnikAccessTokenExpirationDate: DateTime
   dnevnikRefreshToken: String
   dnevnikTokensUpdatedAt: DateTime
+  isBlocked: Boolean
   meta: JSON
   createdAt: DateTime
+  updatedAt: DateTime
 }
 
 """

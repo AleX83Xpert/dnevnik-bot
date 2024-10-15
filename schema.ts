@@ -43,9 +43,14 @@ export const lists = {
       }),
       password: password({ validation: { isRequired: true } }),
       isAdmin: checkbox(),
-      createdAt: timestamp({
-        defaultValue: { kind: 'now' },
-      }),
+      createdAt: timestamp({ defaultValue: { kind: 'now' } }),
+      updatedAt: timestamp({ defaultValue: { kind: 'now' } }),
+    },
+    hooks: {
+      resolveInput ({ resolvedData }) {
+        resolvedData.updatedAt = dayjs().toISOString()
+        return resolvedData
+      },
     },
   }),
 
@@ -84,8 +89,16 @@ export const lists = {
           dnevnikTokensUpdatedAt: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
         },
       }),
+      isBlocked: checkbox({ defaultValue: false }),
       meta: json(),
       createdAt: timestamp({ defaultValue: { kind: 'now' } }),
+      updatedAt: timestamp({ defaultValue: { kind: 'now' } }),
+    },
+    hooks: {
+      resolveInput ({ resolvedData }) {
+        resolvedData.updatedAt = dayjs().toISOString()
+        return resolvedData
+      },
     },
   }),
 } satisfies Lists

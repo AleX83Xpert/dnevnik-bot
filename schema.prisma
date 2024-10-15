@@ -18,6 +18,7 @@ model User {
   password  String
   isAdmin   Boolean   @default(false)
   createdAt DateTime? @default(now())
+  updatedAt DateTime? @default(now())
 }
 
 model TelegramUser {
@@ -27,8 +28,10 @@ model TelegramUser {
   dnevnikAccessTokenExpirationDate DateTime?
   dnevnikRefreshToken              String    @default("")
   dnevnikTokensUpdatedAt           DateTime?
+  isBlocked                        Boolean   @default(false)
   meta                             Json?
   createdAt                        DateTime? @default(now())
+  updatedAt                        DateTime? @default(now())
 
   @@index([dnevnikAccessTokenExpirationDate])
   @@index([dnevnikTokensUpdatedAt])
