@@ -58,6 +58,9 @@ export function prepareTelegramBot (godContext: KeystoneContext, botToken: strin
     }
 
     if (telegramUser) {
+      if (telegramUser.isBlocked) {
+        return await ctx.reply('youWereBlocked') // TODO add i18next
+      }
       ctx.telegramUser = telegramUser
     }
 
