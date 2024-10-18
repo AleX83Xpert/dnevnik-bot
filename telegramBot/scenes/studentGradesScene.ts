@@ -94,7 +94,7 @@ export function getStudentGradesScene(godContext: KeystoneContext): BaseScene<Dn
       } else if (estimateResult?.yearGradesTable) {
         const y = estimateResult.yearGradesTable
         if (y.lessonGrades.length > 0) {
-          await ctx.reply(`*${getSelectedStudentName(ctx)}*\n${escMd('Итоговые оценки (ср./ср.взвеш.)')}\n\n${escMd(y.lessonGrades.map((l) => `${l.lesson.name}\n${l.grades.map((g) => g.finallygrade ? `*${g.finallygrade}*` : `${round(g.averageGrade, 2).toString()}/${round(g.averageWeightedGrade, 2).toString()}`).join(' · ')}`).join('\n'))}`, { parse_mode: 'MarkdownV2' })
+          await ctx.reply(`*${getSelectedStudentName(ctx)}*\n${escMd('Итоговые оценки (ср./ср.взвеш.)')}\n\n${y.lessonGrades.map((l) => `${escMd(l.lesson.name)}\n${l.grades.map((g) => g.finallygrade ? `*${escMd(String(g.finallygrade))}*` : escMd(`${round(g.averageGrade, 2).toString()}/${round(g.averageWeightedGrade, 2).toString()}`)).join(' · ')}`).join('\n')}`, { parse_mode: 'MarkdownV2' })
         } else {
           await ctx.reply('Итоговых оценок пока нет')
         }

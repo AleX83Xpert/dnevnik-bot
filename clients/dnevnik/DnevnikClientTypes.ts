@@ -60,7 +60,7 @@ export type TEstimateResult = {
       grades: {
         averageGrade: number
         averageWeightedGrade: number
-        finallygrade?: unknown
+        finallygrade?: number
         periodId: string
       }[]
       lesson: {
