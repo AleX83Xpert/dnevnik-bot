@@ -29,8 +29,11 @@ export async function findOrCreateTelegramUser(godContext: KeystoneContext, tele
 }
 
 export function getKeyboardWithLoginButton() {
-  const loginPageUrl = `${process.env.SERVER_URL}/static/loginPage.html`
-  return Markup.keyboard([Markup.button.webApp('Подключить дневник', loginPageUrl)]).resize()
+  if (!process.env.LOGIN_PAGE_URL) {
+    throw new Error('LOGIN_PAGE_URL env variable is empty')
+  }
+
+  return Markup.keyboard([Markup.button.webApp('Подключить дневник', process.env.LOGIN_PAGE_URL)]).resize()
 }
 
 export function getSelectedStudent(ctx: DnevnikContext) {

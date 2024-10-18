@@ -7,6 +7,8 @@ import dayjs from "dayjs"
 import { DnevnikClient } from "../clients/dnevnik/DnevnikClient"
 import { DnevnikClientExternalServerError, DnevnikClientUnauthorizedError } from "../clients/dnevnik/DnevnikClientErrors"
 import { getTokenExpirationDate } from "../utils/jwt"
+import { Lists } from '.keystone/types'
+import { ALL_TELEGRAM_USER_FIELDS } from "./constants/fields"
 
 export async function onStart(godContext: KeystoneContext, ctx: Context<{
   message: Update.New & Update.NonChannel & Message.TextMessage;
@@ -41,7 +43,7 @@ export async function onSendTokens(godContext: KeystoneContext, ctx: NarrowedCon
       const newTokens = await dnevnikClientWithUserTokens.refreshTokens()
       const dnevnikAccessTokenExpirationDate = getTokenExpirationDate(newTokens.accessToken)
 
-      await godContext.query.TelegramUser.updateOne({
+      const telegramUserWithNewTokens = await godContext.query.TelegramUser.updateOne({
         where: { telegramId: telegramUser.telegramId },
         data: {
           dnevnikAccessToken: newTokens.accessToken,
@@ -49,7 +51,10 @@ export async function onSendTokens(godContext: KeystoneContext, ctx: NarrowedCon
           dnevnikRefreshToken: newTokens.refreshToken,
           dnevnikTokensUpdatedAt: dayjs().toISOString(),
         },
-      })
+        query: ALL_TELEGRAM_USER_FIELDS,
+      }) as Lists.TelegramUser.Item
+
+      ctx.telegramUser = telegramUserWithNewTokens
 
       await ctx.reply('Готово! Бот подключен к вашему аккаунту в дневнике. Чтобы отключить все это используйте команду /logout.', Markup.removeKeyboard())
       await ctx.scene.enter('select_student')
