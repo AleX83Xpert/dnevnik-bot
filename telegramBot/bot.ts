@@ -99,8 +99,12 @@ export function prepareTelegramBot (godContext: KeystoneContext, botToken: strin
         getKeyboardWithLoginButton(),
       )
     } else {
-      logger.error({ msg: 'uncatched error', reqId: ctx.reqId, telegramId: ctx.telegramUser?.id, err })
-      await ctx.reply('Сейчас произошла ошибка, которую мой разработчик не обработал 😤. Ему отправлено сообщение, а вам нужно начать сначала: /start.')
+      logger.error({ msg: 'uncaught error', reqId: ctx.reqId, telegramId: ctx.telegramUser?.id, err })
+      try {
+        await ctx.reply('Сейчас произошла ошибка, которую мой разработчик не обработал 😤. Ему отправлено сообщение, а вам нужно начать сначала: /start.')
+      } catch (err2) {
+        logger.error({ msg: 'uncaught error message not sent', reqId: ctx.reqId, telegramId: ctx.telegramUser?.id, err: err2 })
+      }
     }
   })
 
