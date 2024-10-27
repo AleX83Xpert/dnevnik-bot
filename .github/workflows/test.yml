@@ -1,0 +1,45 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: main
+        options: >-
+          --health-cmd="pg_isready -U user" 
+          --health-interval=10s 
+          --health-timeout=5s 
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # - name: Set up Docker Compose
+      #   run: |
+      #     docker-compose up -d
+
+      - name: Wait for Postgres to be ready
+        run: |
+          until docker-compose exec postgres pg_isready -U user; do
+            echo "Waiting for postgres...";
+            sleep 5;
+          done
+
+      - name: Install dependencies
+        run: docker-compose exec app npm ci
+
+      - name: Run tests
+        run: docker-compose exec app npm test
