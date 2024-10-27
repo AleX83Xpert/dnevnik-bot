@@ -47,7 +47,12 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: ss
+      - name: Prepare .env
+        run: |
+          echo "NODE_ENV=development" >> .env
+          echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/main" >> .env
+
+      - name: Migrate database
         run: npm run migrate-apply
 
       - name: Run tests
