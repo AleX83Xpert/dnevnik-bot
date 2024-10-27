@@ -9,7 +9,7 @@
     "dev": "keystone dev --no-db-push",
     "build": "keystone build",
     "start": "keystone start",
-    "test": "jest --watch"
+    "test": "jest"
   },
   "dependencies": {
     "@keystone-6/auth": "^8.0.0",
