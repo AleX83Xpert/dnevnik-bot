@@ -39,7 +39,7 @@ jobs:
       #     done
 
       - name: Install dependencies
-        run: docker-compose exec app npm ci
+        run: docker compose exec app npm ci
 
       - name: Run tests
-        run: docker-compose exec app npm test
+        run: docker compose exec app npm test
