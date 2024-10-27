@@ -29,17 +29,17 @@ jobs:
 
       - name: Set up Docker Compose
         run: |
-          docker compose up -d dnevnik-postgresdb dnevnik-redis
+          docker compose up -d postgresdb redis
 
       - name: Wait for Postgres to be ready
         run: |
-          until docker compose exec postgres pg_isready -U user; do
+          until docker compose exec postgresdb pg_isready -U user; do
             echo "Waiting for postgres...";
             sleep 5;
           done
 
       - name: Install dependencies
-        run: docker compose exec app npm ci
+        run: npm ci
 
       - name: Run tests
-        run: docker compose exec app npm test
+        run: npm test
