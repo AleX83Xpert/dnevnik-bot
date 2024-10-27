@@ -41,8 +41,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: No telemetry
+        run: npm run disable-telemetry
+
       - name: Build
         run: npm run build
+
+      - name: ss
+        run: npm run migrate-apply
 
       - name: Run tests
         run: npm run test
