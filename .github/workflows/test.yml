@@ -8,38 +8,38 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: main
-        options: >-
-          --health-cmd="pg_isready -U user" 
-          --health-interval=10s 
-          --health-timeout=5s 
-          --health-retries=5
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # - name: Set up Docker Compose
-      #   run: |
-      #     docker-compose up -d
+      - name: Set up Docker Compose
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.test.yml up -d postgresdb redis
 
       - name: Wait for Postgres to be ready
         run: |
-          until docker-compose exec postgres pg_isready -U user; do
+          until docker compose exec postgresdb pg_isready -U user; do
             echo "Waiting for postgres...";
             sleep 5;
           done
 
       - name: Install dependencies
-        run: docker-compose exec app npm ci
+        run: npm ci
+
+      - name: No telemetry
+        run: npm run disable-telemetry
+
+      - name: Build
+        run: npm run build
+
+      - name: Prepare .env
+        run: |
+          echo "NODE_ENV=development" >> .env
+          echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/main" >> .env
+
+      - name: Migrate database
+        run: npm run migrate-apply
 
       - name: Run tests
-        run: docker-compose exec app npm test
+        run: npm run test

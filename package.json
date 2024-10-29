@@ -5,11 +5,11 @@
   "scripts": {
     "migrate-create": "keystone prisma migrate dev --create-only",
     "migrate-apply": "keystone prisma migrate deploy",
-    "disable-telemetry": "keystone telemetry disable",
+    "disable-telemetry": "keystone telemetry disable && next telemetry disable",
     "dev": "keystone dev --no-db-push",
     "build": "keystone build",
     "start": "keystone start",
-    "test": "jest --watch"
+    "test": "jest"
   },
   "dependencies": {
     "@keystone-6/auth": "^8.0.0",

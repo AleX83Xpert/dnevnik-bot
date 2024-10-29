@@ -60,9 +60,6 @@ services:
       - ./pgdata:/var/lib/postgresql/data
     networks:
       - appnet
-    # do not need to open ports on prod
-    # ports:
-    #   - "5432:5432"
 
   redis:
     container_name: dnevnik-redis
