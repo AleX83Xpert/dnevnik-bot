@@ -30,6 +30,10 @@ describe('messageMarkdownV2Formatters', () => {
       { time: [null, 2, null, null], expectTimeStr: '' },
       { time: [null, null, 3, null], expectTimeStr: '' },
       { time: [null, null, null, 4], expectTimeStr: '' },
+      { time: [null, 2, 3, 4], expectTimeStr: '' },
+      { time: [1, null, 3, 4], expectTimeStr: '' },
+      { time: [1, 2, null, 4], expectTimeStr: '' },
+      { time: [1, 2, 3, null], expectTimeStr: '' },
     ]
 
     test.each(cases)('status $time must be "$expectTimeStr"', async ({ time, expectTimeStr }) => {
