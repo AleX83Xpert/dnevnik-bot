@@ -138,10 +138,17 @@ export type TScheduleResult = {
   }
 }
 
+export type THomeWorkFile = {
+  id: string
+  name: string // original file name
+  size: number // file size in bytes
+  type: string // mime-type
+}
+
 export type THomework = {
   description: string
   endTime: string
-  homeWorkFiles: unknown[]
+  homeWorkFiles: THomeWorkFile[]
   id: string
   isDone: boolean
   isHomeworkElectronicForm: boolean
