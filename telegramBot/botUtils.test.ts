@@ -1,7 +1,7 @@
-import { KeystoneContext } from "@keystone-6/core/types"
-import { createTelegramUser, cutToken, findTelegramUser } from "./botUtils"
+import { KeystoneContext } from '@keystone-6/core/types'
+import { createTelegramUser, cutToken, findTelegramUser } from './botUtils'
 import { createTestGodContext } from '../testUtils/lists.test.utils'
-import { faker } from "@faker-js/faker"
+import { faker } from '@faker-js/faker'
 
 describe('botUtils', () => {
   let context: KeystoneContext

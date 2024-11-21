@@ -115,9 +115,9 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
           await godContext.query.TelegramUser.updateOne({
             where: { telegramId: telegramUser.telegramId },
             data: {
-              dnevnikAccessToken: '',
+              dnevnikAccessToken: null,
               dnevnikAccessTokenExpirationDate: null,
-              dnevnikRefreshToken: '',
+              dnevnikRefreshToken: null,
               dnevnikTokensUpdatedAt: null,
             },
             query: ALL_TELEGRAM_USER_FIELDS,

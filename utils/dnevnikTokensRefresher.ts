@@ -59,9 +59,9 @@ export async function startTokensRefresher (godContext: KeystoneContext, interva
           await godContext.query.TelegramUser.updateOne({
             where: { telegramId },
             data: {
-              dnevnikAccessToken: '',
+              dnevnikAccessToken: null,
               dnevnikAccessTokenExpirationDate: null,
-              dnevnikRefreshToken: '',
+              dnevnikRefreshToken: null,
               dnevnikTokensUpdatedAt: dayjs().toISOString(),
             }
           })
