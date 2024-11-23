@@ -158,13 +158,18 @@ input TelegramUserWhereInput {
   NOT: [TelegramUserWhereInput!]
   id: IDFilter
   telegramId: StringFilter
-  dnevnikAccessToken: StringFilter
+  dnevnikAccessToken: EncryptedTextFilter
   dnevnikAccessTokenExpirationDate: DateTimeNullableFilter
-  dnevnikRefreshToken: StringFilter
+  dnevnikRefreshToken: EncryptedTextFilter
   dnevnikTokensUpdatedAt: DateTimeNullableFilter
   isBlocked: BooleanFilter
   createdAt: DateTimeNullableFilter
   updatedAt: DateTimeNullableFilter
+}
+
+input EncryptedTextFilter {
+  equals: String
+  not: EncryptedTextFilter
 }
 
 input TelegramUserOrderByInput {

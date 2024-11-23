@@ -78,9 +78,9 @@ export async function onLogout(godContext: KeystoneContext, ctx: Context<{ messa
   await godContext.query.TelegramUser.updateOne({
     where: { telegramId },
     data: {
-      dnevnikAccessToken: '',
+      dnevnikAccessToken: null,
       dnevnikAccessTokenExpirationDate: null,
-      dnevnikRefreshToken: '',
+      dnevnikRefreshToken: null,
       dnevnikTokensUpdatedAt: null,
     },
   })

@@ -1,4 +1,5 @@
 import { list, group, graphql } from '@keystone-6/core'
+import { encryptedText } from './keystone/fields/encryptedText/index'
 
 import {
   text,
@@ -11,7 +12,7 @@ import {
 
 import { type Lists } from '.keystone/types'
 
-import get from 'lodash/get'
+import { get } from 'lodash'
 import dayjs from 'dayjs'
 
 type TSession = {
@@ -26,6 +27,16 @@ type TUserData = {
   name: string;
   email: string;
   isAdmin: boolean;
+}
+
+function getEncryptionToken (): string {
+  const TOKENS_ENCRYPTION_KEY = process.env.TOKENS_ENCRYPTION_KEY
+
+  if (TOKENS_ENCRYPTION_KEY?.length !== 32) {
+    throw new Error('TOKENS_ENCRYPTION_KEY must be 32 symbols length')
+  }
+
+  return TOKENS_ENCRYPTION_KEY
 }
 
 const isAdmin = ({ session }: { session?: TSession }) => Boolean(session?.data.isAdmin)
@@ -83,9 +94,9 @@ export const lists = {
               },
             }),
           }),
-          dnevnikAccessToken: text({ validation: { isRequired: false }, ui: {} }),
+          dnevnikAccessToken: encryptedText({ secretKey: getEncryptionToken(), validation: { isRequired: false } }),
           dnevnikAccessTokenExpirationDate: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
-          dnevnikRefreshToken: text({ validation: { isRequired: false } }),
+          dnevnikRefreshToken: encryptedText({ secretKey: getEncryptionToken(), validation: { isRequired: false } }),
           dnevnikTokensUpdatedAt: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
         },
       }),

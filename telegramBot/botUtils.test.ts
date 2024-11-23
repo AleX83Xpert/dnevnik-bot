@@ -1,7 +1,6 @@
-import { KeystoneContext } from "@keystone-6/core/types"
-import { createTelegramUser, cutToken, findTelegramUser } from "./botUtils"
-import { createTestGodContext } from '../testUtils/lists.test.utils'
-import { faker } from "@faker-js/faker"
+import { KeystoneContext } from '@keystone-6/core/types'
+import { createTelegramUser, cutToken, findTelegramUser } from './botUtils'
+import { createTestGodContext, generateTestTelegramId } from '../testUtils/lists.test.utils'
 
 describe('botUtils', () => {
   let context: KeystoneContext
@@ -11,7 +10,7 @@ describe('botUtils', () => {
   })
 
   test('createTelegramUser && findTelegramUser works fine', async () => {
-    const telegramId = `test_fake_${faker.string.uuid()}`
+    const telegramId = generateTestTelegramId()
 
     const createdTelegramUser = await createTelegramUser(context, telegramId, { a:1 })
     const foundTelegramUser = await findTelegramUser(context, telegramId)
