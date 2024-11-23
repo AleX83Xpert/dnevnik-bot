@@ -43,7 +43,7 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
-    command: sh -c "npm ci --omit=dev && npm cache clean --force && npm run disable-telemetry && npm run build && npm run migrate-apply && npm start"
+    command: sh -c "export NODE_ENV=production && npm ci --omit=dev && npm cache clean --force && npm run disable-telemetry && npm run build && npm run migrate-apply && npm start"
     networks:
       - appnet
   
