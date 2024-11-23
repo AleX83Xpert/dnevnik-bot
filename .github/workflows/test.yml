@@ -37,7 +37,7 @@ jobs:
         run: |
           echo "NODE_ENV=development" >> .env
           echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/main" >> .env
-          echo "TOKENS_ENCRYPTION_KEY=someRandomString32SymbolsLength!" >> .env
+          echo "TOKENS_ENCRYPTION_KEY=xCBZw2vyp42pAAwhIWqpHWDutgrKPppq" >> .env
 
       - name: Migrate database
         run: npm run migrate-apply
