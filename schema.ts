@@ -29,10 +29,14 @@ type TUserData = {
   isAdmin: boolean;
 }
 
-const TOKENS_ENCRYPTION_KEY = process.env.TOKENS_ENCRYPTION_KEY
+function getEncryptionToken (): string {
+  const TOKENS_ENCRYPTION_KEY = process.env.TOKENS_ENCRYPTION_KEY
 
-if (TOKENS_ENCRYPTION_KEY?.length !== 32) {
-  throw new Error('TOKENS_ENCRYPTION_KEY must be 32 symbols length')
+  if (TOKENS_ENCRYPTION_KEY?.length !== 32) {
+    throw new Error('TOKENS_ENCRYPTION_KEY must be 32 symbols length')
+  }
+
+  return TOKENS_ENCRYPTION_KEY
 }
 
 const isAdmin = ({ session }: { session?: TSession }) => Boolean(session?.data.isAdmin)
@@ -90,9 +94,9 @@ export const lists = {
               },
             }),
           }),
-          dnevnikAccessToken: encryptedText({ secretKey: String(TOKENS_ENCRYPTION_KEY), validation: { isRequired: false } }),
+          dnevnikAccessToken: encryptedText({ secretKey: getEncryptionToken(), validation: { isRequired: false } }),
           dnevnikAccessTokenExpirationDate: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
-          dnevnikRefreshToken: encryptedText({ secretKey: String(TOKENS_ENCRYPTION_KEY), validation: { isRequired: false } }),
+          dnevnikRefreshToken: encryptedText({ secretKey: getEncryptionToken(), validation: { isRequired: false } }),
           dnevnikTokensUpdatedAt: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
         },
       }),
