@@ -1,6 +1,8 @@
 import { KeystoneContext } from "@keystone-6/core/types"
-import { createTestGodContext, createTestTelegramUser, updateTestTelegramUser } from './testUtils/lists.test.utils'
+import { createTestGodContext, createTestTelegramUser, generateTestTelegramId, updateTestTelegramUser } from './testUtils/lists.test.utils'
 import { faker } from "@faker-js/faker"
+import { ALL_TELEGRAM_USER_FIELDS } from "./telegramBot/constants/fields"
+import { decrypt } from "./keystone/fields/encryptedText/utils"
 
 describe('TelegramUser', () => {
   let context: KeystoneContext
@@ -49,5 +51,51 @@ describe('TelegramUser', () => {
 
     expect(updatedTelegramUser.dnevnikAccessToken).toBe(dnevnikAccessToken)
     expect(updatedTelegramUser.dnevnikRefreshToken).toBe(dnevnikRefreshToken)
+  })
+
+  test('keep existing unencrypted data "as is" on reading and encrypt on update', async () => {
+    const unencryptedDnevnikAccessToken = `unencrypted_${faker.string.alphanumeric(20)}`
+    const unencryptedDnevnikRefreshToken = `unencrypted_${faker.string.alphanumeric(20)}`
+
+    // insert data with skipping encryption
+    const insertedTelegramUser = await context.prisma.TelegramUser.create({
+      data: {
+        telegramId: generateTestTelegramId(),
+        dnevnikAccessToken: unencryptedDnevnikAccessToken,
+        dnevnikRefreshToken: unencryptedDnevnikRefreshToken,
+      }
+    })
+
+    // sure that inserted fields are right
+    expect(insertedTelegramUser.dnevnikAccessToken).toBe(unencryptedDnevnikAccessToken)
+    expect(insertedTelegramUser.dnevnikRefreshToken).toBe(unencryptedDnevnikRefreshToken)
+
+    // search user using encrypted field
+    const createdTelegramUser = await context.query.TelegramUser.findOne({ where: { id: insertedTelegramUser.id }, query: ALL_TELEGRAM_USER_FIELDS })
+
+    // sure that fields are unencrypted
+    expect(createdTelegramUser.dnevnikAccessToken).toBe(unencryptedDnevnikAccessToken)
+    expect(createdTelegramUser.dnevnikRefreshToken).toBe(unencryptedDnevnikRefreshToken)
+
+    // now update tokens
+    const dnevnikAccessToken = faker.string.alphanumeric(20)
+    const dnevnikRefreshToken = faker.string.alphanumeric(20)
+    const updatedTelegramUser = await updateTestTelegramUser(context, insertedTelegramUser.id, { dnevnikAccessToken, dnevnikRefreshToken })
+
+    // sure that decrypted tokens are same
+    expect(updatedTelegramUser.dnevnikAccessToken).toBe(dnevnikAccessToken)
+    expect(updatedTelegramUser.dnevnikRefreshToken).toBe(dnevnikRefreshToken)
+
+    // read data with skipped decryption
+    // https://www.prisma.io/docs/orm/prisma-client/queries/crud#read
+    const encrypted = await context.prisma.TelegramUser.findUnique({ where: { id: insertedTelegramUser.id } })
+
+    // sure that loaded encrypted tokens are not the same as unencrypted ones
+    expect(encrypted.dnevnikAccessToken).not.toBe(dnevnikAccessToken)
+    expect(encrypted.dnevnikRefreshToken).not.toBe(dnevnikRefreshToken)
+
+    // sure that these tokens encrypted right
+    expect(dnevnikAccessToken).toBe(decrypt(encrypted.dnevnikAccessToken, String(process.env.TOKENS_ENCRYPTION_KEY)))
+    expect(dnevnikRefreshToken).toBe(decrypt(encrypted.dnevnikRefreshToken, String(process.env.TOKENS_ENCRYPTION_KEY)))
   })
 })

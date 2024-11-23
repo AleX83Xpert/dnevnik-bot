@@ -10,9 +10,13 @@ export const createTestGodContext = async () => {
   return getContext(config, PrismaModule).sudo()
 }
 
+export function generateTestTelegramId () {
+  return `test_fake_${faker.string.uuid()}`
+}
+
 export async function createTestTelegramUser (context: KeystoneContext, attrs: Partial<Lists.TelegramUser.Item> = {}): Promise<{ data: Lists.TelegramUser.Item, obj: Lists.TelegramUser.Item }> {
   const data = {
-    telegramId: `test_fake_${faker.string.uuid()}`,
+    telegramId: generateTestTelegramId(),
     ...attrs,
   } as Lists.TelegramUser.Item
 
