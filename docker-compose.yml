@@ -16,7 +16,7 @@ services:
       - appnet
 
   dnevnik-app-01:
-    # restart: on-failure
+    restart: on-failure
     container_name: dnevnik-app-01
     hostname: dnevnik-app-01
     #
