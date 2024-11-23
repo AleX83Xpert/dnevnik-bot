@@ -5,3 +5,4 @@ node_modules
 pgdata/
 .env
 *.log
+cache/
