@@ -12,7 +12,7 @@ import {
 
 import { type Lists } from '.keystone/types'
 
-import get from 'lodash/get'
+import { get } from 'lodash'
 import dayjs from 'dayjs'
 
 type TSession = {
