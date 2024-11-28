@@ -23,7 +23,6 @@ export async function startTokensRefresher (godContext: KeystoneContext, interva
       where: {
         dnevnikAccessTokenExpirationDate: {
           lte: dayjs().add(refreshBeforeSec, 'seconds').toISOString(),
-          gte: dayjs().toISOString(),
         },
         dnevnikAccessToken: { not: { equals: '' } },
         dnevnikRefreshToken: { not: { equals: '' } },
