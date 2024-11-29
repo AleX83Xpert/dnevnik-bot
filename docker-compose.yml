@@ -4,7 +4,6 @@ services:
     hostname: load-balancer
     build: ./infra/load-balancer
     ports:
-      - "80:80"
       - "443:443"
     volumes:
     # how to get ssl cert:
