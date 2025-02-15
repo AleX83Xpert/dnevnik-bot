@@ -1,0 +1,69 @@
+#
+#
+# This is just an EXAMPLE of production infrastructure
+# docker compose -f docker-compose.prod.yml up -d
+#
+#
+services:
+  load-balancer:
+    image: load-balancer:latest
+    restart: always
+    container_name: load-balancer
+    hostname: load-balancer
+    depends_on:
+      - dnevnik-app
+    ports:
+      - "443:443"
+    volumes:
+    # how to get ssl cert:
+    # https://certbot.eff.org/instructions?ws=nginx&os=pip
+      - /etc/letsencrypt/live:/etc/letsencrypt/live:ro
+      - /etc/letsencrypt/archive:/etc/letsencrypt/archive:ro
+    networks:
+      - appnet
+
+  dnevnik-app:
+    image: dnevnik-app:latest
+    restart: always
+    container_name: dnevnik-app
+    hostname: dnevnik-app
+    env_file:
+      - .env
+    depends_on:
+      - postgresdb
+      - redis
+    networks:
+      - appnet
+  
+  postgresdb:
+    container_name: dnevnik-postgresdb
+    hostname: postgresdb
+    image: postgres
+    environment:
+      POSTGRES_DB: main
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    networks:
+      - appnet
+
+  redis:
+    container_name: dnevnik-redis
+    hostname: redis
+    image: redis
+    volumes:
+      - ./redisdata:/data
+    networks:
+      - appnet
+
+volumes:
+  pgdata:
+    driver: local
+  redisdata:
+    driver: local
+
+networks:
+  appnet:
+    driver: bridge
