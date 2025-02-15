@@ -1,51 +1,4 @@
 services:
-  load-balancer:
-    container_name: load-balancer
-    hostname: load-balancer
-    build: ./infra/load-balancer
-    ports:
-      - "443:443"
-    volumes:
-    # how to get ssl cert:
-    # https://certbot.eff.org/instructions?ws=nginx&os=pip
-      - /etc/letsencrypt/live:/etc/letsencrypt/live:ro
-      - /etc/letsencrypt/archive:/etc/letsencrypt/archive:ro
-      - ./static:/app/static
-    networks:
-      - appnet
-
-  dnevnik-app-01:
-    restart: on-failure
-    container_name: dnevnik-app-01
-    hostname: dnevnik-app-01
-    #
-    # I have to downgrade from lts version 20 to 18 to prevent error
-    #
-    # unhandledRejection FetchError: request to https://api.telegram.org/bot7517380691:[REDACTED]/getMe failed, reason: 
-    # at ClientRequest.<anonymous> (/app/node_modules/node-fetch/lib/index.js:1501:11)
-    # at ClientRequest.emit (node:events:519:28)
-    # at emitErrorEvent (node:_http_client:108:11)
-    # at TLSSocket.socketErrorListener (node:_http_client:511:5)
-    # at TLSSocket.emit (node:events:519:28)
-    # at emitErrorNT (node:internal/streams/destroy:169:8)
-    # at emitErrorCloseNT (node:internal/streams/destroy:128:3)
-    # at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
-    #   type: 'system',
-    #   errno: 'ETIMEDOUT',
-    #   code: 'ETIMEDOUT'
-    # }
-    #
-    # https://github.com/telegraf/telegraf/issues/1961#issuecomment-2093322253
-    #
-    # image: library/node:lts-alpine
-    image: library/node:18-alpine
-    working_dir: /app
-    volumes:
-      - ./:/app
-    command: sh -c "export NODE_ENV=production && npm ci --omit=dev && npm cache clean --force && npm run disable-telemetry && npm run build && npm run migrate-apply && npm start"
-    networks:
-      - appnet
-  
   postgresdb:
     container_name: dnevnik-postgresdb
     hostname: postgresdb
@@ -59,6 +12,8 @@ services:
       - ./pgdata:/var/lib/postgresql/data
     networks:
       - appnet
+    ports:
+      - "5432:5432"
 
   redis:
     container_name: dnevnik-redis
@@ -66,9 +21,8 @@ services:
     image: redis
     networks:
       - appnet
-    # do not need to open ports on prod
-    # ports:
-    #   - "6379:6379"
+    ports:
+      - "6379:6379"
 
 volumes:
   pgdata:

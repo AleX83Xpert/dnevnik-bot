@@ -15,7 +15,7 @@ jobs:
 
       - name: Start databases
         run: |
-          docker compose -f docker-compose.yml -f docker-compose.test.yml up -d postgresdb redis
+          docker compose up -d postgresdb redis
 
       - name: Wait for Postgres to be ready
         run: |
