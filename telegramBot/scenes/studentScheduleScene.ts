@@ -11,12 +11,12 @@ import { lowerCase } from 'lodash'
 function scheduleMenu () {
   return Markup.inlineKeyboard([
     [
-      Markup.button.callback('🙉 Сегодня', 'schedule_today'),
-      Markup.button.callback('🙈 Завтра', 'schedule_tomorrow'),
+      Markup.button.callback('😴 Сегодня', 'schedule_today'),
+      Markup.button.callback('🤨 Завтра', 'schedule_tomorrow'),
     ],
     [
-      Markup.button.callback('🙊 Эта неделя', 'schedule_this_week'),
-      Markup.button.callback('🙄 След. неделя', 'schedule_next_week'),
+      Markup.button.callback('🫩 Эта неделя', 'schedule_this_week'),
+      Markup.button.callback('🫠 След. неделя', 'schedule_next_week'),
     ],
     [
       Markup.button.callback('◀️ Назад', 'menu_back'),
