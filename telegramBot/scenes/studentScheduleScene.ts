@@ -8,12 +8,15 @@ import { escMd, formatScheduleDay } from "../../utils/messageMdV2Formatters"
 import dayjs from "dayjs"
 import { lowerCase } from 'lodash'
 
-function scheduleMenu() {
+function scheduleMenu () {
   return Markup.inlineKeyboard([
     [
       Markup.button.callback('🙉 Сегодня', 'schedule_today'),
       Markup.button.callback('🙈 Завтра', 'schedule_tomorrow'),
-      Markup.button.callback('🙊 Эта неделя', 'schedule_week'),
+    ],
+    [
+      Markup.button.callback('🙊 Эта неделя', 'schedule_this_week'),
+      Markup.button.callback('🙄 След. неделя', 'schedule_next_week'),
     ],
     [
       Markup.button.callback('◀️ Назад', 'menu_back'),
@@ -21,7 +24,7 @@ function scheduleMenu() {
   ])
 }
 
-export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<DnevnikContext> {
+export function getStudentScheduleScene (godContext: KeystoneContext): BaseScene<DnevnikContext> {
   const scene = new Scenes.BaseScene<DnevnikContext>('student_schedule_scene')
 
   scene.enter(async (ctx) => {
@@ -102,7 +105,7 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
     }
   })
 
-  scene.action('schedule_week', async (ctx) => {
+  scene.action('schedule_this_week', async (ctx) => {
     const student = getSelectedStudent(ctx)
 
     if (student) {
@@ -111,7 +114,7 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
         ctx,
         request: {
           action: 'schedule',
-          params: { studentId: student.id, date: dayjs().format('YYYY-MM-DD') }
+          params: { studentId: student.id, date: dayjs().startOf('week').format('YYYY-MM-DD') }
         }
       })
 
@@ -122,6 +125,38 @@ export function getStudentScheduleScene(godContext: KeystoneContext): BaseScene<
           await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание до конца недели\n\n${days.map((day) => `${escMd(day.dayOfWeekName)}, ${escMd(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`).join('\n\n')}`, { parse_mode: 'MarkdownV2' })
         } else {
           await ctx.reply('На этой неделе уроков больше нет 🥵')
+        }
+      } else {
+        await ctx.reply('Не удалось получить данные')
+      }
+
+      await ctx.deleteMessage()
+      await ctx.scene.enter('student_scene', { needNewMessage: true })
+    } else {
+      await ctx.scene.enter('select_student')
+    }
+  })
+
+  scene.action('schedule_next_week', async (ctx) => {
+    const student = getSelectedStudent(ctx)
+
+    if (student) {
+      const scheduleResult = await fetchFromDnevnik({
+        godContext,
+        ctx,
+        request: {
+          action: 'schedule',
+          params: { studentId: student.id, date: dayjs().add(1, 'week').startOf('week').format('YYYY-MM-DD') }
+        }
+      })
+
+      if (scheduleResult) {
+        const days = scheduleResult.scheduleModel.days.filter((day) => dayjs(day.date.split('T', 2)[0]).format('YYYY-MM-DD') >= dayjs().add(1, 'day').format('YYYY-MM-DD') && day.scheduleDayLessonModels && day.scheduleDayLessonModels.length > 0)
+
+        if (days.length > 0) {
+          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на следующую неделю\n\n${days.map((day) => `${escMd(day.dayOfWeekName)}, ${escMd(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`).join('\n\n')}`, { parse_mode: 'MarkdownV2' })
+        } else {
+          await ctx.reply('На следующей неделе уроков нет 🥵')
         }
       } else {
         await ctx.reply('Не удалось получить данные')
