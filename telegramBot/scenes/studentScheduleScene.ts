@@ -16,7 +16,7 @@ function scheduleMenu () {
     ],
     [
       Markup.button.callback('🙊 Эта неделя', 'schedule_this_week'),
-      Markup.button.callback('🙊 След. неделя', 'schedule_next_week'),
+      Markup.button.callback('🙄 След. неделя', 'schedule_next_week'),
     ],
     [
       Markup.button.callback('◀️ Назад', 'menu_back'),
