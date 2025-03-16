@@ -114,7 +114,7 @@ export function getStudentScheduleScene (godContext: KeystoneContext): BaseScene
         ctx,
         request: {
           action: 'schedule',
-          params: { studentId: student.id, date: dayjs().startOf('week').format('YYYY-MM-DD') }
+          params: { studentId: student.id, date: dayjs().format('YYYY-MM-DD') }
         }
       })
 
