@@ -41,27 +41,34 @@ export function getStudentScheduleScene (godContext: KeystoneContext): BaseScene
     const student = getSelectedStudent(ctx)
 
     if (student) {
-      const todayDateStr = dayjs().format('YYYY-MM-DD')
+      const today = dayjs()
+      const dayOfWeek = today.day()
 
-      const scheduleResult = await fetchFromDnevnik({
-        godContext,
-        ctx,
-        request: {
-          action: 'schedule',
-          params: { studentId: student.id, date: todayDateStr }
-        }
-      })
-
-      if (scheduleResult) {
-        const day = scheduleResult.scheduleModel.days.find((day) => dayjs(day.date.split('T', 2)[0]).format('YYYY-MM-DD') === todayDateStr && day.scheduleDayLessonModels.length > 0)
-
-        if (day) {
-          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на сегодня, ${escMd(lowerCase(day.dayOfWeekName))}, ${escMd(dayjs(day.date.split('T', 2)[0]).format('D MMM'))}:\n${formatScheduleDay(day)}`, { parse_mode: 'MarkdownV2' })
-        } else {
-          await ctx.reply('Сегодня уроков нет 🥵')
-        }
+      if (dayOfWeek === 0) {
+        // Need to process sunday explicitly, because dnevnik's api answers error 500 if call with sunday's date
+        await ctx.reply('Сегодня воскресенье. Уроков нет 😶‍🌫️')
       } else {
-        await ctx.reply('Не удалось получить данные')
+        const todayDateStr = today.format('YYYY-MM-DD')
+        const scheduleResult = await fetchFromDnevnik({
+          godContext,
+          ctx,
+          request: {
+            action: 'schedule',
+            params: { studentId: student.id, date: todayDateStr }
+          }
+        })
+
+        if (scheduleResult) {
+          const day = scheduleResult.scheduleModel.days.find((day) => dayjs(day.date.split('T', 2)[0]).format('YYYY-MM-DD') === todayDateStr && day.scheduleDayLessonModels.length > 0)
+
+          if (day) {
+            await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на сегодня, ${escMd(lowerCase(day.dayOfWeekName))}, ${escMd(dayjs(day.date.split('T', 2)[0]).format('D MMM'))}:\n${formatScheduleDay(day)}`, { parse_mode: 'MarkdownV2' })
+          } else {
+            await ctx.reply('Сегодня уроков нет 🥵')
+          }
+        } else {
+          await ctx.reply('Не удалось получить данные')
+        }
       }
 
       await ctx.deleteMessage()
@@ -75,27 +82,35 @@ export function getStudentScheduleScene (godContext: KeystoneContext): BaseScene
     const student = getSelectedStudent(ctx)
 
     if (student) {
-      const tomorowDateStr = dayjs().add(1, 'day').format('YYYY-MM-DD')
+      const tomorrow = dayjs().add(1, 'day')
+      const dayOfWeek = tomorrow.day()
 
-      const scheduleResult = await fetchFromDnevnik({
-        godContext,
-        ctx,
-        request: {
-          action: 'schedule',
-          params: { studentId: student.id, date: tomorowDateStr }
-        }
-      })
-
-      if (scheduleResult) {
-        const day = scheduleResult.scheduleModel.days.find((day) => dayjs(day.date.split('T', 2)[0]).format('YYYY-MM-DD') === tomorowDateStr && day.scheduleDayLessonModels.length > 0)
-
-        if (day) {
-          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на завтра, ${escMd(lowerCase(day.dayOfWeekName))}, ${escMd(dayjs(day.date.split('T', 2)[0]).format('D MMM'))}:\n${formatScheduleDay(day)}`, { parse_mode: 'MarkdownV2' })
-        } else {
-          await ctx.reply('Завтра уроков нет 🥵')
-        }
+      if (dayOfWeek === 0) {
+        // Need to process sunday explicitly, because dnevnik's api answers error 500 if call with sunday's date
+        await ctx.reply('Завтра же воскресенье! Уроков нет 😶‍🌫️')
       } else {
-        await ctx.reply('Не удалось получить данные')
+        const tomorowDateStr = tomorrow.format('YYYY-MM-DD')
+
+        const scheduleResult = await fetchFromDnevnik({
+          godContext,
+          ctx,
+          request: {
+            action: 'schedule',
+            params: { studentId: student.id, date: tomorowDateStr }
+          }
+        })
+
+        if (scheduleResult) {
+          const day = scheduleResult.scheduleModel.days.find((day) => dayjs(day.date.split('T', 2)[0]).format('YYYY-MM-DD') === tomorowDateStr && day.scheduleDayLessonModels.length > 0)
+
+          if (day) {
+            await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание на завтра, ${escMd(lowerCase(day.dayOfWeekName))}, ${escMd(dayjs(day.date.split('T', 2)[0]).format('D MMM'))}:\n${formatScheduleDay(day)}`, { parse_mode: 'MarkdownV2' })
+          } else {
+            await ctx.reply('Завтра уроков нет 🥵')
+          }
+        } else {
+          await ctx.reply('Не удалось получить данные')
+        }
       }
 
       await ctx.deleteMessage()
@@ -109,25 +124,33 @@ export function getStudentScheduleScene (godContext: KeystoneContext): BaseScene
     const student = getSelectedStudent(ctx)
 
     if (student) {
-      const scheduleResult = await fetchFromDnevnik({
-        godContext,
-        ctx,
-        request: {
-          action: 'schedule',
-          params: { studentId: student.id, date: dayjs().format('YYYY-MM-DD') }
-        }
-      })
+      const today = dayjs()
+      const dayOfWeek = today.day()
 
-      if (scheduleResult) {
-        const days = scheduleResult.scheduleModel.days.filter((day) => dayjs(day.date.split('T', 2)[0]).format('YYYY-MM-DD') >= dayjs().add(1, 'day').format('YYYY-MM-DD') && day.scheduleDayLessonModels && day.scheduleDayLessonModels.length > 0)
-
-        if (days.length > 0) {
-          await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание до конца недели\n\n${days.map((day) => `${escMd(day.dayOfWeekName)}, ${escMd(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`).join('\n\n')}`, { parse_mode: 'MarkdownV2' })
-        } else {
-          await ctx.reply('На этой неделе уроков больше нет 🥵')
-        }
+      if (dayOfWeek === 0) {
+        // Need to process sunday explicitly, because dnevnik's api answers error 500 if call with sunday's date
+        await ctx.reply('На этой неделе осталось только воскресенье. Уроков больше нет 😶‍🌫️')
       } else {
-        await ctx.reply('Не удалось получить данные')
+        const scheduleResult = await fetchFromDnevnik({
+          godContext,
+          ctx,
+          request: {
+            action: 'schedule',
+            params: { studentId: student.id, date: today.format('YYYY-MM-DD') }
+          }
+        })
+
+        if (scheduleResult) {
+          const days = scheduleResult.scheduleModel.days.filter((day) => dayjs(day.date.split('T', 2)[0]).format('YYYY-MM-DD') >= today.add(1, 'day').format('YYYY-MM-DD') && day.scheduleDayLessonModels && day.scheduleDayLessonModels.length > 0)
+
+          if (days.length > 0) {
+            await ctx.reply(`*${getSelectedStudentName(ctx)}*\nРасписание до конца недели\n\n${days.map((day) => `${escMd(day.dayOfWeekName)}, ${escMd(dayjs(day.date).format('D MMM'))}:\n${formatScheduleDay(day)}`).join('\n\n')}`, { parse_mode: 'MarkdownV2' })
+          } else {
+            await ctx.reply('На этой неделе уроков больше нет 🥵')
+          }
+        } else {
+          await ctx.reply('Не удалось получить данные')
+        }
       }
 
       await ctx.deleteMessage()
