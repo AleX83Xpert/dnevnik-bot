@@ -35,8 +35,8 @@ To log in to the Sverdlovsk Region's electronic school diary, you first need to 
 <p float="left">
   <img src="https://github.com/user-attachments/assets/5319002c-9a1c-489c-bbfc-8b9e3fec2a22" width="30%" />
   <img src="https://github.com/user-attachments/assets/772a45d4-557d-47ca-bea8-c1166af49da2" width="30%" />
-  <img src="https://github.com/user-attachments/assets/20928ade-2080-4042-8de4-0c059f8cfd58" width="30%" />
   <img src="https://github.com/user-attachments/assets/16129604-1a6d-4c1d-b84a-6745660c9cae" width="30%" />
+  <img src="https://github.com/user-attachments/assets/20928ade-2080-4042-8de4-0c059f8cfd58" width="30%" />
   <img src="https://github.com/user-attachments/assets/d01873ee-3d3f-4bcc-abc1-93351d77ac40" width="30%" />
   <img src="https://github.com/user-attachments/assets/06fd06e6-485a-4a20-bd58-f1890c4b4484" width="30%" />
   <img src="https://github.com/user-attachments/assets/b35d06c5-60eb-407f-a57d-059d23f19031" width="30%" />
