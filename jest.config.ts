@@ -8,6 +8,7 @@ const config: Config = {
   },
   modulePathIgnorePatterns: [
     '<rootDir>/pgdata',
+    '<rootDir>/redisdata',
     '<rootDir>/node_modules'
   ],
 };
