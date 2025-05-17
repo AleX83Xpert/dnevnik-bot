@@ -1,5 +1,5 @@
-import { isNil } from "lodash"
-import { THomework, TScheduleDay, TStudent } from "../clients/dnevnik/DnevnikClientTypes"
+import { isNil, round } from "lodash"
+import { TEstimateResultYearGradesTableLessonGrade, THomework, TScheduleDay, TStudent } from "../clients/dnevnik/DnevnikClientTypes"
 
 const SPECIAL_CHARS = ['\\', '_', '*', '[', ']', '(', ')', '~', '`', '>', '<', '&', '#', '+', '-', '=', '|', '{', '}', '.', '!']
 
@@ -33,4 +33,15 @@ export function formatHomeworkItem (hw: THomework) {
     ? ''
     : `\nФайлы: ${hw.homeWorkFiles.map((f) => `${escMd(f.name)} \\(${escMd(formatFileSize(f.size))}\\)`).join(', ')}`
   return `${escMd(`${hw.isDone ? '🟢' : '🔴'} Урок ${String(hw.lessonNumber)}`)}, *${escMd(hw.lessonName)}*\n>${escMd(hw.description)}||${attachments}`
+}
+
+export function formatYearGradesLesson (l: TEstimateResultYearGradesTableLessonGrade) {
+  const finalStr = l.finallyGrade || l.yearGrade
+    ? [
+      l.yearGrade && `Год *${l.yearGrade}*`,
+      l.testGrade && `Тест *${l.testGrade}*`,
+      l.finallyGrade && `Итог *${l.finallyGrade}*`,
+    ].filter(Boolean).join(', ')
+    : null
+  return `${escMd(l.lesson.name)}\n${l.grades.map((g) => g.finallygrade ? `*${escMd(String(g.finallygrade))}*` : escMd(`${round(g.averageGrade, 2).toString()}/${round(g.averageWeightedGrade, 2).toString()}`)).join(' · ')}${finalStr ? ` ⋯ ${finalStr}` : ''}`
 }
