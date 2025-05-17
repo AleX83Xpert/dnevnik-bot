@@ -18,6 +18,27 @@ type TPaginationData = {
   totalPages: number
 }
 
+export type TEstimateResultYearGradesTableLessonGrade = {
+  finallyGrade?: unknown
+  grades: {
+    averageGrade: number
+    averageWeightedGrade: number
+    finallygrade?: number
+    periodId: string
+  }[]
+  lesson: {
+    id: string
+    name: string
+  }
+  testGrade?: unknown
+  yearGrade?: unknown
+}
+
+export type TEstimateResultYearGradesTable = {
+  lessonGrades: TEstimateResultYearGradesTableLessonGrade[]
+  periods: TEstimatePeriod[]
+}
+
 export type TEstimateResult = {
   periodGradesTable?: {
     days: { date: string }[]
@@ -54,24 +75,7 @@ export type TEstimateResult = {
       }[]
     }[]
   }
-  yearGradesTable?: {
-    lessonGrades: {
-      finallyGrade?: unknown
-      grades: {
-        averageGrade: number
-        averageWeightedGrade: number
-        finallygrade?: number
-        periodId: string
-      }[]
-      lesson: {
-        id: string
-        name: string
-      }
-      testGrade?: unknown
-      yearGrade?: unknown
-    }[]
-    periods: TEstimatePeriod[]
-  }
+  yearGradesTable?: TEstimateResultYearGradesTable
 }
 
 export type TDnevnikClientArgs = {

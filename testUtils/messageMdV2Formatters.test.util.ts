@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { THomework, TScheduleDay, TSheduleDayLessonModel } from '../clients/dnevnik/DnevnikClientTypes'
+import { TEstimateResultYearGradesTableLessonGrade, THomework, TScheduleDay, TSheduleDayLessonModel } from '../clients/dnevnik/DnevnikClientTypes'
 
 export function createTestHomeworkItem (attrs: Partial<THomework> = {}): THomework {
   return {
@@ -42,6 +42,25 @@ export function createTestScheduleDay (attrs: Partial<TScheduleDay> = {}): TSche
       createTestScheduleDayLessonModel(),
       createTestScheduleDayLessonModel(),
     ],
+    ...attrs,
+  }
+}
+
+export function createTestYearGradesLessonItem (numberOfPeriods = 4, attrs: Partial<TEstimateResultYearGradesTableLessonGrade> = {}): TEstimateResultYearGradesTableLessonGrade {
+  return {
+    finallyGrade: faker.number.int({ min: 2, max: 5 }),
+    grades: Array(numberOfPeriods).fill(null).map(() => ({
+      averageGrade: faker.number.float({ min: 2, max: 5, fractionDigits: 2 }),
+      averageWeightedGrade: faker.number.float({ min: 2, max: 5, fractionDigits: 2 }),
+      finallygrade: faker.number.int({ min: 2, max: 5 }),
+      periodId: faker.string.uuid(),
+    })),
+    lesson: {
+      id: faker.string.uuid(),
+      name: faker.book.title(),
+    },
+    testGrade: faker.number.int({ min: 2, max: 5 }),
+    yearGrade: faker.number.int({ min: 2, max: 5 }),
     ...attrs,
   }
 }

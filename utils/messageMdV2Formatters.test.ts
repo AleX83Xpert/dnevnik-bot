@@ -1,5 +1,5 @@
-import { createTestHomeworkItem, createTestScheduleDay, createTestScheduleDayLessonModel } from "../testUtils/messageMdV2Formatters.test.util"
-import { formatHomeworkItem, formatScheduleDay, formatTime } from "./messageMdV2Formatters"
+import { createTestHomeworkItem, createTestScheduleDay, createTestScheduleDayLessonModel, createTestYearGradesLessonItem } from "../testUtils/messageMdV2Formatters.test.util"
+import { formatHomeworkItem, formatScheduleDay, formatTime, formatYearGradesLesson } from "./messageMdV2Formatters"
 
 describe('messageMarkdownV2Formatters', () => {
   test('formatHomeworkItem', () => {
@@ -45,6 +45,31 @@ describe('messageMarkdownV2Formatters', () => {
       })
       const day = createTestScheduleDay({ scheduleDayLessonModels: [lesson] })
       expect(formatScheduleDay(day)).toBe(`${lesson.number}\\. ${expectTimeStr}${lesson.lessonName}, ${lesson.room}`)
+    })
+  })
+
+  describe('formatYearGradesLesson', () => {
+    test('two periods and all possible finaly grades', () => {
+      const item = createTestYearGradesLessonItem(2)
+      item.grades[1].finallygrade = undefined // test average grades for this period
+      const str = formatYearGradesLesson(item)
+      expect(str).toBe(`${item.lesson.name}\n*${item.grades[0].finallygrade}* · ${String(item.grades[1].averageGrade).replace('.', '\\.')}/${String(item.grades[1].averageWeightedGrade).replace('.', '\\.')} ⋯ Год *${item.yearGrade}*, Тест *${item.testGrade}*, Итог *${item.finallyGrade}*`)
+    })
+
+    test('two periods and year grade only', () => {
+      const item = createTestYearGradesLessonItem(2)
+      item.grades[1].finallygrade = undefined // test average grades for this period
+      item.testGrade = undefined // no test grade
+      item.finallyGrade = undefined // no finally grade
+      const str = formatYearGradesLesson(item)
+      expect(str).toBe(`${item.lesson.name}\n*${item.grades[0].finallygrade}* · ${String(item.grades[1].averageGrade).replace('.', '\\.')}/${String(item.grades[1].averageWeightedGrade).replace('.', '\\.')} ⋯ Год *${item.yearGrade}*`)
+    })
+
+    test('two periods, year grade and finally grade', () => {
+      const item = createTestYearGradesLessonItem(2)
+      item.testGrade = undefined
+      const str = formatYearGradesLesson(item)
+      expect(str).toBe(`${item.lesson.name}\n*${item.grades[0].finallygrade}* · *${item.grades[1].finallygrade}* ⋯ Год *${item.yearGrade}*, Итог *${item.finallyGrade}*`)
     })
   })
 })
