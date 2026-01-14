@@ -19,7 +19,7 @@ jobs:
 
       - name: Wait for Postgres to be ready
         run: |
-          until docker compose exec postgresdb pg_isready -U user; do
+          until docker compose exec postgresdb pg_isready -U postgres; do
             echo "Waiting for postgres...";
             sleep 5;
           done
