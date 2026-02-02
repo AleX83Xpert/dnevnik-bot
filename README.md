@@ -86,3 +86,36 @@ docker save load-balancer:latest | ssh user@server "docker load"
 5. Down&up containers
 
 > P.S. You need to migrate database if starting first time or if you created new migrations. Use `npm run migrate-apply` from the container
+
+# PostgreSQL Version Upgrade / Обновление версии PostgreSQL
+
+When upgrading PostgreSQL between major versions (e.g., 16 → 18), data migration is required due to incompatible data formats.
+
+## Backup and Upgrade Process / Процесс резервного копирования и обновления
+
+### Method 1: Dump/Restore (Recommended / Рекомендуется)
+```bash
+# 1. Backup current data
+docker exec postgresdb pg_dumpall > backup.sql
+
+# 2. Stop PostgreSQL container
+docker compose stop postgresdb
+
+# 3. Update image version in docker-compose.yml
+# Change: image: postgres:16 → image: postgres:18.1
+
+# 4. Remove old data directory (WARNING: This deletes current data!)
+rm -rf ./pgdata/*
+
+# 5. Start with new version
+docker compose up -d postgresdb
+
+# 6. Restore data
+docker exec -i postgresdb psql < backup.sql
+```
+
+## Important Notes / Важные заметки
+- Always test migration on staging first / Всегда тестируйте миграцию на стейдинге
+- Keep backups before any upgrade / Сохраняйте резервные копии перед обновлением
+- Check application compatibility with new PostgreSQL version / Проверьте совместимость приложения с новой версией PostgreSQL
+- Plan for downtime during major version upgrades / Планируйте простой во время обновления между основными версиями
