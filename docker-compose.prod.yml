@@ -7,7 +7,7 @@
 services:
   load-balancer:
     image: load-balancer:latest
-    restart: always
+    restart: unless-stopped
     container_name: load-balancer
     hostname: load-balancer
     depends_on:
@@ -24,7 +24,7 @@ services:
 
   dnevnik-app:
     image: dnevnik-app:latest
-    restart: always
+    restart: unless-stopped
     container_name: dnevnik-app
     hostname: dnevnik-app
     env_file:
@@ -38,7 +38,8 @@ services:
   postgresdb:
     container_name: dnevnik-postgresdb
     hostname: postgresdb
-    image: postgres
+    image: postgres:16
+    restart: unless-stopped
     environment:
       POSTGRES_DB: main
       POSTGRES_USER: postgres
@@ -53,6 +54,7 @@ services:
     container_name: dnevnik-redis
     hostname: redis
     image: redis
+    restart: unless-stopped
     volumes:
       - ./redisdata:/data
     networks:
