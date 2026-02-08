@@ -19,7 +19,7 @@
 #
 # FROM library/node:lts-alpine
 
-FROM library/node:18-alpine
+FROM library/node:24
 ENV NODE_ENV=production
 RUN mkdir /app
 WORKDIR /app
