@@ -12,28 +12,31 @@
     "test": "jest"
   },
   "dependencies": {
-    "@keystone-6/auth": "^8.0.0",
-    "@keystone-6/core": "^6.0.0",
-    "@keystone-6/fields-document": "^9.0.0",
+    "@keystone-6/auth": "^8.1.0",
+    "@keystone-6/core": "^6.5.1",
     "@telegraf/session": "^2.0.0-beta.7",
-    "dayjs": "^1.11.13",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.0",
-    "jsonwebtoken": "^9.0.2",
-    "lodash": "^4.17.21",
-    "pino": "^9.4.0",
-    "redis": "^4.7.0",
+    "dayjs": "^1.11.19",
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "lodash": "^4.17.23",
+    "pino": "^10.3.0",
     "telegraf": "^4.16.3",
-    "typescript": "^5.5.0"
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "@telegraf/session": {
+      "redis": "^4.6.12"
+    }
   },
   "devDependencies": {
-    "@faker-js/faker": "^9.0.3",
-    "@jest/globals": "^29.7.0",
-    "@types/jest": "^29.5.13",
-    "@types/jsonwebtoken": "^9.0.7",
-    "@types/lodash": "^4.17.13",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.5",
+    "@faker-js/faker": "^10.3.0",
+    "@jest/globals": "^30.2.0",
+    "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/lodash": "^4.17.23",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2"
   }
 }
