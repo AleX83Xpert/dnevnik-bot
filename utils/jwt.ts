@@ -4,7 +4,12 @@ import jwt from 'jsonwebtoken'
 import { DEFAULT_TELEGRAM_TOKENS_TTL_SEC } from "./constants"
 
 export function getTokenExpirationDate (token: string): string {
+  const forceAccessTokenTtl = get(process.env, 'FORCE_ACCESS_TOKEN_TTL', 'false') === 'true'
   let tokenExpirationDate = dayjs().add(Number(get(process.env, 'TELEGRAM_TOKENS_TTL_SEC', DEFAULT_TELEGRAM_TOKENS_TTL_SEC)), 'seconds').toISOString()
+
+  if (forceAccessTokenTtl) {
+    return tokenExpirationDate
+  }
   
   const decodedToken = jwt.decode(token)
   if (decodedToken) {
