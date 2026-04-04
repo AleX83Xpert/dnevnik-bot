@@ -66,11 +66,11 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
     throw new DnevnikFetcherNoTokensError('TelegramUser contains no tokens')
   }
 
+  // Create shared client instance for this request
   const dnevnikClient = new DnevnikClient({ accessToken: telegramUser.dnevnikAccessToken, refreshToken: telegramUser.dnevnikRefreshToken })
+  const method = dnevnikClientMethodsMap[request.action]
 
   try {
-    const method = dnevnikClientMethodsMap[request.action]
-
     logger.info({
       msg: 'request',
       reqId,
@@ -102,9 +102,11 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
             query: ALL_TELEGRAM_USER_FIELDS,
           }) as Lists.TelegramUser.Item
 
+          // Update context with refreshed tokens
           ctx.telegramUser = { ...telegramUserWithRefreshedTokens }
 
-          return await fetchFromDnevnik({ ...options })
+          // Retry the request with the same client (now has updated tokens)
+          return await method(dnevnikClient, request.params)
         }
       } catch (err) {
         logger.warn({ msg: 'tokens refresh failed', reqId, err })

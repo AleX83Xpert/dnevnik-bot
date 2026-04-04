@@ -9,8 +9,8 @@ export class DnevnikClient {
   private logger
 
   private apiUrl = 'https://dnevnik.egov66.ru/api'
-  public readonly dnevnikAccessToken: string
-  public readonly dnevnikRefreshToken: string
+  public dnevnikAccessToken: string
+  public dnevnikRefreshToken: string
 
   constructor(args: TDnevnikClientArgs) {
     this.logger = getLogger('DnevnikClient')
@@ -55,7 +55,19 @@ export class DnevnikClient {
   }
 
   public async refreshTokens () {
-    return await this.fetch<TRefreshTokenBody, TRefreshTokenResult>('/auth/Token/Refresh', { refreshToken: this.dnevnikRefreshToken })
+    if (!this.dnevnikAccessToken || !this.dnevnikRefreshToken) {
+      throw new Error('Cannot refresh: missing access token or refresh token')
+    }
+    
+    const result = await this.fetch<TRefreshTokenBody, TRefreshTokenResult>('/auth/Token/Refresh', { refreshToken: this.dnevnikRefreshToken })
+    
+    if (result) {
+      // Update in-memory tokens for subsequent calls
+      this.dnevnikAccessToken = result.accessToken
+      this.dnevnikRefreshToken = result.refreshToken
+    }
+    
+    return result
   }
 
   public async getStudents () {
