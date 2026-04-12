@@ -34,6 +34,10 @@ export default withAuth(
     },
     server: {
       extendExpressApp: async (app, context) => {
+        // Disable GraphQL multipart upload middleware when not using file uploads
+        // This prevents potential conflicts with request parsing and reduces overhead
+        app.disable('graphqlUploadMiddleware')
+        
         const godContext = context.sudo()
 
         if (!process.env.TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC) {
