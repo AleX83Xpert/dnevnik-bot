@@ -132,10 +132,11 @@ input UserCreateInput {
   updatedAt: DateTime
 }
 
-type TelegramUser {
+type MessengerUser {
   id: ID!
   label: String
-  telegramId: String
+  platform: String
+  platformUserId: String
   isTokenActual: Boolean
   dnevnikAccessToken: String
   dnevnikAccessTokenExpirationDate: DateTime
@@ -147,17 +148,17 @@ type TelegramUser {
   updatedAt: DateTime
 }
 
-input TelegramUserWhereUniqueInput {
+input MessengerUserWhereUniqueInput {
   id: ID
-  telegramId: String
 }
 
-input TelegramUserWhereInput {
-  AND: [TelegramUserWhereInput!]
-  OR: [TelegramUserWhereInput!]
-  NOT: [TelegramUserWhereInput!]
+input MessengerUserWhereInput {
+  AND: [MessengerUserWhereInput!]
+  OR: [MessengerUserWhereInput!]
+  NOT: [MessengerUserWhereInput!]
   id: IDFilter
-  telegramId: StringFilter
+  platform: StringFilter
+  platformUserId: StringFilter
   dnevnikAccessToken: EncryptedTextFilter
   dnevnikAccessTokenExpirationDate: DateTimeNullableFilter
   dnevnikRefreshToken: EncryptedTextFilter
@@ -172,9 +173,10 @@ input EncryptedTextFilter {
   not: EncryptedTextFilter
 }
 
-input TelegramUserOrderByInput {
+input MessengerUserOrderByInput {
   id: OrderDirection
-  telegramId: OrderDirection
+  platform: OrderDirection
+  platformUserId: OrderDirection
   dnevnikAccessToken: OrderDirection
   dnevnikAccessTokenExpirationDate: OrderDirection
   dnevnikRefreshToken: OrderDirection
@@ -184,8 +186,9 @@ input TelegramUserOrderByInput {
   updatedAt: OrderDirection
 }
 
-input TelegramUserUpdateInput {
-  telegramId: String
+input MessengerUserUpdateInput {
+  platform: String
+  platformUserId: String
   dnevnikAccessToken: String
   dnevnikAccessTokenExpirationDate: DateTime
   dnevnikRefreshToken: String
@@ -196,13 +199,14 @@ input TelegramUserUpdateInput {
   updatedAt: DateTime
 }
 
-input TelegramUserUpdateArgs {
-  where: TelegramUserWhereUniqueInput!
-  data: TelegramUserUpdateInput!
+input MessengerUserUpdateArgs {
+  where: MessengerUserWhereUniqueInput!
+  data: MessengerUserUpdateInput!
 }
 
-input TelegramUserCreateInput {
-  telegramId: String
+input MessengerUserCreateInput {
+  platform: String
+  platformUserId: String
   dnevnikAccessToken: String
   dnevnikAccessTokenExpirationDate: DateTime
   dnevnikRefreshToken: String
@@ -225,12 +229,12 @@ type Mutation {
   updateUsers(data: [UserUpdateArgs!]!): [User]
   deleteUser(where: UserWhereUniqueInput!): User
   deleteUsers(where: [UserWhereUniqueInput!]!): [User]
-  createTelegramUser(data: TelegramUserCreateInput!): TelegramUser
-  createTelegramUsers(data: [TelegramUserCreateInput!]!): [TelegramUser]
-  updateTelegramUser(where: TelegramUserWhereUniqueInput!, data: TelegramUserUpdateInput!): TelegramUser
-  updateTelegramUsers(data: [TelegramUserUpdateArgs!]!): [TelegramUser]
-  deleteTelegramUser(where: TelegramUserWhereUniqueInput!): TelegramUser
-  deleteTelegramUsers(where: [TelegramUserWhereUniqueInput!]!): [TelegramUser]
+  createMessengerUser(data: MessengerUserCreateInput!): MessengerUser
+  createMessengerUsers(data: [MessengerUserCreateInput!]!): [MessengerUser]
+  updateMessengerUser(where: MessengerUserWhereUniqueInput!, data: MessengerUserUpdateInput!): MessengerUser
+  updateMessengerUsers(data: [MessengerUserUpdateArgs!]!): [MessengerUser]
+  deleteMessengerUser(where: MessengerUserWhereUniqueInput!): MessengerUser
+  deleteMessengerUsers(where: [MessengerUserWhereUniqueInput!]!): [MessengerUser]
   endSession: Boolean!
   authenticateUserWithPassword(email: String!, password: String!): UserAuthenticationWithPasswordResult
   createInitialUser(data: CreateInitialUserInput!): UserAuthenticationWithPasswordSuccess!
@@ -257,9 +261,9 @@ type Query {
   user(where: UserWhereUniqueInput!): User
   users(where: UserWhereInput! = {}, orderBy: [UserOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserWhereUniqueInput): [User!]
   usersCount(where: UserWhereInput! = {}): Int
-  telegramUser(where: TelegramUserWhereUniqueInput!): TelegramUser
-  telegramUsers(where: TelegramUserWhereInput! = {}, orderBy: [TelegramUserOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TelegramUserWhereUniqueInput): [TelegramUser!]
-  telegramUsersCount(where: TelegramUserWhereInput! = {}): Int
+  messengerUser(where: MessengerUserWhereUniqueInput!): MessengerUser
+  messengerUsers(where: MessengerUserWhereInput! = {}, orderBy: [MessengerUserOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MessengerUserWhereUniqueInput): [MessengerUser!]
+  messengerUsersCount(where: MessengerUserWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
 }

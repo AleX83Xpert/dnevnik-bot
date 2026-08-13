@@ -1,10 +1,11 @@
 import { KeystoneContext } from "@keystone-6/core/types"
-import { createTestGodContext, createTestTelegramUser, generateTestTelegramId, updateTestTelegramUser } from './testUtils/lists.test.utils'
+import { createTestGodContext, createTestMessengerUser, generateTestPlatformUserId, updateTestMessengerUser } from './testUtils/lists.test.utils'
 import { faker } from "@faker-js/faker"
-import { ALL_TELEGRAM_USER_FIELDS } from "./telegramBot/constants/fields"
+import { ALL_USER_FIELDS } from "./core/constants"
 import { decrypt } from "./keystone/fields/encryptedText/utils"
+import { config } from './config'
 
-describe('TelegramUser', () => {
+describe('MessengerUser', () => {
   let context: KeystoneContext
 
   beforeAll(async () => {
@@ -12,45 +13,45 @@ describe('TelegramUser', () => {
   })
 
   test('dnevnik tokens are null by default', async () => {
-    const { obj: createdTelegramUser } = await createTestTelegramUser(context)
+    const { obj: createdMessengerUser } = await createTestMessengerUser(context)
 
-    expect(createdTelegramUser.dnevnikAccessToken).toBeNull()
-    expect(createdTelegramUser.dnevnikRefreshToken).toBeNull()
+    expect(createdMessengerUser.dnevnikAccessToken).toBeNull()
+    expect(createdMessengerUser.dnevnikRefreshToken).toBeNull()
   })
 
   test('dnevnik tokens can be set to string and back to null', async () => {
-    const { obj: createdTelegramUser } = await createTestTelegramUser(context)
+    const { obj: createdMessengerUser } = await createTestMessengerUser(context)
 
-    expect(createdTelegramUser.dnevnikAccessToken).toBeNull()
-    expect(createdTelegramUser.dnevnikRefreshToken).toBeNull()
+    expect(createdMessengerUser.dnevnikAccessToken).toBeNull()
+    expect(createdMessengerUser.dnevnikRefreshToken).toBeNull()
 
     const dnevnikAccessToken = faker.string.alphanumeric(20)
     const dnevnikRefreshToken = faker.string.alphanumeric(20)
 
-    const updatedTelegramUser1 = await updateTestTelegramUser(context, createdTelegramUser.id, { dnevnikAccessToken, dnevnikRefreshToken })
+    const updatedMessengerUser1 = await updateTestMessengerUser(context, createdMessengerUser.id, { dnevnikAccessToken, dnevnikRefreshToken })
 
-    expect(updatedTelegramUser1.dnevnikAccessToken).toBe(dnevnikAccessToken)
-    expect(updatedTelegramUser1.dnevnikRefreshToken).toBe(dnevnikRefreshToken)
+    expect(updatedMessengerUser1.dnevnikAccessToken).toBe(dnevnikAccessToken)
+    expect(updatedMessengerUser1.dnevnikRefreshToken).toBe(dnevnikRefreshToken)
 
-    const updatedTelegramUser2 = await updateTestTelegramUser(context, createdTelegramUser.id, { dnevnikAccessToken: null, dnevnikRefreshToken: null })
+    const updatedMessengerUser2 = await updateTestMessengerUser(context, createdMessengerUser.id, { dnevnikAccessToken: null, dnevnikRefreshToken: null })
 
-    expect(updatedTelegramUser2.dnevnikAccessToken).toBeNull()
-    expect(updatedTelegramUser2.dnevnikRefreshToken).toBeNull()
+    expect(updatedMessengerUser2.dnevnikAccessToken).toBeNull()
+    expect(updatedMessengerUser2.dnevnikRefreshToken).toBeNull()
   })
 
   test('keep dnevnik tokens unchanged when update other fields', async () => {
     const dnevnikAccessToken = faker.string.alphanumeric(20)
     const dnevnikRefreshToken = faker.string.alphanumeric(20)
 
-    const { obj: createdTelegramUser } = await createTestTelegramUser(context, { dnevnikAccessToken, dnevnikRefreshToken })
+    const { obj: createdMessengerUser } = await createTestMessengerUser(context, { dnevnikAccessToken, dnevnikRefreshToken })
 
-    expect(createdTelegramUser.dnevnikAccessToken).toBe(dnevnikAccessToken)
-    expect(createdTelegramUser.dnevnikRefreshToken).toBe(dnevnikRefreshToken)
+    expect(createdMessengerUser.dnevnikAccessToken).toBe(dnevnikAccessToken)
+    expect(createdMessengerUser.dnevnikRefreshToken).toBe(dnevnikRefreshToken)
 
-    const updatedTelegramUser = await updateTestTelegramUser(context, createdTelegramUser.id, { dnevnikAccessTokenExpirationDate: faker.date.soon() })
+    const updatedMessengerUser = await updateTestMessengerUser(context, createdMessengerUser.id, { dnevnikAccessTokenExpirationDate: faker.date.soon() })
 
-    expect(updatedTelegramUser.dnevnikAccessToken).toBe(dnevnikAccessToken)
-    expect(updatedTelegramUser.dnevnikRefreshToken).toBe(dnevnikRefreshToken)
+    expect(updatedMessengerUser.dnevnikAccessToken).toBe(dnevnikAccessToken)
+    expect(updatedMessengerUser.dnevnikRefreshToken).toBe(dnevnikRefreshToken)
   })
 
   test('keep existing unencrypted data "as is" on reading and encrypt on update', async () => {
@@ -58,44 +59,45 @@ describe('TelegramUser', () => {
     const unencryptedDnevnikRefreshToken = `unencrypted_${faker.string.alphanumeric(20)}`
 
     // insert data with skipping encryption
-    const insertedTelegramUser = await context.prisma.TelegramUser.create({
+    const insertedMessengerUser = await context.prisma.MessengerUser.create({
       data: {
-        telegramId: generateTestTelegramId(),
+        platform: 'telegram',
+        platformUserId: generateTestPlatformUserId(),
         dnevnikAccessToken: unencryptedDnevnikAccessToken,
         dnevnikRefreshToken: unencryptedDnevnikRefreshToken,
       }
     })
 
     // sure that inserted fields are right
-    expect(insertedTelegramUser.dnevnikAccessToken).toBe(unencryptedDnevnikAccessToken)
-    expect(insertedTelegramUser.dnevnikRefreshToken).toBe(unencryptedDnevnikRefreshToken)
+    expect(insertedMessengerUser.dnevnikAccessToken).toBe(unencryptedDnevnikAccessToken)
+    expect(insertedMessengerUser.dnevnikRefreshToken).toBe(unencryptedDnevnikRefreshToken)
 
     // search user using encrypted field
-    const createdTelegramUser = await context.query.TelegramUser.findOne({ where: { id: insertedTelegramUser.id }, query: ALL_TELEGRAM_USER_FIELDS })
+    const createdMessengerUser = await context.query.MessengerUser.findOne({ where: { id: insertedMessengerUser.id }, query: ALL_USER_FIELDS })
 
     // sure that fields are unencrypted
-    expect(createdTelegramUser.dnevnikAccessToken).toBe(unencryptedDnevnikAccessToken)
-    expect(createdTelegramUser.dnevnikRefreshToken).toBe(unencryptedDnevnikRefreshToken)
+    expect(createdMessengerUser.dnevnikAccessToken).toBe(unencryptedDnevnikAccessToken)
+    expect(createdMessengerUser.dnevnikRefreshToken).toBe(unencryptedDnevnikRefreshToken)
 
     // now update tokens
     const dnevnikAccessToken = faker.string.alphanumeric(20)
     const dnevnikRefreshToken = faker.string.alphanumeric(20)
-    const updatedTelegramUser = await updateTestTelegramUser(context, insertedTelegramUser.id, { dnevnikAccessToken, dnevnikRefreshToken })
+    const updatedMessengerUser = await updateTestMessengerUser(context, insertedMessengerUser.id, { dnevnikAccessToken, dnevnikRefreshToken })
 
     // sure that decrypted tokens are same
-    expect(updatedTelegramUser.dnevnikAccessToken).toBe(dnevnikAccessToken)
-    expect(updatedTelegramUser.dnevnikRefreshToken).toBe(dnevnikRefreshToken)
+    expect(updatedMessengerUser.dnevnikAccessToken).toBe(dnevnikAccessToken)
+    expect(updatedMessengerUser.dnevnikRefreshToken).toBe(dnevnikRefreshToken)
 
     // read data with skipped decryption
     // https://www.prisma.io/docs/orm/prisma-client/queries/crud#read
-    const encrypted = await context.prisma.TelegramUser.findUnique({ where: { id: insertedTelegramUser.id } })
+    const encrypted = await context.prisma.MessengerUser.findUnique({ where: { id: insertedMessengerUser.id } })
 
     // sure that loaded encrypted tokens are not the same as unencrypted ones
     expect(encrypted.dnevnikAccessToken).not.toBe(dnevnikAccessToken)
     expect(encrypted.dnevnikRefreshToken).not.toBe(dnevnikRefreshToken)
 
     // sure that these tokens encrypted right
-    expect(dnevnikAccessToken).toBe(decrypt(encrypted.dnevnikAccessToken, String(process.env.TOKENS_ENCRYPTION_KEY)))
-    expect(dnevnikRefreshToken).toBe(decrypt(encrypted.dnevnikRefreshToken, String(process.env.TOKENS_ENCRYPTION_KEY)))
+    expect(dnevnikAccessToken).toBe(decrypt(encrypted.dnevnikAccessToken, config.tokensEncryptionKey))
+    expect(dnevnikRefreshToken).toBe(decrypt(encrypted.dnevnikRefreshToken, config.tokensEncryptionKey))
   })
 })

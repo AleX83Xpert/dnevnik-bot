@@ -14,6 +14,7 @@ import { type Lists } from '.keystone/types'
 
 import { get } from 'lodash'
 import dayjs from 'dayjs'
+import { config } from './config'
 
 type TSession = {
   data: {
@@ -30,13 +31,7 @@ type TUserData = {
 }
 
 function getEncryptionToken (): string {
-  const TOKENS_ENCRYPTION_KEY = process.env.TOKENS_ENCRYPTION_KEY
-
-  if (TOKENS_ENCRYPTION_KEY?.length !== 32) {
-    throw new Error('TOKENS_ENCRYPTION_KEY must be 32 symbols length')
-  }
-
-  return TOKENS_ENCRYPTION_KEY
+  return config.tokensEncryptionKey
 }
 
 const isAdmin = ({ session }: { session?: TSession }) => Boolean(session?.data.isAdmin)
@@ -65,23 +60,27 @@ export const lists = {
     },
   }),
 
-  TelegramUser: list({
+  MessengerUser: list({
     access: isAdmin,
     fields: {
       label: virtual({
         field: graphql.field({
           type: graphql.String,
           async resolve (item, args, context) {
-            const telegramId = get(item, ['meta', 'id'])
+            const platformUserId = get(item, ['platformUserId'])
             const title = get(item, ['meta', 'username'], get(item, ['meta', 'first_name']))
 
-            return title ? `${title}/${telegramId}` : item.id
+            return title ? `${title}/${platformUserId}` : item.id
           }
         }),
       }),
-      telegramId: text({
+      platform: text({
         validation: { isRequired: true },
-        isIndexed: 'unique',
+        isIndexed: true,
+      }),
+      platformUserId: text({
+        validation: { isRequired: true },
+        isIndexed: true,
       }),
       ...group({
         label: 'Dnevnik token set',

@@ -15,6 +15,7 @@
     "@keystone-6/auth": "^8.1.0",
     "@keystone-6/core": "^6.5.1",
     "@keystone-6/fields-document": "^9.0.0",
+    "@maxhub/max-bot-api": "^0.2.5",
     "@telegraf/session": "^2.0.0-beta.7",
     "dayjs": "^1.11.19",
     "dotenv": "^17.2.4",

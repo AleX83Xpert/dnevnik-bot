@@ -1,10 +1,11 @@
-import 'dotenv/config'
-import { config } from '@keystone-6/core'
+import { config as keystoneConfig } from '@keystone-6/core'
+import { config } from './config'
 import { lists } from './schema'
 import { withAuth, session } from './auth'
 import { getLogger } from './utils/logger'
-import { startTokensRefresher } from './utils/dnevnikTokensRefresher'
-import { prepareTelegramBot } from './telegramBot/bot'
+import { startTokenRefresher } from './core/tokenRefresher'
+import { prepareTelegramBot } from './transports/telegram/bot'
+import { prepareMaxBot } from './transports/max/bot'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ru'
 import localeData from 'dayjs/plugin/localeData'
@@ -15,13 +16,13 @@ dayjs.extend(localeData)
 const logger = getLogger('main')
 
 export default withAuth(
-  config({
+  keystoneConfig({
     db: {
       provider: 'postgresql',
-      url: process.env.DATABASE_URL as string,
-      shadowDatabaseUrl: process.env.SHADOW_DATABASE_URL as string,
+      url: config.databaseUrl,
+      shadowDatabaseUrl: config.shadowDatabaseUrl,
       onConnect: async (context) => { logger.info({ msg: 'Connected to database' }) },
-      enableLogging: process.env.ENABLE_DB_LOGS === 'true',
+      enableLogging: config.enableDbLogs,
       idField: { kind: 'uuid' },
     },
     lists,
@@ -37,29 +38,26 @@ export default withAuth(
         // Disable GraphQL multipart upload middleware when not using file uploads
         // This prevents potential conflicts with request parsing and reduces overhead
         app.disable('graphqlUploadMiddleware')
-        
+
         const godContext = context.sudo()
 
-        if (!process.env.TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC) {
-          throw new Error('TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC must be provided!')
+        startTokenRefresher(godContext, config.refreshIntervalSec, config.refreshBeforeSec)
+
+        if (config.telegramBotToken) {
+          const bot = prepareTelegramBot(godContext, config.telegramBotToken)
+          bot.launch()
+
+          // Enable graceful stop
+          process.once('SIGINT', () => bot.stop('SIGINT'))
+          process.once('SIGTERM', () => bot.stop('SIGTERM'))
+          logger.info({ msg: 'Telegram bot started' })
         }
 
-        if (!process.env.TELEGRAM_TOKENS_REFRESH_BEFORE_SEC) {
-          throw new Error('TELEGRAM_TOKENS_REFRESH_BEFORE_SEC must be provided!')
-        }
-
-        startTokensRefresher(godContext, Number(process.env.TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC), Number(process.env.TELEGRAM_TOKENS_REFRESH_BEFORE_SEC))
-
-        if (!process.env.TELEGRAM_BOT_TOKEN) {
-          throw new Error('TELEGRAM_BOT_TOKEN must be provided!')
-        }
-        
-        const bot = prepareTelegramBot(godContext, process.env.TELEGRAM_BOT_TOKEN as string)
-        bot.launch()
-
-        // Enable graceful stop
-        process.once('SIGINT', () => bot.stop('SIGINT'))
-        process.once('SIGTERM', () => bot.stop('SIGTERM'))
+        // if (config.maxBotToken) {
+        //   const maxBot = prepareMaxBot(godContext, app)
+        //   maxBot.start()
+        //   logger.info({ msg: 'MAX bot started' })
+        // }
       },
     }
   })
