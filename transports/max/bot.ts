@@ -149,17 +149,71 @@ export function prepareMaxBot (godContext: KeystoneContext, app: Express): Bot {
 
 /**
  * Validates MAX initData using HMAC-SHA256.
- * MAX's initData validation differs from Telegram's.
- * The initData is a JSON string containing user info signed by MAX.
+ *
+ * Algorithm (from https://dev.max.ru/docs/webapps/validation):
+ * 1. Parse initData as key=value pairs separated by &
+ * 2. URL-decode values
+ * 3. Extract and remove hash
+ * 4. Sort remaining params alphabetically by key
+ * 5. Join as key=value with \n separator → launch_params
+ * 6. secret_key = HMAC-SHA256(key='WebAppData', data=botToken)
+ * 7. computed_hash = hex(HMAC-SHA256(key=secret_key, data=launch_params))
+ * 8. Compare computed_hash with original hash
+ * 9. Extract user.id from parsed params
+ *
+ * Returns the user ID (as string) if valid, null otherwise.
  */
 function validateMaxInitData (initData: string, botToken: string): string | null {
   try {
-    // MAX initData format: check MAX Bridge docs for the exact validation algorithm
-    // This is a placeholder — the exact algorithm depends on MAX's implementation
-    // The initData typically contains a hash that can be validated with the bot token
-    const parsed = typeof initData === 'string' ? JSON.parse(initData) : initData
-    const user = parsed.user || parsed
-    return String(user.user_id || user.id)
+    if (!initData || typeof initData !== 'string') return null
+
+    // Parse key=value pairs separated by &
+    const params: [string, string][] = initData.split('&').map((pair) => {
+      const [key, ...valueParts] = pair.split('=')
+      return [key, decodeURIComponent(valueParts.join('='))]
+    })
+
+    // hash must appear exactly once
+    const hashEntries = params.filter(([key]) => key === 'hash')
+    if (hashEntries.length !== 1) return null
+
+    const originalHash = hashEntries[0][1]
+    if (!originalHash) return null
+
+    // Sort params alphabetically by key, excluding hash
+    const paramsWithoutHash = params.filter(([key]) => key !== 'hash')
+    paramsWithoutHash.sort((a, b) => a[0].localeCompare(b[0]))
+
+    // Build launch_params string: key=value joined with \n
+    const launchParams = paramsWithoutHash
+      .map(([key, value]) => `${key}=${value}`)
+      .join('\n')
+
+    // Create secret_key: HMAC-SHA256 with 'WebAppData' as key, botToken as data
+    const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest()
+
+    // Compute hash: HMAC-SHA256 with secret_key as key, launchParams as data
+    const computedHash = crypto.createHmac('sha256', secretKey).update(launchParams).digest('hex')
+
+    // Compare computed hash with original
+    if (computedHash !== originalHash) return null
+
+    // Check auth_date freshness (recommended interval: 1 hour)
+    const authDateEntry = params.find(([key]) => key === 'auth_date')
+    if (!authDateEntry) return null
+
+    const authDate = Number(authDateEntry[1])
+    if (Number.isNaN(authDate)) return null
+
+    const ageSec = Math.floor(Date.now() / 1000) - authDate
+    if (ageSec > 3600) return null  // initData older than 1 hour is invalid
+
+    // Extract user.id from parsed params
+    const userEntry = params.find(([key]) => key === 'user')
+    if (!userEntry) return null
+
+    const user = JSON.parse(userEntry[1])
+    return String(user.id)
   } catch {
     return null
   }

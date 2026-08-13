@@ -36,11 +36,13 @@ export class MaxTransportAdapter implements TransportAdapter {
   }
 
   getLoginKeyboard (): ReplyKeyboard {
-    // MAX uses deep links to mini-apps
-    return { text: 'Подключить дневник', url: `https://max.ru/${config.maxBotUsername}?startapp=connect` }
+    // MAX uses deep links to mini-app
+    if (!config.maxLoginPageUrl) throw new Error('MAX_LOGIN_PAGE_URL is required for MAX transport')
+    return { text: 'Подключить дневник', url: config.maxLoginPageUrl }
   }
 
   async sendLoginPrompt (text: string): Promise<MessageRef> {
+    if (!config.maxLoginPageUrl) throw new Error('MAX_LOGIN_PAGE_URL is required for MAX transport')
     // MAX: send message with a link button to the mini-app
     const attachments = [{
       type: 'inline_keyboard',
@@ -48,7 +50,7 @@ export class MaxTransportAdapter implements TransportAdapter {
         buttons: [[{
           type: 'link',
           text: 'Подключить дневник',
-          url: `https://max.ru/${config.maxBotUsername}?startapp=connect`,
+          url: config.maxLoginPageUrl,
         }]],
       },
     }]

@@ -28,6 +28,7 @@ export const config = {
   sessionSecret: required('SESSION_SECRET'),
   tokensEncryptionKey: required('TOKENS_ENCRYPTION_KEY'),
   loginPageUrl: optional('LOGIN_PAGE_URL'),
+  maxLoginPageUrl: optional('MAX_LOGIN_PAGE_URL'),
   telegramBotToken: optional('TELEGRAM_BOT_TOKEN'),
   maxBotToken: optional('MAX_BOT_TOKEN'),
   maxBotUsername: optional('MAX_BOT_USERNAME'),
