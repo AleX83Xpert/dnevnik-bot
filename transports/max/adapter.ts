@@ -1,4 +1,5 @@
 import { TransportAdapter, InlineKeyboard, ReplyKeyboard, MessageRef } from '../../core/types'
+import { config } from '../../config'
 
 export class MaxTransportAdapter implements TransportAdapter {
   platform = 'max'
@@ -36,7 +37,7 @@ export class MaxTransportAdapter implements TransportAdapter {
 
   getLoginKeyboard (): ReplyKeyboard {
     // MAX uses deep links to mini-apps
-    return { text: 'Подключить дневник', url: 'https://max.ru/dnevnik66_bot?startapp=connect' }
+    return { text: 'Подключить дневник', url: `https://max.ru/${config.maxBotUsername}?startapp=connect` }
   }
 
   async sendLoginPrompt (text: string): Promise<MessageRef> {
@@ -47,7 +48,7 @@ export class MaxTransportAdapter implements TransportAdapter {
         buttons: [[{
           type: 'link',
           text: 'Подключить дневник',
-          url: 'https://max.ru/dnevnik66_bot?startapp=connect',
+          url: `https://max.ru/${config.maxBotUsername}?startapp=connect`,
         }]],
       },
     }]
