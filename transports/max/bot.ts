@@ -90,7 +90,7 @@ export async function prepareMaxBot (godContext: KeystoneContext, app: Express):
         : undefined
 
       const { ctx, userId } = await mapToBotContext(maxCtx, messageRef)
-      await maxCtx.answerCallback()
+      await maxCtx.answerOnCallback({ notification: '' })
       await handleEvent(godContext, ctx, { type: 'BUTTON_CLICKED', actionId: callback?.payload || '' })
       await sessionManager.saveSession(userId, ctx.session)
     } catch (err) {
