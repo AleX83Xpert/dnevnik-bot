@@ -34,10 +34,6 @@ export interface BotSession {
 export interface InlineKeyboard {
   buttons: { text: string; callbackId: string }[][]
 }
-export interface ReplyKeyboard {
-  text: string
-  url?: string              // for web app / deep link buttons
-}
 export interface MessageRef {
   messageId: string | number
   chatId: string | number
@@ -51,7 +47,6 @@ export interface TransportAdapter {
   editText(messageRef: MessageRef, text: string, keyboard?: InlineKeyboard): Promise<void>
   deleteMessage(messageRef: MessageRef): Promise<void>
 
-  getLoginKeyboard(): ReplyKeyboard
   sendLoginPrompt(text: string): Promise<MessageRef>
   removeKeyboard(text: string): Promise<MessageRef>
   bold(text: string): string

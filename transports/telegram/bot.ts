@@ -1,7 +1,6 @@
 import { KeystoneContext } from '@keystone-6/core/types'
 import { Telegraf, session } from 'telegraf'
 import { message } from 'telegraf/filters'
-import { Redis } from '@telegraf/session/redis'
 import { BotContext, BotSession, DomainEvent } from '../../core/types'
 import { findUser, findOrCreateUser } from '../../core/userRepo'
 import { handleEvent } from '../../core/router'
@@ -10,10 +9,11 @@ import { config } from '../../config'
 import crypto from 'node:crypto'
 import { getLogger } from '../../utils/logger'
 import { NoUserError, NoTokensError } from '../../core/errors'
+import { RedisSessionStore } from '../../infrastructure/redisSessionStore'
 
 const logger = getLogger('telegramBot')
 
-export function prepareTelegramBot (godContext: KeystoneContext, botToken: string): Telegraf {
+export async function prepareTelegramBot (godContext: KeystoneContext, botToken: string): Promise<Telegraf> {
   const bot = new Telegraf(botToken)
 
   // Logger middleware. Must be first
@@ -27,12 +27,18 @@ export function prepareTelegramBot (godContext: KeystoneContext, botToken: strin
     })
   })
 
-  // Session
-  const sessionStore = Redis<BotSession>({
-    url: config.redisUrl,
-    prefix: 'dnevnik:telegram:',
-  })
-  bot.use(session({ store: sessionStore, defaultSession: () => ({ state: { name: 'AUTH_REQUIRED' }, students: [] }) as any } as any))
+  // Session — use RedisSessionStore with TTL (replaces @telegraf/session/redis which has no TTL)
+  const sessionStore = new RedisSessionStore(config.redisUrl)
+  await sessionStore.connect()
+  const sessionPrefix = 'dnevnik:telegram:'
+  // Telegraf's session middleware calls get/set/delete with the session key (user ID)
+  // We wrap the store to apply the prefix
+  const telegrafSessionStore = {
+    get: (key: string) => sessionStore.get(sessionPrefix + key),
+    set: (key: string, value: BotSession) => sessionStore.set(sessionPrefix + key, value),
+    delete: (key: string) => sessionStore.delete(sessionPrefix + key),
+  }
+  bot.use(session({ store: telegrafSessionStore as any, defaultSession: () => ({ state: { name: 'AUTH_REQUIRED' }, students: [] }) as any } as any))
 
   // Build BotContext middleware
   bot.use(async (telegrafCtx, next) => {
@@ -47,7 +53,7 @@ export function prepareTelegramBot (godContext: KeystoneContext, botToken: strin
       return await telegrafCtx.reply('youWereBlocked')
     }
 
-    const transport = new TelegramTransportAdapter(telegrafCtx)
+    const transport = new TelegramTransportAdapter(telegrafCtx, (telegrafCtx as any).session)
     const fromName = telegrafCtx.from?.first_name ?? telegrafCtx.from?.username ?? 'человек'
     const ctx: BotContext = { reqId, user, session: (telegrafCtx as any).session, transport, fromName }
 

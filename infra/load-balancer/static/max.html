@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-  <title>Форма логина</title>
+  <title>Дневник</title>
   <script src="https://dev.max.ru/max-bridge.js"></script>
   <style>
     body {
@@ -122,12 +122,35 @@
     #status.success {
       color: #4CAF50;
     }
+
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 
 <body>
 
-  <div class="login-container">
+  <!-- Info page (shown when no WebAppStartParam=login) -->
+  <div id="info-page" class="login-container hidden">
+    <h2>Дневник 📔</h2>
+    <div class="instruction">
+      <p>Это бот для работы с электронным школьным дневником Свердловской области.</p>
+      <p>С его помощью можно:</p>
+      <ul>
+        <li>📅 Смотреть расписание уроков</li>
+        <li>📚 Получать домашние задания</li>
+        <li>📊 Следить за оценками</li>
+      </ul>
+      <p>Чтобы начать пользоваться ботом, отправьте в чат команду <strong>/login</strong> и следуйте инструкции.</p>
+    </div>
+    <div class="instruction">
+      <p>Бот избавляет от необходимости каждый раз входить в дневник через Госуслуги. Достаточно подключить его один раз.</p>
+    </div>
+  </div>
+
+  <!-- Login page (shown when WebAppStartParam=login) -->
+  <div id="login-page" class="login-container hidden">
     <h2>Авторизация</h2>
     <div class="instruction">
       <p>Чтобы бот 🤖 заработал, нужно дать ему авторизоваться в дневнике. Предположительно, это нужно будет сделать один раз 😅.</p>
@@ -191,6 +214,20 @@
   </div>
 
   <script>
+    // Show login form or info page based on WebAppStartParam
+    const urlParams = new URLSearchParams(window.location.search)
+    const startParam = urlParams.get('WebAppStartParam') || ''
+    const isLogin = startParam === 'login'
+
+    if (isLogin) {
+      document.getElementById('login-page').classList.remove('hidden')
+    } else {
+      document.getElementById('info-page').classList.remove('hidden')
+    }
+  </script>
+
+  <script>
+    // Login form handler (only active on login page)
     const form = document.getElementById('tokensForm')
     const submitBtn = document.getElementById('submitBtn')
     const status = document.getElementById('status')
@@ -238,7 +275,9 @@
       event.preventDefault()
     })
   </script>
+
   <script>
+    // Show/hide info details (only on login page)
     const showInfoLink = document.getElementById('show-info')
     const infoContainer = document.getElementById('info-container')
     const openedClassName = 'opened'

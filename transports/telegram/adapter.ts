@@ -1,18 +1,20 @@
 import { Context, Markup } from 'telegraf'
-import { TransportAdapter, InlineKeyboard, ReplyKeyboard, MessageRef } from '../../core/types'
+import { TransportAdapter, InlineKeyboard, MessageRef, BotSession } from '../../core/types'
 import { escMd, boldMd } from './formatters'
 import { config } from '../../config'
 
 export class TelegramTransportAdapter implements TransportAdapter {
   platform = 'telegram'
   private ctx: Context
-  private messageRef: MessageRef | undefined
+  private session: BotSession
 
-  constructor (ctx: Context) {
+  constructor (ctx: Context, session: BotSession) {
     this.ctx = ctx
-    // Capture the current message ref for editing (from callback queries)
-    if (ctx.callbackQuery?.message) {
-      this.messageRef = {
+    this.session = session
+    // Capture the current message ref from callback query (the message the button was on)
+    // Only use it if the session doesn't already have one
+    if (!this.session.messageRef && ctx.callbackQuery?.message) {
+      this.session.messageRef = {
         messageId: (ctx.callbackQuery.message as any).message_id,
         chatId: (ctx.callbackQuery.message as any).chat.id,
       }
@@ -39,11 +41,6 @@ export class TelegramTransportAdapter implements TransportAdapter {
     await this.ctx.telegram.deleteMessage(messageRef.chatId, Number(messageRef.messageId))
   }
 
-  getLoginKeyboard (): ReplyKeyboard {
-    if (!config.loginPageUrl) throw new Error('LOGIN_PAGE_URL is required for Telegram transport')
-    return { text: 'Подключить дневник', url: config.loginPageUrl }
-  }
-
   async sendLoginPrompt (text: string): Promise<MessageRef> {
     if (!config.loginPageUrl) throw new Error('LOGIN_PAGE_URL is required for Telegram transport')
     const keyboard = Markup.keyboard([Markup.button.webApp('Подключить дневник', config.loginPageUrl)]).resize()
@@ -59,8 +56,8 @@ export class TelegramTransportAdapter implements TransportAdapter {
   bold (text: string): string { return boldMd(text) }
   escape (text: string): string { return escMd(text) }
 
-  getMessageRef (): MessageRef | undefined { return this.messageRef }
-  setMessageRef (ref: MessageRef): void { this.messageRef = ref }
+  getMessageRef (): MessageRef | undefined { return this.session.messageRef }
+  setMessageRef (ref: MessageRef): void { this.session.messageRef = ref }
 
   private toInlineKeyboard (kb: InlineKeyboard) {
     return Markup.inlineKeyboard(

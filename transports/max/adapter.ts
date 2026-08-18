@@ -1,16 +1,20 @@
-import { TransportAdapter, InlineKeyboard, ReplyKeyboard, MessageRef } from '../../core/types'
+import { TransportAdapter, InlineKeyboard, MessageRef, BotSession } from '../../core/types'
 import { config } from '../../config'
 
 export class MaxTransportAdapter implements TransportAdapter {
   platform = 'max'
-  private messageRef: MessageRef | undefined
+  private session: BotSession
   private userId: number
   private api: any // Max Bot API instance
 
-  constructor (userId: number, api: any, messageRef?: MessageRef) {
+  constructor (userId: number, api: any, session: BotSession, messageRef?: MessageRef) {
     this.userId = userId
     this.api = api
-    this.messageRef = messageRef
+    this.session = session
+    // Use the messageRef from callback query if session doesn't have one
+    if (!this.session.messageRef && messageRef) {
+      this.session.messageRef = messageRef
+    }
   }
 
   async reply (text: string, keyboard?: InlineKeyboard): Promise<MessageRef> {
@@ -35,22 +39,18 @@ export class MaxTransportAdapter implements TransportAdapter {
     await this.api.deleteMessage(String(messageRef.messageId))
   }
 
-  getLoginKeyboard (): ReplyKeyboard {
-    // MAX uses deep links to mini-app
-    if (!config.maxLoginPageUrl) throw new Error('MAX_LOGIN_PAGE_URL is required for MAX transport')
-    return { text: 'Подключить дневник', url: config.maxLoginPageUrl }
-  }
-
   async sendLoginPrompt (text: string): Promise<MessageRef> {
     if (!config.maxLoginPageUrl) throw new Error('MAX_LOGIN_PAGE_URL is required for MAX transport')
-    // MAX: send message with a link button to the mini-app
+    // MAX: open_app button opens the mini-app directly within MAX
+    // web_app is the bot username, payload becomes WebAppStartParam in the URL
     const attachments = [{
       type: 'inline_keyboard',
-      keyboard: {
+      payload: {
         buttons: [[{
-          type: 'link',
+          type: 'open_app',
           text: 'Подключить дневник',
-          url: config.maxLoginPageUrl,
+          web_app: config.maxBotUsername,
+          payload: 'login',
         }]],
       },
     }]
@@ -74,13 +74,13 @@ export class MaxTransportAdapter implements TransportAdapter {
       .replace(/>/g, '&gt;')
   }
 
-  getMessageRef (): MessageRef | undefined { return this.messageRef }
-  setMessageRef (ref: MessageRef): void { this.messageRef = ref }
+  getMessageRef (): MessageRef | undefined { return this.session.messageRef }
+  setMessageRef (ref: MessageRef): void { this.session.messageRef = ref }
 
   private toInlineKeyboard (kb: InlineKeyboard) {
     return [{
       type: 'inline_keyboard',
-      keyboard: {
+      payload: {
         buttons: kb.buttons.map(row =>
           row.map(btn => ({
             type: 'callback',

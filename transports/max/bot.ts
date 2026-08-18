@@ -1,6 +1,6 @@
 import { Bot } from '@maxhub/max-bot-api'
 import { KeystoneContext } from '@keystone-6/core/types'
-import { BotContext, BotSession } from '../../core/types'
+import { BotContext } from '../../core/types'
 import { findUser, findOrCreateUser } from '../../core/userRepo'
 import { handleEvent } from '../../core/router'
 import { MaxTransportAdapter } from './adapter'
@@ -9,26 +9,22 @@ import { Express } from 'express'
 import crypto from 'node:crypto'
 import { getLogger } from '../../utils/logger'
 import { NoUserError, NoTokensError } from '../../core/errors'
+import { SessionManager } from '../../core/sessionManager'
+import { RedisSessionStore } from '../../infrastructure/redisSessionStore'
 
 const logger = getLogger('maxBot')
 
-// In-memory session store for MAX (keyed by userId)
-// In production, use Redis with prefix 'dnevnik:max:'
-const maxSessions = new Map<string, BotSession>()
+let sessionManager: SessionManager
 
-function getSession (userId: string): BotSession {
-  let session = maxSessions.get(userId)
-  if (!session) {
-    session = { state: { name: 'AUTH_REQUIRED' }, students: [] }
-    maxSessions.set(userId, session)
-  }
-  return session
-}
-
-export function prepareMaxBot (godContext: KeystoneContext, app: Express): Bot {
+export async function prepareMaxBot (godContext: KeystoneContext, app: Express): Promise<Bot> {
   const bot = new Bot(config.maxBotToken!)
 
-  async function mapToBotContext (maxCtx: any, messageRef?: { messageId: string; chatId: number }): Promise<BotContext> {
+  // Initialize session manager with Redis store
+  const sessionStore = new RedisSessionStore(config.redisUrl)
+  await sessionStore.connect()
+  sessionManager = new SessionManager(sessionStore, 'dnevnik:max:')
+
+  async function mapToBotContext (maxCtx: any, messageRef?: { messageId: string; chatId: number }): Promise<{ ctx: BotContext, userId: string }> {
     const reqId = crypto.randomUUID()
     const userId = String(maxCtx.from?.user_id || maxCtx.user?.user_id || maxCtx.chat_id)
     const numericUserId = Number(userId)
@@ -39,20 +35,47 @@ export function prepareMaxBot (godContext: KeystoneContext, app: Express): Bot {
       throw new Error('User is blocked')
     }
 
-    const session = getSession(userId)
-    const transport = new MaxTransportAdapter(numericUserId, bot.api, messageRef)
+    const session = await sessionManager.getSession(userId)
+    const transport = new MaxTransportAdapter(numericUserId, bot.api, session, messageRef)
 
-    return { reqId, user, session, transport }
+    return { ctx: { reqId, user, session, transport }, userId }
   }
+
+  // '/ping'
+  bot.command('ping', (ctx) => ctx.reply('pong'))
+
+  // '/login'
+  bot.command('login', async (maxCtx: any) => {
+    try {
+      const { ctx, userId } = await mapToBotContext(maxCtx)
+      await handleEvent(godContext, ctx, { type: 'COMMAND', command: 'login' })
+      await sessionManager.saveSession(userId, ctx.session)
+    } catch (err) {
+      logger.error({ msg: 'login command error', err })
+    }
+  })
+
+  // '/logout'
+  bot.command('logout', async (maxCtx: any) => {
+    try {
+      const { ctx, userId } = await mapToBotContext(maxCtx)
+      await handleEvent(godContext, ctx, { type: 'COMMAND', command: 'logout' })
+      await sessionManager.saveSession(userId, ctx.session)
+    } catch (err) {
+      logger.error({ msg: 'logout command error', err })
+    }
+  })
 
   // Start event (deep link /start)
   bot.on('bot_started', async (maxCtx: any) => {
     try {
-      const ctx = await mapToBotContext(maxCtx)
+      logger.info('/start')
+      const { ctx, userId } = await mapToBotContext(maxCtx)
       if (!ctx.user) {
         ctx.user = await findOrCreateUser(godContext, 'max', String(maxCtx.from.user_id), maxCtx.from)
       }
       await handleEvent(godContext, ctx, { type: 'START' })
+      await sessionManager.saveSession(userId, ctx.session)
     } catch (err) {
       logger.error({ msg: 'bot_started error', err })
     }
@@ -66,31 +89,12 @@ export function prepareMaxBot (godContext: KeystoneContext, app: Express): Bot {
         ? { messageId: callback.message.message_id, chatId: maxCtx.chat_id || maxCtx.from?.user_id }
         : undefined
 
-      const ctx = await mapToBotContext(maxCtx, messageRef)
+      const { ctx, userId } = await mapToBotContext(maxCtx, messageRef)
       await maxCtx.answerCallback()
       await handleEvent(godContext, ctx, { type: 'BUTTON_CLICKED', actionId: callback?.payload || '' })
+      await sessionManager.saveSession(userId, ctx.session)
     } catch (err) {
       logger.error({ msg: 'message_callback error', err })
-    }
-  })
-
-  // Text messages
-  bot.on('message_created', async (maxCtx: any) => {
-    try {
-      const text = maxCtx.message?.text?.body || ''
-      if (text === '/login') {
-        const ctx = await mapToBotContext(maxCtx)
-        await handleEvent(godContext, ctx, { type: 'COMMAND', command: 'login' })
-        return
-      }
-      if (text === '/logout') {
-        const ctx = await mapToBotContext(maxCtx)
-        await handleEvent(godContext, ctx, { type: 'COMMAND', command: 'logout' })
-        return
-      }
-      // Ignore other messages
-    } catch (err) {
-      logger.error({ msg: 'message_created error', err })
     }
   })
 
@@ -113,6 +117,15 @@ export function prepareMaxBot (godContext: KeystoneContext, app: Express): Bot {
   // Token delivery: HTTP endpoint (Max has no sendData equivalent)
   // The mini-app POSTs tokens here with initData for authentication
   app.post('/api/max/connect-dnevnik', async (req, res) => {
+    // Allow cross-origin requests from the MAX mini-app
+    res.header('Access-Control-Allow-Origin', '*')
+    res.header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+    res.header('Access-Control-Allow-Headers', 'Content-Type')
+
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(204)
+    }
+
     try {
       const { accessToken, refreshToken, initData } = req.body
 
@@ -128,14 +141,16 @@ export function prepareMaxBot (godContext: KeystoneContext, app: Express): Bot {
         user = await findOrCreateUser(godContext, 'max', userId, {})
       }
 
-      const session = getSession(userId)
-      const transport = new MaxTransportAdapter(Number(userId), bot.api)
+      const session = await sessionManager.getSession(userId)
+      const transport = new MaxTransportAdapter(Number(userId), bot.api, session)
       const ctx: BotContext = { reqId: crypto.randomUUID(), user, session, transport }
 
       await handleEvent(godContext, ctx, {
         type: 'TOKENS_RECEIVED',
         tokens: { accessToken, refreshToken },
       })
+
+      await sessionManager.saveSession(userId, ctx.session)
 
       res.json({ success: true })
     } catch (err) {

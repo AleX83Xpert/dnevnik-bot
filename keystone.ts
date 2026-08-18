@@ -44,10 +44,10 @@ export default withAuth(
 
         const godContext = context.sudo()
 
-        startTokenRefresher(godContext, config.refreshIntervalSec, config.refreshBeforeSec)
+        // startTokenRefresher(godContext, config.refreshIntervalSec, config.refreshBeforeSec)
 
         if (config.telegramBotToken) {
-          const bot = prepareTelegramBot(godContext, config.telegramBotToken)
+          const bot = await prepareTelegramBot(godContext, config.telegramBotToken)
           bot.launch()
 
           // Enable graceful stop
@@ -57,7 +57,7 @@ export default withAuth(
         }
 
         if (config.maxBotToken) {
-          const maxBot = prepareMaxBot(godContext, app)
+          const maxBot = await prepareMaxBot(godContext, app)
           maxBot.start()
           logger.info({ msg: 'MAX bot started' })
         }
