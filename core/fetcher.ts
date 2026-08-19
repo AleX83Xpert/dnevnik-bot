@@ -64,7 +64,7 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
   }
 
   if (!user.dnevnikAccessToken || !user.dnevnikRefreshToken) {
-    logger.error({ msg: 'User contains no tokens', reqId: reqId, request: request, platformUserId: user.platformUserId })
+    logger.error({ msg: 'User contains no tokens', reqId: reqId, request: request, platform: user.platform, platformUserId: user.platformUserId })
     throw new NoTokensError('User contains no tokens')
   }
 
@@ -77,6 +77,7 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
       msg: 'request',
       reqId,
       request,
+      platform: user.platform,
       platformUserId: user.platformUserId,
       accessToken: cutToken(user.dnevnikAccessToken),
       refreshToken: cutToken(user.dnevnikRefreshToken),
@@ -86,12 +87,12 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
   } catch (err) {
     if (err instanceof DnevnikClientUnauthorizedError) {
       // Unauthorized! Try to refresh tokens and retry.
-      logger.warn({ msg: 'token expired', platformUserId: user.platformUserId, reqId, accessToken: cutToken(dnevnikClient.dnevnikAccessToken), refreshToken: cutToken(dnevnikClient.dnevnikRefreshToken), accessTokenExpirationDate: user.dnevnikAccessTokenExpirationDate })
+      logger.warn({ msg: 'token expired', platform: user.platform, platformUserId: user.platformUserId, reqId, accessToken: cutToken(dnevnikClient.dnevnikAccessToken), refreshToken: cutToken(dnevnikClient.dnevnikRefreshToken), accessTokenExpirationDate: user.dnevnikAccessTokenExpirationDate })
       try {
         const newTokens = await dnevnikClient.refreshTokens()
         if (newTokens) {
           const dnevnikAccessTokenExpirationDate = getTokenExpirationDate(newTokens.accessToken)
-          logger.info({ msg: 'tokens refreshed', platformUserId: user.platformUserId, reqId, accessToken: cutToken(newTokens.accessToken), refreshToken: cutToken(newTokens.refreshToken), accessTokenExpirationDate: dnevnikAccessTokenExpirationDate })
+          logger.info({ msg: 'tokens refreshed', platform: user.platform, platformUserId: user.platformUserId, reqId, accessToken: cutToken(newTokens.accessToken), refreshToken: cutToken(newTokens.refreshToken), accessTokenExpirationDate: dnevnikAccessTokenExpirationDate })
 
           const updatedUser = await updateUserTokens(godContext, user.id, {
             accessToken: newTokens.accessToken,
