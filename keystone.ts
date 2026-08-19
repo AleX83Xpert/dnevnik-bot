@@ -39,12 +39,9 @@ export default withAuth(
         // This prevents potential conflicts with request parsing and reduces overhead
         app.disable('graphqlUploadMiddleware')
 
-        // Parse JSON bodies for HTTP endpoints (e.g. MAX token delivery)
-        app.use(require('express').json())
-
         const godContext = context.sudo()
 
-        // startTokenRefresher(godContext, config.refreshIntervalSec, config.refreshBeforeSec)
+        startTokenRefresher(godContext, config.refreshIntervalSec, config.refreshBeforeSec)
 
         if (config.telegramBotToken) {
           const bot = await prepareTelegramBot(godContext, config.telegramBotToken)

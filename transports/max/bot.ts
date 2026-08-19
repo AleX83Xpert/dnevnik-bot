@@ -5,7 +5,7 @@ import { findUser, findOrCreateUser } from '../../core/userRepo'
 import { handleEvent } from '../../core/router'
 import { MaxTransportAdapter } from './adapter'
 import { config } from '../../config'
-import { Express } from 'express'
+import { Express, json } from 'express'
 import crypto from 'node:crypto'
 import { getLogger } from '../../utils/logger'
 import { NoUserError, NoTokensError } from '../../core/errors'
@@ -178,7 +178,7 @@ export async function prepareMaxBot (godContext: KeystoneContext, app: Express):
 
   // Token delivery: HTTP endpoint (Max has no sendData equivalent)
   // The mini-app POSTs tokens here with initData for authentication
-  app.post('/api/max/connect-dnevnik', async (req, res) => {
+  app.post('/api/max/connect-dnevnik', json(), async (req, res) => {
     // Allow cross-origin requests from the MAX mini-app
     res.header('Access-Control-Allow-Origin', '*')
     res.header('Access-Control-Allow-Methods', 'POST, OPTIONS')
@@ -226,7 +226,7 @@ export async function prepareMaxBot (godContext: KeystoneContext, app: Express):
   if (config.maxBotWebhookUrl) {
     const webhookPath = new URL(config.maxBotWebhookUrl).pathname
 
-    app.post(webhookPath, async (req, res) => {
+    app.post(webhookPath, json(), async (req, res) => {
       // Validate secret header if configured
       if (config.maxBotWebhookSecret) {
         const secretHeader = req.headers['x-max-bot-api-secret'] as string
