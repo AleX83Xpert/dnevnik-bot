@@ -134,7 +134,12 @@ export async function prepareMaxBot (godContext: KeystoneContext, app: Express):
       logger.info('/start')
       const { ctx, userId } = await mapToBotContext(maxCtx)
       if (!ctx.user) {
-        ctx.user = await findOrCreateUser(godContext, 'max', String(maxCtx.from.user_id), maxCtx.from)
+        ctx.user = await findOrCreateUser(godContext, 'max', String(maxCtx.from.user_id), {
+          id: maxCtx.from.user_id,
+          first_name: maxCtx.from.first_name,
+          last_name: maxCtx.from.last_name,
+          username: maxCtx.from.username,
+        })
       }
       await handleEvent(godContext, ctx, { type: 'START' })
       await sessionManager.saveSession(userId, ctx.session)
@@ -200,7 +205,9 @@ export async function prepareMaxBot (godContext: KeystoneContext, app: Express):
       // Find or create the MAX user
       let user = await findUser(godContext, 'max', userId)
       if (!user) {
-        user = await findOrCreateUser(godContext, 'max', userId, {})
+        // Extract user info from initData for meta
+        const userInfo = extractUserInfoFromInitData(initData)
+        user = await findOrCreateUser(godContext, 'max', userId, userInfo)
       }
 
       const session = await sessionManager.getSession(userId)
@@ -266,6 +273,23 @@ export async function prepareMaxBot (godContext: KeystoneContext, app: Express):
  *
  * Returns the user ID (as string) if valid, null otherwise.
  */
+/**
+ * Extracts user info from MAX initData for storing as MessengerUser.meta.
+ * Returns an object with id, first_name, last_name, username.
+ */
+function extractUserInfoFromInitData (initData: string): Record<string, unknown> {
+  try {
+    const params = new URLSearchParams(initData)
+    const userStr = params.get('user')
+    if (userStr) {
+      return JSON.parse(decodeURIComponent(userStr))
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return {}
+}
+
 function validateMaxInitData (initData: string, botToken: string): string | null {
   try {
     if (!initData || typeof initData !== 'string') return null
