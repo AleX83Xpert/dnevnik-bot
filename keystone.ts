@@ -5,7 +5,7 @@ import { withAuth, session } from './auth'
 import { getLogger } from './utils/logger'
 import { startTokenRefresher } from './core/tokenRefresher'
 import { prepareTelegramBot } from './transports/telegram/bot'
-import { prepareMaxBot } from './transports/max/bot'
+import { prepareMaxBot, ensureWebhookSubscription } from './transports/max/bot'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ru'
 import localeData from 'dayjs/plugin/localeData'
@@ -58,8 +58,20 @@ export default withAuth(
 
         if (config.maxBotToken) {
           const maxBot = await prepareMaxBot(godContext, app)
-          maxBot.start()
-          logger.info({ msg: 'MAX bot started' })
+
+          if (config.maxBotWebhookUrl && config.maxBotWebhookSecret) {
+            // Production: use webhooks
+            await ensureWebhookSubscription(
+              config.maxBotToken,
+              config.maxBotWebhookUrl,
+              config.maxBotWebhookSecret,
+            )
+            logger.info({ msg: 'MAX bot started with webhook', url: config.maxBotWebhookUrl })
+          } else {
+            // Development: use long polling
+            maxBot.start()
+            logger.info({ msg: 'MAX bot started with long polling' })
+          }
         }
       },
     }

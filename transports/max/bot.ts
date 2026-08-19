@@ -16,6 +16,68 @@ const logger = getLogger('maxBot')
 
 let sessionManager: SessionManager
 
+const MAX_API_BASE = 'https://platform-api2.max.ru'
+
+const UPDATE_TYPES = [
+  'bot_started',
+  'message_callback',
+  'message_created',
+]
+
+/**
+ * Get existing subscriptions from MAX API.
+ * Returns array of subscription URLs.
+ */
+async function getExistingSubscriptions (botToken: string): Promise<string[]> {
+  try {
+    const response = await fetch(`${MAX_API_BASE}/subscriptions?access_token=${botToken}`, {
+      method: 'GET',
+      headers: { 'content-type': 'application/json' },
+    })
+    if (!response.ok) return []
+    const data = await response.json() as any
+    const subscriptions = data.subscriptions || data || []
+    if (Array.isArray(subscriptions)) {
+      return subscriptions.map((s: any) => s.url || '').filter(Boolean)
+    }
+    return []
+  } catch (err) {
+    logger.error({ msg: 'Failed to get existing subscriptions', err })
+    return []
+  }
+}
+
+/**
+ * Create a webhook subscription on MAX API.
+ * Checks if subscription already exists to avoid duplicates.
+ */
+export async function ensureWebhookSubscription (botToken: string, webhookUrl: string, secret: string): Promise<void> {
+  // Check if subscription already exists
+  const existingUrls = await getExistingSubscriptions(botToken)
+  if (existingUrls.includes(webhookUrl)) {
+    logger.info({ msg: 'Webhook subscription already exists', url: webhookUrl })
+    return
+  }
+
+  // Create new subscription
+  const response = await fetch(`${MAX_API_BASE}/subscriptions?access_token=${botToken}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      url: webhookUrl,
+      update_types: UPDATE_TYPES,
+      secret,
+    }),
+  })
+
+  if (!response.ok) {
+    const text = await response.text()
+    throw new Error(`Failed to create MAX webhook subscription: ${response.status} ${text}`)
+  }
+
+  logger.info({ msg: 'Webhook subscription created', url: webhookUrl })
+}
+
 export async function prepareMaxBot (godContext: KeystoneContext, app: Express): Promise<Bot> {
   const bot = new Bot(config.maxBotToken!)
 
@@ -158,6 +220,32 @@ export async function prepareMaxBot (godContext: KeystoneContext, app: Express):
       res.status(500).json({ error: 'Connection failed' })
     }
   })
+
+  // Webhook endpoint for MAX updates (production)
+  // MAX sends POST requests with Update objects to this endpoint
+  if (config.maxBotWebhookUrl) {
+    const webhookPath = new URL(config.maxBotWebhookUrl).pathname
+
+    app.post(webhookPath, async (req, res) => {
+      // Validate secret header if configured
+      if (config.maxBotWebhookSecret) {
+        const secretHeader = req.headers['x-max-bot-api-secret'] as string
+        if (secretHeader !== config.maxBotWebhookSecret) {
+          logger.warn({ msg: 'Webhook secret mismatch' })
+          return res.sendStatus(403)
+        }
+      }
+
+      try {
+        const update = req.body
+        await (bot as any).handleUpdate(update)
+        res.sendStatus(200)
+      } catch (err) {
+        logger.error({ msg: 'Webhook handler error', err })
+        res.sendStatus(200) // Always return 200 to prevent MAX from unsubscribing
+      }
+    })
+  }
 
   return bot
 }

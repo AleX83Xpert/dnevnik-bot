@@ -32,6 +32,8 @@ export const config = {
   telegramBotToken: optional('TELEGRAM_BOT_TOKEN'),
   maxBotToken: optional('MAX_BOT_TOKEN'),
   maxBotUsername: optional('MAX_BOT_USERNAME'),
+  maxBotWebhookUrl: optional('MAX_BOT_WEBHOOK_URL'),
+  maxBotWebhookSecret: optional('MAX_BOT_WEBHOOK_SECRET'),
   refreshIntervalSec: requiredNumber('TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC'),
   refreshBeforeSec: requiredNumber('TELEGRAM_TOKENS_REFRESH_BEFORE_SEC'),
   tokensTtlSec: optional('TELEGRAM_TOKENS_TTL_SEC') ? Number(optional('TELEGRAM_TOKENS_TTL_SEC')) : 600,
