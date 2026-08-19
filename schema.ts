@@ -12,7 +12,6 @@ import {
 
 import { type Lists } from '.keystone/types'
 
-import { get } from 'lodash'
 import dayjs from 'dayjs'
 import { config } from './config'
 
@@ -67,8 +66,9 @@ export const lists = {
         field: graphql.field({
           type: graphql.String,
           async resolve (item, args, context) {
-            const platformUserId = get(item, ['platformUserId'])
-            const title = get(item, ['meta', 'username'], get(item, ['meta', 'first_name']))
+            const platformUserId = item.platformUserId
+            const meta = item.meta as any
+            const title = meta?.username || meta?.first_name
 
             return title ? `${title}/${platformUserId}` : item.id
           }
