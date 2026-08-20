@@ -1,7 +1,8 @@
 > I use English due to open source, and Russian due to the project's purpose.
 
 # Here's an example / И сразу пример
-https://t.me/dnevnik66_bot
+Telegram: https://t.me/dnevnik66_bot
+Max: https://max.ru/se13902840_bot
 
 # What is that / Что это
 ### en
