@@ -6,9 +6,11 @@ import { getLogger } from './utils/logger'
 import { startTokenRefresher } from './core/tokenRefresher'
 import { prepareTelegramBot } from './transports/telegram/bot'
 import { prepareMaxBot, ensureWebhookSubscription } from './transports/max/bot'
+import { randomBytes } from 'node:crypto'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ru'
 import localeData from 'dayjs/plugin/localeData'
+import { PrismaPg } from '@prisma/adapter-pg'
 
 dayjs.locale('ru')
 dayjs.extend(localeData)
@@ -21,7 +23,29 @@ export default withAuth(
       provider: 'postgresql',
       url: config.databaseUrl,
       shadowDatabaseUrl: config.shadowDatabaseUrl,
-      onConnect: async (context) => { logger.info({ msg: 'Connected to database' }) },
+      prismaClientOptions: () => ({
+        adapter: new PrismaPg({ connectionString: config.databaseUrl }),
+      }),
+      onConnect: async (context) => {
+        logger.info({ msg: 'Connected to database' })
+        // Seed development data if no users exist
+        const sudo = context.sudo()
+        const userCount = await sudo.db.User.count()
+        if (userCount === 0) {
+          logger.info({ msg: 'No users found, creating development user' })
+          // Create a development-only account with a random password
+          const password = randomBytes(16).toString('hex')
+          await sudo.db.User.create({
+            data: {
+              name: 'Development Admin',
+              email: 'admin@example.com',
+              password,
+              isAdmin: true,
+            },
+          })
+          logger.info({ msg: 'Development user created', email: 'admin@example.com', password })
+        }
+      },
       enableLogging: config.enableDbLogs,
       idField: { kind: 'uuid' },
     },
@@ -58,12 +82,16 @@ export default withAuth(
 
           if (config.maxBotWebhookUrl && config.maxBotWebhookSecret) {
             // Production: use webhooks
-            await ensureWebhookSubscription(
-              config.maxBotToken,
-              config.maxBotWebhookUrl,
-              config.maxBotWebhookSecret,
-            )
-            logger.info({ msg: 'MAX bot started with webhook', url: config.maxBotWebhookUrl })
+            try {
+              await ensureWebhookSubscription(
+                config.maxBotToken,
+                config.maxBotWebhookUrl,
+                config.maxBotWebhookSecret,
+              )
+              logger.info({ msg: 'MAX bot started with webhook', url: config.maxBotWebhookUrl })
+            } catch (err) {
+              logger.error({ msg: 'Failed to setup MAX webhook subscription', err })
+            }
           } else {
             // Development: use long polling
             maxBot.start()
@@ -71,6 +99,6 @@ export default withAuth(
           }
         }
       },
-    }
+    },
   })
 )

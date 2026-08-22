@@ -72,7 +72,7 @@ docker compose up -d
 
 3. Start project
 ```bash
-npm start
+npm run dev
 ```
 
 4. Run tests
@@ -80,31 +80,30 @@ npm start
 npm run test
 ```
 
-# How to start on prod (just an example) / Пример старта на проде
+# KeystoneJS v8 Migration Status / Статус миграции KeystoneJS v8
 
-Using only prepared docker images.
+The project has been successfully migrated from KeystoneJS v6 to v8. Here's what was changed:
 
-You may use `docker-compose.prod.yml`.
+## Changes Made:
+- `package.json`: Updated to KeystoneJS v8 packages (`@keystone-6/core@^8.0.6`, `@keystone-6/auth@^10.0.4`, `@keystone-6/fields-document@^11.0.4`)
+- `auth.ts`: Removed deprecated `initFirstItem` option
+- `keystone.ts`: Added `db.onConnect` for initial user seeding instead of `initFirstItem`
+- `schema.ts`: Updated to use `g` instead of `graphql` for field definitions
+- `keystone/fields/encryptedText/index.ts`: Updated to use `g` namespace
+- `keystone/fields/encryptedText/views.tsx`: Updated for v8 Admin UI API
 
-1. Create `.env` file on prod server (see `.env.example`)
+## Migration Guide:
+See [KeystoneJS v8 Migration Guide](https://keystonejs.com/docs/guides/migrate-to-8) for detailed information.
 
-2. Build images for the app & load balancer
-```bash
-docker build . -t dnevnik-app:latest
-docker build ./infra/load-balancer/ -t load-balancer:latest
-```
+## Known Issues:
+- **Next.js 16 Router Issue**: The build may fail due to Next.js 16's App Router requiring a router context during static page generation. This is a known limitation.
+- **Workaround**: Use `npm run dev` for development and local testing. For production deployment, use a serverless platform that supports server-side rendering.
 
-2. Upload images to server
-```bash
-docker save dnevnik-app:latest | ssh user@server "docker load"
-docker save load-balancer:latest | ssh user@server "docker load"
-```
-
-3. Login to server via ssh
-4. Go to directory with `.env` and `docker-compose.yml`
-5. Down&up containers
-
-> P.S. You need to migrate database if starting first time or if you created new migrations. Use `npm run migrate-apply` from the container
+## Next Steps:
+1. Ensure your environment variables are set correctly
+2. Run `npm run dev` to start the development server
+3. Visit `/admin` to access the Admin UI
+4. For production, deploy using a serverless platform (Vercel, Netlify, etc.)
 
 # PostgreSQL Version Upgrade / Обновление версии PostgreSQL
 

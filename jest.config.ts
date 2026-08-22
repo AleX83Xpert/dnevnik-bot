@@ -1,11 +1,15 @@
-import type {Config} from 'jest'
-
-const config: Config = {
+/** @type {import('jest').Config} */
+const config = {
   verbose: true,
   testEnvironment: "node",
   transform: {
-    "^.+.tsx?$": ["ts-jest", {}],
+    "^.+\\.(t|j)sx?$": ["ts-jest", {
+      useESM: false,
+    }],
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(@keystone-6|@prisma|@types))',
+  ],
   modulePathIgnorePatterns: [
     '<rootDir>/pgdata',
     '<rootDir>/redisdata',
@@ -13,4 +17,4 @@ const config: Config = {
   ],
 };
 
-export default config
+export default config;

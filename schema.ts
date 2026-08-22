@@ -1,5 +1,5 @@
-import { list, group, graphql } from '@keystone-6/core'
-import { encryptedText } from './keystone/fields/encryptedText/index'
+import { list, group, gWithContext } from '@keystone-6/core'
+import { encryptedText } from './keystone/fields/encryptedText/index.js'
 
 import {
   text,
@@ -10,23 +10,23 @@ import {
   virtual,
 } from '@keystone-6/core/fields'
 
-import { type Lists } from '.keystone/types'
+import { type Lists, Context } from '.keystone/types'
 
 import dayjs from 'dayjs'
 import { config } from './config'
 
 type TSession = {
   data: {
-    id: string;
-    isAdmin: boolean;
+    id: string
+    isAdmin: boolean
   }
 }
 
 type TUserData = {
-  id: string;
-  name: string;
-  email: string;
-  isAdmin: boolean;
+  id: string
+  name: string
+  email: string
+  isAdmin: boolean
 }
 
 function getEncryptionToken (): string {
@@ -35,6 +35,10 @@ function getEncryptionToken (): string {
 
 const isAdmin = ({ session }: { session?: TSession }) => Boolean(session?.data.isAdmin)
 const isOwner = ({ session, item }: { session: TSession, item: TUserData }) => session?.data.id === item.id
+
+// Create g with context for type inference
+const g = gWithContext<Context>()
+type g<T> = typeof gWithContext.infer<T>
 
 export const lists = {
   User: list({
@@ -63,15 +67,15 @@ export const lists = {
     access: isAdmin,
     fields: {
       label: virtual({
-        field: graphql.field({
-          type: graphql.String,
+        field: g.field({
+          type: g.String,
           async resolve (item, args, context) {
             const platformUserId = item.platformUserId
             const meta = item.meta as any
             const title = meta?.username || meta?.first_name
 
             return title ? `${title}/${platformUserId}` : item.id
-          }
+          },
         }),
       }),
       platform: text({
@@ -86,8 +90,8 @@ export const lists = {
         label: 'Dnevnik token set',
         fields: {
           isTokenActual: virtual({
-            field: graphql.field({
-              type: graphql.Boolean,
+            field: g.field({
+              type: g.Boolean,
               async resolve (item, args, context) {
                 return dayjs().isBefore(item.dnevnikAccessTokenExpirationDate)
               },

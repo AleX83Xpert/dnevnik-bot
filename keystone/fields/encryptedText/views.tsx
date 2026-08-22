@@ -1,6 +1,6 @@
 import React from 'react'
-import { FieldContainer, FieldDescription, FieldLabel, TextInput } from '@keystone-ui/fields'
-import { CellLink, CellContainer } from '@keystone-6/core/admin-ui/components'
+import { TextField } from '@keystar/ui/text-field'
+import { CellContainer } from '@keystone-6/core/admin-ui/components'
 
 import {
   type CardValueComponent,
@@ -14,36 +14,28 @@ export function Field ({ field, value, onChange, autoFocus }: FieldProps<typeof 
   const disabled = onChange === undefined
 
   return (
-    <FieldContainer as="fieldset">
-      <FieldLabel>{field.label}</FieldLabel>
-      <FieldDescription id={`${field.path}-description`}>{field.description}</FieldDescription>
-      <div>
-        <TextInput
-          type="text"
-          onChange={event => {
-            onChange?.(event.target.value)
-          }}
-          disabled={disabled}
-          value={value || ''}
-          autoFocus={autoFocus}
-        />
-      </div>
-    </FieldContainer>
+    <TextField
+      autoFocus={autoFocus}
+      description={field.description}
+      label={field.label}
+      isDisabled={disabled}
+      onChange={x => onChange?.(x === '' ? null : x)}
+      value={value ?? ''}
+    />
   )
 }
 
-export const Cell: CellComponent = ({ item, field, linkTo }) => {
-  const value = item[field.path] + ''
-  return linkTo ? <CellLink {...linkTo}>{value}</CellLink> : <CellContainer>{value}</CellContainer>
+export const Cell: CellComponent = ({ value, field, item }) => {
+  const displayValue = value + ''
+  return <CellContainer>{displayValue}</CellContainer>
 }
-Cell.supportsLinkTo = true
 
-export const CardValue: CardValueComponent = ({ item, field }) => {
+export const CardValue: CardValueComponent = ({ field, item }) => {
   return (
-    <FieldContainer>
-      <FieldLabel>{field.label}</FieldLabel>
-      {item[field.path]}
-    </FieldContainer>
+    <div>
+      <label>{field.label}</label>
+      {item[field.fieldKey]}
+    </div>
   )
 }
 
@@ -51,15 +43,15 @@ export const controller = (
   config: FieldControllerConfig<{}>
 ): FieldController<string | null, string> => {
   return {
-    path: config.path,
+    fieldKey: config.fieldKey,
     label: config.label,
     description: config.description,
-    graphqlSelection: config.path,
     defaultValue: null,
     deserialize: data => {
-      const value = data[config.path]
+      const value = data[config.fieldKey]
       return typeof value === 'string' ? value : null
     },
-    serialize: value => ({ [config.path]: value }),
+    serialize: value => ({ [config.fieldKey]: value }),
+    graphqlSelection: config.fieldKey,
   }
 }

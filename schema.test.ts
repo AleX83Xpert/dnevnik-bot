@@ -1,5 +1,5 @@
 import { KeystoneContext } from "@keystone-6/core/types"
-import { createTestGodContext, createTestMessengerUser, generateTestPlatformUserId, updateTestMessengerUser } from './testUtils/lists.test.utils'
+import { createTestGodContext, createTestMessengerUser, generateTestPlatformUserId, updateTestMessengerUser } from './testUtils_esm/lists.test.utils'
 import { faker } from "@faker-js/faker"
 import { ALL_USER_FIELDS } from "./core/constants"
 import { decrypt } from "./keystone/fields/encryptedText/utils"
