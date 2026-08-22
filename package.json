@@ -2,6 +2,7 @@
   "name": "dnevnik",
   "version": "2.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "migrate-create": "keystone prisma migrate dev --create-only",
     "migrate-apply": "keystone prisma migrate deploy",

@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
-import { decrypt, encrypt } from './utils'
+import { describe, test, expect } from '@jest/globals'
+import { decrypt, encrypt } from './utils.js'
 
 describe('encryptedText', () => {
   test('shold get same value after encrypt-decrypt', () => {

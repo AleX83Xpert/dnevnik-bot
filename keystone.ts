@@ -1,19 +1,20 @@
 import { config as keystoneConfig } from '@keystone-6/core'
-import { config } from './config'
-import { lists } from './schema'
-import { withAuth, session } from './auth'
-import { getLogger } from './utils/logger'
-import { startTokenRefresher } from './core/tokenRefresher'
-import { prepareTelegramBot } from './transports/telegram/bot'
-import { prepareMaxBot, ensureWebhookSubscription } from './transports/max/bot'
+import { config } from './config.js'
+import { lists } from './schema.js'
+import { withAuth, session } from './auth.js'
+import { getLogger } from './utils/logger.js'
+import { startTokenRefresher } from './core/tokenRefresher.js'
+import { prepareTelegramBot } from './transports/telegram/bot.js'
+import { prepareMaxBot, ensureWebhookSubscription } from './transports/max/bot.js'
 import { randomBytes } from 'node:crypto'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ru'
+// @ts-ignore - dayjs plugins don't have ES module type declarations
 import localeData from 'dayjs/plugin/localeData'
 import { PrismaPg } from '@prisma/adapter-pg'
 
 dayjs.locale('ru')
-dayjs.extend(localeData)
+dayjs.extend(localeData as any)
 
 const logger = getLogger('main')
 
@@ -21,8 +22,6 @@ export default withAuth(
   keystoneConfig({
     db: {
       provider: 'postgresql',
-      url: config.databaseUrl,
-      shadowDatabaseUrl: config.shadowDatabaseUrl,
       prismaClientOptions: () => ({
         adapter: new PrismaPg({ connectionString: config.databaseUrl }),
       }),
@@ -35,7 +34,7 @@ export default withAuth(
           logger.info({ msg: 'No users found, creating development user' })
           // Create a development-only account with a random password
           const password = randomBytes(16).toString('hex')
-          await sudo.db.User.create({
+          await sudo.db.User.createOne({
             data: {
               name: 'Development Admin',
               email: 'admin@example.com',
@@ -46,7 +45,6 @@ export default withAuth(
           logger.info({ msg: 'Development user created', email: 'admin@example.com', password })
         }
       },
-      enableLogging: config.enableDbLogs,
       idField: { kind: 'uuid' },
     },
     lists,
