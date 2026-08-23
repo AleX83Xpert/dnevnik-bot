@@ -80,31 +80,6 @@ npm run dev
 npm run test
 ```
 
-# KeystoneJS v8 Migration Status / Статус миграции KeystoneJS v8
-
-The project has been successfully migrated from KeystoneJS v6 to v8. Here's what was changed:
-
-## Changes Made:
-- `package.json`: Updated to KeystoneJS v8 packages (`@keystone-6/core@^8.0.6`, `@keystone-6/auth@^10.0.4`, `@keystone-6/fields-document@^11.0.4`)
-- `auth.ts`: Removed deprecated `initFirstItem` option
-- `keystone.ts`: Added `db.onConnect` for initial user seeding instead of `initFirstItem`
-- `schema.ts`: Updated to use `g` instead of `graphql` for field definitions
-- `keystone/fields/encryptedText/index.ts`: Updated to use `g` namespace
-- `keystone/fields/encryptedText/views.tsx`: Updated for v8 Admin UI API
-
-## Migration Guide:
-See [KeystoneJS v8 Migration Guide](https://keystonejs.com/docs/guides/migrate-to-8) for detailed information.
-
-## Known Issues:
-- **Next.js 16 Router Issue**: The build may fail due to Next.js 16's App Router requiring a router context during static page generation. This is a known limitation.
-- **Workaround**: Use `npm run dev` for development and local testing. For production deployment, use a serverless platform that supports server-side rendering.
-
-## Next Steps:
-1. Ensure your environment variables are set correctly
-2. Run `npm run dev` to start the development server
-3. Visit `/admin` to access the Admin UI
-4. For production, deploy using a serverless platform (Vercel, Netlify, etc.)
-
 # PostgreSQL Version Upgrade / Обновление версии PostgreSQL
 
 When upgrading PostgreSQL between major versions (e.g., 16 → 18), data migration is required due to incompatible data formats.
