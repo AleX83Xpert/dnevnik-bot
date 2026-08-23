@@ -21,7 +21,7 @@ import { createAuth } from '@keystone-6/auth'
 // see https://keystonejs.com/docs/apis/session for the session docs
 import { statelessSessions } from '@keystone-6/core/session'
 
-import { config } from './config'
+import { config } from './config.js'
 
 // withAuth is a function we can use to wrap our base configuration
 const { withAuth } = createAuth({

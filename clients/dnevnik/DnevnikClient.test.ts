@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals'
-import { DnevnikClient } from './DnevnikClient'
-import { DnevnikClientExternalServerError, DnevnikClientHttpResponseError, DnevnikClientUnauthorizedError } from './DnevnikClientErrors'
+import { DnevnikClient } from './DnevnikClient.ts'
+import { DnevnikClientExternalServerError, DnevnikClientHttpResponseError, DnevnikClientUnauthorizedError } from './DnevnikClientErrors.ts'
 
 global.fetch = jest.fn() as jest.Mock
 

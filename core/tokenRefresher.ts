@@ -1,9 +1,9 @@
-import { KeystoneContext } from '@keystone-6/core/types'
-import { DnevnikClient } from '../clients/dnevnik/DnevnikClient'
-import { DnevnikClientUnauthorizedError } from '../clients/dnevnik/DnevnikClientErrors'
-import { findExpiringUsers, updateUserTokens, clearUserTokens } from './userRepo'
-import { getTokenExpirationDate } from '../utils/jwt'
-import { getLogger } from '../utils/logger'
+import type { KeystoneContext } from '@keystone-6/core/types'
+import { DnevnikClient } from '../clients/dnevnik/DnevnikClient.js'
+import { DnevnikClientUnauthorizedError } from '../clients/dnevnik/DnevnikClientErrors.js'
+import { findExpiringUsers, updateUserTokens, clearUserTokens } from './userRepo.js'
+import { getTokenExpirationDate } from '../utils/jwt.js'
+import { getLogger } from '../utils/logger.js'
 import dayjs from 'dayjs'
 
 const logger = getLogger('tokenRefresher')

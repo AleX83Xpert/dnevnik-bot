@@ -8,3 +8,9 @@ redisdata/
 !.env.example
 *.log
 cache/
+tsconfig.tsbuildinfo
+coverage/
+schema.graphql
+schema.prisma
+generated/
+.prism

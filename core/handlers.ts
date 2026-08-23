@@ -1,15 +1,15 @@
-import { KeystoneContext } from '@keystone-6/core/types'
+import type { KeystoneContext } from '@keystone-6/core/types'
 import dayjs from 'dayjs'
 import { chunk, lowerCase, round } from 'lodash'
-import { BotContext, InlineKeyboard } from './types'
-import { fetchFromDnevnik } from './fetcher'
-import { findOrCreateUser, findUser, updateUserTokens, clearUserTokens } from './userRepo'
-import { DnevnikClient } from '../clients/dnevnik/DnevnikClient'
-import { DnevnikClientExternalServerError, DnevnikClientUnauthorizedError } from '../clients/dnevnik/DnevnikClientErrors'
-import { getTokenExpirationDate } from '../utils/jwt'
-import { getLogger } from '../utils/logger'
-import { formatStudentMainMenuTitle, formatScheduleDay, formatHomeworkItem, formatYearGradesLesson } from './formatters'
-import { TEstimatePeriod } from '../clients/dnevnik/DnevnikClientTypes'
+import type { BotContext, InlineKeyboard } from './types.js'
+import { fetchFromDnevnik } from './fetcher.js'
+import { findOrCreateUser, findUser, updateUserTokens, clearUserTokens } from './userRepo.js'
+import { DnevnikClient } from '../clients/dnevnik/DnevnikClient.js'
+import { DnevnikClientExternalServerError, DnevnikClientUnauthorizedError } from '../clients/dnevnik/DnevnikClientErrors.js'
+import { getTokenExpirationDate } from '../utils/jwt.js'
+import { getLogger } from '../utils/logger.js'
+import { formatStudentMainMenuTitle, formatScheduleDay, formatHomeworkItem, formatYearGradesLesson } from './formatters.js'
+import type { TEstimatePeriod } from '../clients/dnevnik/DnevnikClientTypes.js'
 
 const logger = getLogger('handlers')
 
@@ -213,7 +213,7 @@ export async function enterGradesMenu (godContext: KeystoneContext, ctx: BotCont
 export async function enterState (
   godContext: KeystoneContext,
   ctx: BotContext,
-  state: import('./types').ConversationState,
+  state: import('./types.js').ConversationState,
   needNewMessage: boolean = false
 ): Promise<void> {
   ctx.session.state = state

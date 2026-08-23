@@ -10,10 +10,10 @@ import {
   virtual,
 } from '@keystone-6/core/fields'
 
-import { type Lists, Context } from '.keystone/types'
+import { type Lists, type Context } from './generated/keystone/types.js'
 
 import dayjs from 'dayjs'
-import { config } from './config'
+import { config } from './config.ts'
 
 type TSession = {
   data: {
@@ -38,12 +38,12 @@ const isOwner = ({ session, item }: { session: TSession, item: TUserData }) => s
 
 // Create g with context for type inference
 const g = gWithContext<Context>()
-type g<T> = typeof gWithContext.infer<T>
+type G = typeof g
 
 export const lists = {
   User: list({
     access: isAdmin,
-    description: 'The web site user',
+    graphql: { description: 'The web site user' },
     fields: {
       name: text({ validation: { isRequired: true } }),
       email: text({
@@ -98,9 +98,9 @@ export const lists = {
             }),
           }),
           dnevnikAccessToken: encryptedText({ secretKey: getEncryptionToken(), validation: { isRequired: false } }),
-          dnevnikAccessTokenExpirationDate: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
+          dnevnikAccessTokenExpirationDate: timestamp({ validation: { isRequired: false }, isIndexed: true }),
           dnevnikRefreshToken: encryptedText({ secretKey: getEncryptionToken(), validation: { isRequired: false } }),
-          dnevnikTokensUpdatedAt: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
+          dnevnikTokensUpdatedAt: timestamp({ validation: { isRequired: false }, isIndexed: true }),
         },
       }),
       isBlocked: checkbox({ defaultValue: false }),

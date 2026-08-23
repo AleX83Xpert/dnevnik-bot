@@ -1,6 +1,6 @@
-import { KeystoneContext } from '@keystone-6/core/types'
-import { ALL_USER_FIELDS } from './constants'
-import { MessengerUser } from './types'
+import type { KeystoneContext } from '@keystone-6/core/types'
+import { ALL_USER_FIELDS } from './constants.js'
+import type { MessengerUser } from './types.js'
 
 export async function findUser(
   godContext: KeystoneContext,

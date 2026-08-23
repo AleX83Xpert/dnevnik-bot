@@ -1,5 +1,5 @@
-import { TransportAdapter } from './types'
-import { TStudent, TScheduleDay, THomework, TEstimateResultYearGradesTableLessonGrade } from '../clients/dnevnik/DnevnikClientTypes'
+import type { TransportAdapter } from './types.js'
+import type { TStudent, TScheduleDay, THomework, TEstimateResultYearGradesTableLessonGrade } from '../clients/dnevnik/DnevnikClientTypes.js'
 import { isNil, round } from 'lodash'
 
 export function formatTime (hour: number, minute: number) {

@@ -1,7 +1,7 @@
 import { isObject } from 'lodash'
-import { DnevnikClientExternalServerError, DnevnikClientHttpResponseError, DnevnikClientUnauthorizedError } from './DnevnikClientErrors'
-import { TClassesResult, TDnevnikClientArgs, TEstimateResult, THomeworkDoneParams, THomeworkDoneResult, THomeworkParams, THomeworkResult, TEstimatePeriodsResult, TRefreshTokenBody, TRefreshTokenResult, TScheduleParams, TScheduleResult, TStudentsResult, TEstimateSubjectsResult, TEstimateYearsParams, TEstimateYearsResult, TEstimatePeriodsParams, TEstimateSubjectsParams, TClassesParams, TEstimateParams } from './DnevnikClientTypes'
-import { getLogger } from '../../utils/logger'
+import { DnevnikClientExternalServerError, DnevnikClientHttpResponseError, DnevnikClientUnauthorizedError } from './DnevnikClientErrors.js'
+import type { TClassesResult, TDnevnikClientArgs, TEstimateResult, THomeworkDoneParams, THomeworkDoneResult, THomeworkParams, THomeworkResult, TEstimatePeriodsResult, TRefreshTokenBody, TRefreshTokenResult, TScheduleParams, TScheduleResult, TStudentsResult, TEstimateSubjectsResult, TEstimateYearsParams, TEstimateYearsResult, TEstimatePeriodsParams, TEstimateSubjectsParams, TClassesParams, TEstimateParams } from './DnevnikClientTypes.js'
+import { getLogger } from '../../utils/logger.js'
 import crypto from 'node:crypto'
 
 function cutToken (str: string) {

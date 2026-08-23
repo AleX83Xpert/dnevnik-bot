@@ -1,9 +1,9 @@
 import { getContext } from '@keystone-6/core/context'
 import * as PrismaModule from '.prisma/client'
-import config from '../keystone'
-import { Lists } from '.keystone/types'
-import { KeystoneContext } from '@keystone-6/core/types'
-import { ALL_USER_FIELDS } from '../core/constants'
+import config from '../keystone.js'
+import type { Lists } from '../generated/keystone/types.js'
+import type { KeystoneContext } from '@keystone-6/core/types'
+import { ALL_USER_FIELDS } from '../core/constants.ts'
 import { faker } from '@faker-js/faker'
 
 export const createTestGodContext = async () => {
@@ -35,4 +35,19 @@ export async function updateTestMessengerUser(context: KeystoneContext, id: stri
     data,
     query: ALL_USER_FIELDS,
   }) as Lists.MessengerUser.Item
+}
+
+export async function createTestUser(context: KeystoneContext, attrs: Partial<Lists.User.Item> = {}): Promise<Lists.User.Item> {
+  const data = {
+    name: faker.person.fullName(),
+    email: faker.internet.email(),
+    password: faker.internet.password(),
+    isAdmin: false,
+    ...attrs,
+  } as Lists.User.Item
+
+  return await context.query.User.createOne({
+    data,
+    query: 'id name email password isAdmin createdAt updatedAt',
+  }) as Lists.User.Item
 }

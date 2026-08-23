@@ -1,7 +1,7 @@
 import dayjs from "dayjs"
 import { get } from "lodash"
 import jwt from 'jsonwebtoken'
-import { config } from '../config'
+import { config } from '../config.js'
 
 export function getTokenExpirationDate (token: string): string {
   const forceAccessTokenTtl = config.forceAccessTokenTtl

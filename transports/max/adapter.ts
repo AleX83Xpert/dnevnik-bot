@@ -1,5 +1,5 @@
-import { TransportAdapter, InlineKeyboard, MessageRef, BotSession } from '../../core/types'
-import { config } from '../../config'
+import type { TransportAdapter, InlineKeyboard, MessageRef, BotSession } from '../../core/types.js'
+import { config } from '../../config.js'
 
 export class MaxTransportAdapter implements TransportAdapter {
   platform = 'max'

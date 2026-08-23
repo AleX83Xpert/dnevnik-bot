@@ -1,7 +1,7 @@
 import { Context, Markup } from 'telegraf'
-import { TransportAdapter, InlineKeyboard, MessageRef, BotSession } from '../../core/types'
-import { escMd, boldMd } from './formatters'
-import { config } from '../../config'
+import type { TransportAdapter, InlineKeyboard, MessageRef, BotSession } from '../../core/types.js'
+import { escMd, boldMd } from './formatters.js'
+import { config } from '../../config.js'
 
 export class TelegramTransportAdapter implements TransportAdapter {
   platform = 'telegram'

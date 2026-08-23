@@ -1,4 +1,4 @@
-import { TStudent, TEstimatePeriod } from '../clients/dnevnik/DnevnikClientTypes'
+import type { TStudent, TEstimatePeriod } from '../clients/dnevnik/DnevnikClientTypes.js'
 
 // ─── MessengerUser type (matches schema.ts MessengerUser list) ───
 export interface MessengerUser {

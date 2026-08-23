@@ -1,5 +1,5 @@
-import { KeystoneContext } from '@keystone-6/core/types'
-import { BotContext, ConversationState, DomainEvent } from './types'
+import type { KeystoneContext } from '@keystone-6/core/types'
+import type { BotContext, ConversationState, DomainEvent } from './types.js'
 import {
   onStart, onLogin, onLogout, onSendTokens,
   enterState,
@@ -8,7 +8,7 @@ import {
   handleScheduleToday, handleScheduleTomorrow, handleScheduleThisWeek, handleScheduleNextWeek,
   handleHomeworkToday, handleHomeworkTomorrow, handleHomeworkThisWeek, handleHomeworkNextWeek,
   handlePeriodSelect, handleBackToMainMenu,
-} from './handlers'
+} from './handlers.js'
 
 type ActionHandler = (godContext: KeystoneContext, ctx: BotContext, actionId: string) => Promise<void>
 

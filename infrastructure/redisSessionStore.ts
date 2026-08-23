@@ -1,8 +1,9 @@
-import { createClient, RedisClientType } from 'redis'
-import { SessionStore } from '../core/sessionManager'
-import { BotSession } from '../core/types'
-import { SESSION_TTL_SEC } from '../core/constants'
-import { getLogger } from '../utils/logger'
+import { createClient } from 'redis'
+import type { RedisClientType } from 'redis'
+import type { SessionStore } from '../core/sessionManager.js'
+import type { BotSession } from '../core/types.js'
+import { SESSION_TTL_SEC } from '../core/constants.js'
+import { getLogger } from '../utils/logger.js'
 
 const logger = getLogger('redisSessionStore')
 

@@ -2,18 +2,28 @@
 const config = {
   verbose: true,
   testEnvironment: "node",
-  transform: {
-    "^.+\\.(t|j)sx?$": ["ts-jest", {
-      useESM: false,
-    }],
+  extensionsToTreatAsEsm: [".ts"],
+  moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.js$": "$1",
   },
-  transformIgnorePatterns: [
-    'node_modules/(?!(@keystone-6|@prisma|@types))',
-  ],
+  transform: {
+    "^.+\\.tsx?$": [
+      "@swc/jest",
+      {
+        jsc: {
+          parser: {
+            syntax: "typescript",
+          },
+          target: "es2022",
+        },
+      },
+    ],
+  },
+  transformIgnorePatterns: [],
   modulePathIgnorePatterns: [
-    '<rootDir>/pgdata',
-    '<rootDir>/redisdata',
-    '<rootDir>/node_modules'
+    "<rootDir>/pgdata",
+    "<rootDir>/redisdata",
+    "<rootDir>/node_modules",
   ],
 };
 

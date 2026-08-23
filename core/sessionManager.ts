@@ -1,4 +1,4 @@
-import { BotSession } from './types'
+import type { BotSession } from './types.js'
 
 // ─── Session storage interface (storage-agnostic) ───
 export interface SessionStore {

@@ -1,18 +1,29 @@
 {
   "compilerOptions": {
-    "jsx": "react",
-    "target": "esnext",
+    "jsx": "react-jsx",
+    "target": "es2023",
     "module": "nodenext",
     "moduleResolution": "nodenext",
+    "moduleDetection": "force",
     "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
     "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedSideEffectImports": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "isolatedModules": true,
+    "resolveJsonModule": true,
+    "resolvePackageJsonExports": true,
+    "resolvePackageJsonImports": true,
+    "composite": true,
+    "incremental": true,
     "paths": {
       ".keystone/*": ["./.keystone/*"]
     }
-  }
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", ".keystone", "pgdata", "redisdata"]
 }

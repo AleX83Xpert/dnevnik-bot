@@ -1,4 +1,5 @@
-import { escMd, boldMd } from './formatters'
+import { describe, test, expect } from '@jest/globals'
+import { escMd, boldMd } from './formatters.ts'
 
 describe('Telegram formatters', () => {
   test('escMd escapes all special characters', () => {

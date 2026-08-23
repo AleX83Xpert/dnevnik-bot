@@ -1,9 +1,10 @@
-import { KeystoneContext } from "@keystone-6/core/types"
-import { createTestGodContext, createTestMessengerUser, generateTestPlatformUserId, updateTestMessengerUser } from './testUtils_esm/lists.test.utils'
+import type { KeystoneContext } from "@keystone-6/core/types"
+import { createTestGodContext, createTestMessengerUser, generateTestPlatformUserId, updateTestMessengerUser } from './testUtils/lists.test.utils.ts'
 import { faker } from "@faker-js/faker"
-import { ALL_USER_FIELDS } from "./core/constants"
-import { decrypt } from "./keystone/fields/encryptedText/utils"
-import { config } from './config'
+import { ALL_USER_FIELDS } from "./core/constants.ts"
+import { decrypt } from "./keystone/fields/encryptedText/utils.ts"
+import { config } from './config.ts'
+import { describe, beforeAll, test, expect } from "@jest/globals"
 
 describe('MessengerUser', () => {
   let context: KeystoneContext

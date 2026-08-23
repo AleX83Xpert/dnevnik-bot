@@ -5,8 +5,8 @@ import {
   orderDirectionEnum,
 } from '@keystone-6/core/types'
 import { graphql } from '@keystone-6/core'
-import { TextFieldConfig } from '@keystone-6/core/fields'
-import { decrypt, encrypt } from './utils'
+import type { TextFieldConfig } from '@keystone-6/core/fields'
+import { decrypt, encrypt } from './utils.js'
 import { isNil } from 'lodash'
 
 type EncryptedTextFieldConfig<ListTypeInfo extends BaseListTypeInfo> = TextFieldConfig<ListTypeInfo> & {

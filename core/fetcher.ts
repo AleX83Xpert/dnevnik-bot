@@ -1,13 +1,13 @@
-import { KeystoneContext } from '@keystone-6/core/types'
-import { DnevnikClient } from '../clients/dnevnik/DnevnikClient'
-import { TClassesParams, TClassesResult, TEstimateParams, TEstimatePeriodsParams, TEstimatePeriodsResult, TEstimateResult, TEstimateYearsParams, TEstimateYearsResult, THomeworkParams, THomeworkResult, TScheduleParams, TScheduleResult, TStudentsResult } from '../clients/dnevnik/DnevnikClientTypes'
-import { DnevnikClientExternalServerError, DnevnikClientHttpResponseError, DnevnikClientUnauthorizedError } from '../clients/dnevnik/DnevnikClientErrors'
+import type { KeystoneContext } from '@keystone-6/core/types'
+import { DnevnikClient } from '../clients/dnevnik/DnevnikClient.js'
+import type { TClassesParams, TClassesResult, TEstimateParams, TEstimatePeriodsParams, TEstimatePeriodsResult, TEstimateResult, TEstimateYearsParams, TEstimateYearsResult, THomeworkParams, THomeworkResult, TScheduleParams, TScheduleResult, TStudentsResult } from '../clients/dnevnik/DnevnikClientTypes.js'
+import { DnevnikClientExternalServerError, DnevnikClientHttpResponseError, DnevnikClientUnauthorizedError } from '../clients/dnevnik/DnevnikClientErrors.js'
 import dayjs from 'dayjs'
-import { getLogger } from '../utils/logger'
-import { getTokenExpirationDate } from '../utils/jwt'
-import { BotContext } from './types'
-import { NoUserError, NoTokensError } from './errors'
-import { updateUserTokens, clearUserTokens } from './userRepo'
+import { getLogger } from '../utils/logger.js'
+import { getTokenExpirationDate } from '../utils/jwt.js'
+import type { BotContext } from './types.js'
+import { NoUserError, NoTokensError } from './errors.js'
+import { updateUserTokens, clearUserTokens } from './userRepo.js'
 
 type TDnevnikRequest =
   | { action: 'students', params?: any }
