@@ -2,8 +2,9 @@
   "compilerOptions": {
     "jsx": "react",
     "target": "esnext",
-    "module": "node16",
-    "moduleResolution": "node16",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "allowImportingTsExtensions": true,
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
