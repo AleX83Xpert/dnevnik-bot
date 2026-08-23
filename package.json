@@ -9,7 +9,7 @@
     "disable-telemetry": "keystone telemetry disable && next telemetry disable",
     "dev": "NODE_OPTIONS=--use-openssl-ca keystone dev --no-db-push",
     "build": "NODE_ENV=production keystone build",
-    "start": "keystone start",
+    "start": "NODE_OPTIONS=--use-openssl-ca keystone start",
     "test": "jest"
   },
   "dependencies": {
