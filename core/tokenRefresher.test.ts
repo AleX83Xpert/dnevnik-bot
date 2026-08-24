@@ -1,4 +1,4 @@
-import { describe, beforeAll, afterAll, test, expect, jest } from "vitest"
+import { describe, beforeAll, afterAll, test, expect } from "vitest"
 import { createTestGodContext, createTestMessengerUser } from '../testUtils/lists.test.utils.ts'
 import { faker } from "@faker-js/faker"
 import { startTokenRefresher } from './tokenRefresher.ts'
@@ -12,7 +12,7 @@ describe('tokenRefresher', () => {
   })
 
   afterAll(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test('finds users with expiring tokens', async () => {
