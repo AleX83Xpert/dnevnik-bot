@@ -1,7 +1,7 @@
 import { describe, beforeAll, afterAll, test, expect } from "vitest"
-import { createTestGodContext, createTestMessengerUser } from '../testUtils/lists.test.utils.ts'
+import { createTestGodContext, createTestMessengerUser } from '../testUtils/lists.test.utils.js'
 import { faker } from "@faker-js/faker"
-import { startTokenRefresher } from './tokenRefresher.ts'
+import { startTokenRefresher } from './tokenRefresher.js'
 import dayjs from 'dayjs'
 
 describe('tokenRefresher', () => {

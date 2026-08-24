@@ -29,12 +29,17 @@ export default withAuth(
         logger.info({ msg: 'Connected to database' })
         // Seed development data if no users exist
         const sudo = context.sudo()
-        const userCount = await sudo.db.User.count()
+        const User = sudo.db['User']
+        if (!User) {
+          logger.warn({ msg: 'User list not available, skipping seed' })
+          return
+        }
+        const userCount = await User.count()
         if (userCount === 0) {
           logger.info({ msg: 'No users found, creating development user' })
           // Create a development-only account with a random password
           const password = randomBytes(16).toString('hex')
-          await sudo.db.User.createOne({
+          await User.createOne({
             data: {
               name: 'Development Admin',
               email: 'admin@example.com',

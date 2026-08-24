@@ -1,9 +1,9 @@
-import type { KeystoneContext } from "@keystone-6/core/types"
-import { createTestGodContext, createTestMessengerUser, generateTestPlatformUserId, updateTestMessengerUser } from './testUtils/lists.test.utils.ts'
+import type { Context as KeystoneContext } from './generated/keystone/types.js'
+import { createTestGodContext, createTestMessengerUser, generateTestPlatformUserId, updateTestMessengerUser } from './testUtils/lists.test.utils.js'
 import { faker } from "@faker-js/faker"
-import { ALL_USER_FIELDS } from "./core/constants.ts"
-import { decrypt } from "./keystone/fields/encryptedText/utils.ts"
-import { config } from './config.ts'
+import { ALL_USER_FIELDS } from "./core/constants.js"
+import { decrypt } from "./keystone/fields/encryptedText/utils.js"
+import { config } from './config.js'
 import { describe, beforeAll, test, expect } from "vitest"
 
 describe('MessengerUser', () => {
@@ -60,7 +60,7 @@ describe('MessengerUser', () => {
     const unencryptedDnevnikRefreshToken = `unencrypted_${faker.string.alphanumeric(20)}`
 
     // insert data with skipping encryption
-    const insertedMessengerUser = await context.prisma.MessengerUser.create({
+    const insertedMessengerUser = await context.prisma.messengerUser.create({
       data: {
         platform: 'telegram',
         platformUserId: generateTestPlatformUserId(),
@@ -77,8 +77,8 @@ describe('MessengerUser', () => {
     const createdMessengerUser = await context.query.MessengerUser.findOne({ where: { id: insertedMessengerUser.id }, query: ALL_USER_FIELDS })
 
     // sure that fields are unencrypted
-    expect(createdMessengerUser.dnevnikAccessToken).toBe(unencryptedDnevnikAccessToken)
-    expect(createdMessengerUser.dnevnikRefreshToken).toBe(unencryptedDnevnikRefreshToken)
+    expect(createdMessengerUser['dnevnikAccessToken']).toBe(unencryptedDnevnikAccessToken)
+    expect(createdMessengerUser['dnevnikRefreshToken']).toBe(unencryptedDnevnikRefreshToken)
 
     // now update tokens
     const dnevnikAccessToken = faker.string.alphanumeric(20)
@@ -91,14 +91,14 @@ describe('MessengerUser', () => {
 
     // read data with skipped decryption
     // https://www.prisma.io/docs/orm/prisma-client/queries/crud#read
-    const encrypted = await context.prisma.MessengerUser.findUnique({ where: { id: insertedMessengerUser.id } })
+    const encrypted = await context.prisma.messengerUser.findUnique({ where: { id: insertedMessengerUser.id } })
 
     // sure that loaded encrypted tokens are not the same as unencrypted ones
-    expect(encrypted.dnevnikAccessToken).not.toBe(dnevnikAccessToken)
-    expect(encrypted.dnevnikRefreshToken).not.toBe(dnevnikRefreshToken)
+    expect(encrypted?.dnevnikAccessToken).not.toBe(dnevnikAccessToken)
+    expect(encrypted?.dnevnikRefreshToken).not.toBe(dnevnikRefreshToken)
 
     // sure that these tokens encrypted right
-    expect(dnevnikAccessToken).toBe(decrypt(encrypted.dnevnikAccessToken, config.tokensEncryptionKey))
-    expect(dnevnikRefreshToken).toBe(decrypt(encrypted.dnevnikRefreshToken, config.tokensEncryptionKey))
+    expect(dnevnikAccessToken).toBe(decrypt(String(encrypted?.dnevnikAccessToken), config.tokensEncryptionKey))
+    expect(dnevnikRefreshToken).toBe(decrypt(String(encrypted?.dnevnikRefreshToken), config.tokensEncryptionKey))
   })
 })

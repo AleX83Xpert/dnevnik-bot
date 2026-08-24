@@ -1,7 +1,7 @@
 import { describe, beforeAll, test, expect } from "vitest"
-import { createTestGodContext, createTestMessengerUser, generateTestPlatformUserId } from '../testUtils/lists.test.utils.ts'
+import { createTestGodContext, createTestMessengerUser, generateTestPlatformUserId } from '../testUtils/lists.test.utils.js'
 import { faker } from "@faker-js/faker"
-import { findUser, findOrCreateUser, updateUserTokens, clearUserTokens, findExpiringUsers } from './userRepo.ts'
+import { findUser, findOrCreateUser, updateUserTokens, clearUserTokens, findExpiringUsers } from './userRepo.js'
 import dayjs from 'dayjs'
 
 describe('userRepo', () => {

@@ -96,8 +96,13 @@ export async function enterSelectStudent (godContext: KeystoneContext, ctx: BotC
 
     ctx.session.students = studentsResult.students
     if (studentsResult.students.length === 1) {
-      ctx.session.selectedStudentId = studentsResult.students[0].id
-      await enterState(godContext, ctx, { name: 'MAIN_MENU', studentId: studentsResult.students[0].id }, true)
+      const student = studentsResult.students[0]
+      if (!student) {
+        await ctx.transport.reply('Не удалось определить ученика. Попробуйте снова: /start.')
+        return
+      }
+      ctx.session.selectedStudentId = student.id
+      await enterState(godContext, ctx, { name: 'MAIN_MENU', studentId: student.id }, true)
     } else {
       const keyboard: InlineKeyboard = {
         buttons: studentsResult.students.map((student) => [{ text: `${student.firstName} ${student.lastName}, ${student.orgName}, ${student.className}`, callbackId: `select_${student.id}` }]),

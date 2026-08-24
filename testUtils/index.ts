@@ -1,2 +1,2 @@
 // Re-export test utilities for backward compatibility
-export * from './lists.test.utils';
+export * from './lists.test.utils.js';

@@ -7,7 +7,11 @@ export async function findUser(
   platform: string,
   platformUserId: string
 ): Promise<MessengerUser | undefined> {
-  const users = await godContext.query.MessengerUser.findMany({
+  const MessengerUser = godContext.query['MessengerUser']
+  if (!MessengerUser) {
+    throw new Error('MessengerUser list not available in query')
+  }
+  const users = await MessengerUser.findMany({
     where: { platform: { equals: platform }, platformUserId: { equals: platformUserId } },
     query: ALL_USER_FIELDS,
   })
@@ -22,7 +26,11 @@ export async function findOrCreateUser(
 ): Promise<MessengerUser> {
   let user = await findUser(godContext, platform, platformUserId)
   if (!user) {
-    user = await godContext.query.MessengerUser.createOne({
+    const MessengerUser = godContext.query['MessengerUser']
+    if (!MessengerUser) {
+      throw new Error('MessengerUser list not available in query')
+    }
+    user = await MessengerUser.createOne({
       data: { platform, platformUserId, meta },
       query: ALL_USER_FIELDS,
     }) as MessengerUser
@@ -35,7 +43,11 @@ export async function updateUserTokens(
   userId: string,
   tokens: { accessToken: string; accessTokenExpirationDate: string; refreshToken: string }
 ): Promise<MessengerUser> {
-  return await godContext.query.MessengerUser.updateOne({
+  const MessengerUser = godContext.query['MessengerUser']
+  if (!MessengerUser) {
+    throw new Error('MessengerUser list not available in query')
+  }
+  return await MessengerUser.updateOne({
     where: { id: userId },
     data: {
       dnevnikAccessToken: tokens.accessToken,
@@ -51,7 +63,11 @@ export async function clearUserTokens(
   godContext: KeystoneContext,
   userId: string
 ): Promise<void> {
-  await godContext.query.MessengerUser.updateOne({
+  const MessengerUser = godContext.query['MessengerUser']
+  if (!MessengerUser) {
+    throw new Error('MessengerUser list not available in query')
+  }
+  await MessengerUser.updateOne({
     where: { id: userId },
     data: {
       dnevnikAccessToken: null,
@@ -66,7 +82,11 @@ export async function findExpiringUsers(
   godContext: KeystoneContext,
   expiresBefore: string
 ): Promise<MessengerUser[]> {
-  return await godContext.query.MessengerUser.findMany({
+  const MessengerUser = godContext.query['MessengerUser']
+  if (!MessengerUser) {
+    throw new Error('MessengerUser list not available in query')
+  }
+  return await MessengerUser.findMany({
     where: {
       dnevnikAccessTokenExpirationDate: { lte: expiresBefore },
       dnevnikAccessToken: { not: { equals: '' } },

@@ -2,8 +2,8 @@ import { getContext } from '@keystone-6/core/context'
 import * as PrismaModule from '.prisma/client'
 import config from '../keystone.js'
 import type { Lists } from '../generated/keystone/types.js'
-import type { KeystoneContext } from '@keystone-6/core/types'
-import { ALL_USER_FIELDS } from '../core/constants.ts'
+import type { Context as KeystoneContext } from '../generated/keystone/types.js'
+import { ALL_USER_FIELDS } from '../core/constants.js'
 import { faker } from '@faker-js/faker'
 
 export const createTestGodContext = async () => {

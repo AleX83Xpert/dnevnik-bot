@@ -296,16 +296,21 @@ function validateMaxInitData (initData: string, botToken: string): string | null
     if (!initData || typeof initData !== 'string') return null
 
     // Parse key=value pairs separated by &
-    const params: [string, string][] = initData.split('&').map((pair) => {
-      const [key, ...valueParts] = pair.split('=')
-      return [key, decodeURIComponent(valueParts.join('='))]
-    })
+    const params: [string, string][] = initData.split('&')
+      .map((pair) => {
+        const [key, ...valueParts] = pair.split('=')
+        if (!key) return null
+        return [key, decodeURIComponent(valueParts.join('='))] as [string, string] | null
+      })
+      .filter((entry): entry is [string, string] => entry !== null)
 
     // hash must appear exactly once
     const hashEntries = params.filter(([key]) => key === 'hash')
     if (hashEntries.length !== 1) return null
 
-    const originalHash = hashEntries[0][1]
+    const hashEntry = hashEntries[0]
+    if (!hashEntry) return null
+    const originalHash = hashEntry[1]
     if (!originalHash) return null
 
     // Sort params alphabetically by key, excluding hash

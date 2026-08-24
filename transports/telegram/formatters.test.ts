@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { escMd, boldMd } from './formatters.ts'
+import { escMd, boldMd } from './formatters.js'
 
 describe('Telegram formatters', () => {
   test('escMd escapes all special characters', () => {
