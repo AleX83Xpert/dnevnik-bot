@@ -17,5 +17,11 @@ export default defineConfig({
       'core/userRepo.test.ts',
     ],
     testTimeout: 30_000,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      include: ['core/**', 'clients/**', 'transports/**'],
+      exclude: ['**/*.test.ts'],
+    },
   },
 });
