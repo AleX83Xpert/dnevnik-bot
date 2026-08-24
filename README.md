@@ -10,24 +10,6 @@ This is a multi-transport bot (Telegram, MAX) that makes using the Sverdlovsk Re
 ### ru
 Это мульти-транспортный бот (Telegram, MAX), дающий возможность гораздо удобнее пользоваться электронным школьным дневником Свердловской области, чем сам дневник https://dnevnik.egov66.ru.
 
-# Multi-transport support / Мульти-транспортная поддержка
-### en
-The bot supports multiple messenger platforms (transports). Currently:
-- **Telegram** — via Telegraf, using WebApp for token delivery
-- **MAX** — via @maxhub/max-bot-api, using a mini-app with HTTP POST for token delivery
-
-Adding a new transport is purely additive: implement a `TransportAdapter`, create a `transports/<platform>/bot.ts`, and wire it in `keystone.ts`. No core files change.
-
-At least one transport token is required (`TELEGRAM_BOT_TOKEN` or `MAX_BOT_TOKEN`).
-### ru
-Бот поддерживает несколько мессенджеров (транспортов). Сейчас:
-- **Telegram** — через Telegraf, использует WebApp для передачи токенов
-- **MAX** — через @maxhub/max-bot-api, использует мини-приложение с HTTP POST для передачи токенов
-
-Добавление нового транспорта — чисто аддитивное: реализуйте `TransportAdapter`, создайте `transports/<platform>/bot.ts` и подключите в `keystone.ts`. Ядро не меняется.
-
-Требуется хотя бы один токен транспорта (`TELEGRAM_BOT_TOKEN` или `MAX_BOT_TOKEN`).
-
 # Why / Мотивация
 ### en
 To log in to the Sverdlovsk Region's electronic school diary, you first need to log in to Gosuslugi (the government services portal). To log in to Gosuslugi, you have to receive an SMS with a code. To receive the SMS code, you need to enter your username and password. And this happens every single time. Every. Damn. Time.
@@ -79,6 +61,24 @@ npm run dev
 ```bash
 npm run test
 ```
+
+# Multi-transport support / Мульти-транспортная поддержка
+### en
+The bot supports multiple messenger platforms (transports). Currently:
+- **Telegram** — via Telegraf, using WebApp for token delivery
+- **MAX** — via @maxhub/max-bot-api, using a mini-app with HTTP POST for token delivery
+
+Adding a new transport is purely additive: implement a `TransportAdapter`, create a `transports/<platform>/bot.ts`, and wire it in `keystone.ts`. No core files change.
+
+At least one transport token is required (`TELEGRAM_BOT_TOKEN` or `MAX_BOT_TOKEN`).
+### ru
+Бот поддерживает несколько мессенджеров (транспортов). Сейчас:
+- **Telegram** — через Telegraf, использует WebApp для передачи токенов
+- **MAX** — через @maxhub/max-bot-api, использует мини-приложение с HTTP POST для передачи токенов
+
+Добавление нового транспорта — чисто аддитивное: реализуйте `TransportAdapter`, создайте `transports/<platform>/bot.ts` и подключите в `keystone.ts`. Ядро не меняется.
+
+Требуется хотя бы один токен транспорта (`TELEGRAM_BOT_TOKEN` или `MAX_BOT_TOKEN`).
 
 # PostgreSQL Version Upgrade / Обновление версии PostgreSQL
 
