@@ -12,6 +12,9 @@ export function encrypt (text: string, secretKey: string) {
 
 export function decrypt (text: string, secretKey: string) {
   const [iv, encryptedText] = text.split(CIPHER_SEPARATOR, 2)
+  if (!iv || !encryptedText) {
+    throw new Error('Invalid encrypted text format')
+  }
   const decipher = crypto.createDecipheriv('aes-256-cbc', secretKey, Buffer.from(iv, 'hex'))
   let decrypted = decipher.update(encryptedText, 'hex', 'utf8')
   decrypted += decipher.final('utf8')

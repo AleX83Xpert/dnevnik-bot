@@ -3,12 +3,30 @@ import { TextField } from '@keystar/ui/text-field'
 import { CellContainer } from '@keystone-6/core/admin-ui/components'
 
 import {
-  type CardValueComponent,
   type CellComponent,
   type FieldController,
   type FieldControllerConfig,
   type FieldProps,
 } from '@keystone-6/core/types'
+
+type CardValueProps = {
+  field: ReturnType<typeof controller>
+  item: Record<string, unknown>
+}
+
+export const CardValue: React.FC<CardValueProps> = ({ field, item }) => {
+  return (
+    <div>
+      <label>{field.label}</label>
+      {item[field.fieldKey] as string}
+    </div>
+  )
+}
+
+export const Cell: CellComponent = ({ value, field, item }) => {
+  const displayValue = value + ''
+  return <CellContainer>{displayValue}</CellContainer>
+}
 
 export function Field ({ field, value, onChange, autoFocus }: FieldProps<typeof controller>) {
   const disabled = onChange === undefined
@@ -22,20 +40,6 @@ export function Field ({ field, value, onChange, autoFocus }: FieldProps<typeof 
       onChange={x => onChange?.(x === '' ? null : x)}
       value={value ?? ''}
     />
-  )
-}
-
-export const Cell: CellComponent = ({ value, field, item }) => {
-  const displayValue = value + ''
-  return <CellContainer>{displayValue}</CellContainer>
-}
-
-export const CardValue: CardValueComponent = ({ field, item }) => {
-  return (
-    <div>
-      <label>{field.label}</label>
-      {item[field.fieldKey]}
-    </div>
   )
 }
 
