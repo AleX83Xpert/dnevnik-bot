@@ -5,6 +5,7 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "moduleDetection": "force",
+    "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "strict": true,
     "noUncheckedIndexedAccess": true,
@@ -19,10 +20,11 @@
     "resolvePackageJsonImports": true,
     "composite": true,
     "incremental": true,
+    "types": ["vitest/globals"],
     "paths": {
       ".keystone/*": ["./.keystone/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", ".keystone", "pgdata", "redisdata"]
+  "exclude": ["node_modules", "pgdata", "redisdata"]
 }

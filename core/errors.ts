@@ -1,12 +1,12 @@
 export class NoUserError extends Error {
-  name = 'NoUserError'
+  override name = 'NoUserError'
 }
 export class NoTokensError extends Error {
-  name = 'NoTokensError'
+  override name = 'NoTokensError'
 }
 export class AuthenticationExpiredError extends Error {
-  name = 'AuthenticationExpiredError'
+  override name = 'AuthenticationExpiredError'
 }
 export class DiaryUnavailableError extends Error {
-  name = 'DiaryUnavailableError'
+  override name = 'DiaryUnavailableError'
 }
