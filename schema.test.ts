@@ -4,7 +4,7 @@ import { faker } from "@faker-js/faker"
 import { ALL_USER_FIELDS } from "./core/constants.ts"
 import { decrypt } from "./keystone/fields/encryptedText/utils.ts"
 import { config } from './config.ts'
-import { describe, beforeAll, test, expect } from "@jest/globals"
+import { describe, beforeAll, test, expect } from "vitest"
 
 describe('MessengerUser', () => {
   let context: KeystoneContext

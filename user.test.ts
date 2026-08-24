@@ -1,4 +1,4 @@
-import { describe, beforeAll, test, expect } from "@jest/globals"
+import { describe, beforeAll, test, expect } from "vitest"
 import { createTestGodContext, createTestUser } from './testUtils/lists.test.utils.ts'
 import { faker } from "@faker-js/faker"
 

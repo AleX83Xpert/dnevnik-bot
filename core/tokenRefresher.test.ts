@@ -1,4 +1,4 @@
-import { describe, beforeAll, afterAll, test, expect, jest } from "@jest/globals"
+import { describe, beforeAll, afterAll, test, expect, jest } from "vitest"
 import { createTestGodContext, createTestMessengerUser } from '../testUtils/lists.test.utils.ts'
 import { faker } from "@faker-js/faker"
 import { startTokenRefresher } from './tokenRefresher.ts'

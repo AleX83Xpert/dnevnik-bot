@@ -1,4 +1,4 @@
-import { describe, test, expect } from '@jest/globals'
+import { describe, test, expect } from 'vitest'
 import { escMd, boldMd } from './formatters.ts'
 
 describe('Telegram formatters', () => {

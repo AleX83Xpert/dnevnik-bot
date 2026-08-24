@@ -1,4 +1,12 @@
-export class NoUserError extends Error {}
-export class NoTokensError extends Error {}
-export class AuthenticationExpiredError extends Error {}
-export class DiaryUnavailableError extends Error {}
+export class NoUserError extends Error {
+  name = 'NoUserError'
+}
+export class NoTokensError extends Error {
+  name = 'NoTokensError'
+}
+export class AuthenticationExpiredError extends Error {
+  name = 'AuthenticationExpiredError'
+}
+export class DiaryUnavailableError extends Error {
+  name = 'DiaryUnavailableError'
+}

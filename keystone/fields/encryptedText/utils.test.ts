@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { describe, test, expect } from '@jest/globals'
+import { describe, test, expect } from 'vitest'
 import { decrypt, encrypt } from './utils.js'
 
 describe('encryptedText', () => {

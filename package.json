@@ -10,7 +10,7 @@
     "dev": "NODE_OPTIONS=--use-openssl-ca keystone dev --no-db-push",
     "build": "NODE_ENV=production keystone build",
     "start": "NODE_OPTIONS=--use-openssl-ca keystone start",
-    "test": "jest"
+    "test": "vitest"
   },
   "dependencies": {
     "@keystone-6/auth": "^10.0.4",
@@ -34,16 +34,13 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^9.9.0",
-    "@jest/globals": "^30.2.0",
     "@prisma/client": "^7.9.1",
-    "@swc/jest": "^0.2.39",
     "@types/express": "^4.17.25",
-    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/lodash": "^4.17.23",
-    "jest": "^30.2.0",
     "prisma": "^7.9.1",
-    "ts-jest": "^29.4.6",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "tsx": "^4.23.12",
+    "vitest": "^4.1.11"
   }
 }

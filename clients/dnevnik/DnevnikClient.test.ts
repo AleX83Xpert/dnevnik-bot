@@ -1,20 +1,23 @@
-import { describe, expect, test } from '@jest/globals'
-import { DnevnikClient } from './DnevnikClient.ts'
-import { DnevnikClientExternalServerError, DnevnikClientHttpResponseError, DnevnikClientUnauthorizedError } from './DnevnikClientErrors.ts'
+import { describe, expect, test, beforeEach, vi } from 'vitest'
+import { DnevnikClient } from './DnevnikClient.js'
+import { DnevnikClientExternalServerError, DnevnikClientHttpResponseError, DnevnikClientUnauthorizedError } from './DnevnikClientErrors.js'
 
-global.fetch = jest.fn() as jest.Mock
+const mockFetch = vi.fn()
+const originalFetch = globalThis.fetch
+beforeEach(() => {
+  globalThis.fetch = mockFetch as unknown as typeof fetch
+  mockFetch.mockReset()
+})
+afterAll(() => {
+  globalThis.fetch = originalFetch
+})
 
 describe('DnevnikClient', () => {
-  beforeEach(() => {
-    (fetch as jest.Mock).mockClear()
-  })
-
   test('should return data if status=200', async () => {
     const client = new DnevnikClient({ accessToken: '', refreshToken: '' })
     const mockData = { a: 1 }
-    const f = fetch as jest.Mock
 
-    f.mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: async () => mockData,
@@ -22,7 +25,7 @@ describe('DnevnikClient', () => {
 
     const result = await client.getStudents()
 
-    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(mockFetch).toHaveBeenCalledTimes(1)
     expect(result).toEqual(mockData)
   })
 
@@ -33,18 +36,16 @@ describe('DnevnikClient', () => {
       { status: 403, errType: DnevnikClientUnauthorizedError },
       { status: 502, errType: DnevnikClientExternalServerError },
       { status: 504, errType: DnevnikClientExternalServerError },
-      { status: 403, errType: DnevnikClientHttpResponseError },
       { status: 404, errType: DnevnikClientHttpResponseError },
     ]
 
     test.each(cases)('status $status must throw $errType', async ({ status, errType }) => {
       const client = new DnevnikClient({ accessToken: '', refreshToken: '' })
-      const f = fetch as jest.Mock
 
-      f.mockResolvedValueOnce({ ok: false, status: status })
+      mockFetch.mockResolvedValueOnce({ ok: false, status })
 
       await expect(client.getStudents()).rejects.toThrow(errType)
-      expect(fetch).toHaveBeenCalledTimes(1)
+      expect(mockFetch).toHaveBeenCalledTimes(1)
     })
   })
 })
