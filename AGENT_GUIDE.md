@@ -51,7 +51,7 @@ Transport-agnostic business logic. All bot logic lives here:
 - `keystone/fields/encryptedText/` — AES-256-CBC field for token encryption
 - `schema.ts` — MessengerUser list (platform + platformUserId)
 - `config.ts` — single validated config, no process.env elsewhere
-- `infrastructure/redisSessionStore.ts` — RedisSessionStore with TTL
+- `utils/redisSessionStore.ts` — RedisSessionStore with TTL
 
 ## Key Files
 
@@ -89,7 +89,7 @@ Transport-agnostic business logic. All bot logic lives here:
 - Stored in Redis with 45-day TTL (`SESSION_TTL_SEC` in `core/constants.ts`)
 - Keyed by `dnevnik:<platform>:<userId>`
 - `messageRef` stored in session for cross-request menu message editing
-- Both transports use `RedisSessionStore` from `infrastructure/`
+- Both transports use `RedisSessionStore` from `utils/`
 
 ## Token Delivery
 

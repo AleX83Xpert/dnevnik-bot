@@ -11,7 +11,7 @@ import crypto from 'node:crypto'
 import { getLogger } from '../../utils/logger.js'
 import { NoUserError, NoTokensError } from '../../core/errors.js'
 import { SessionManager } from '../../core/sessionManager.js'
-import { RedisSessionStore } from '../../infrastructure/redisSessionStore.js'
+import { RedisSessionStore } from '../../utils/redisSessionStore.js'
 
 const logger = getLogger('maxBot')
 
