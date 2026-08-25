@@ -175,18 +175,3 @@ No core files change. No other transports are affected. The diary client, token 
 **Implementation:** This requires registering as a Gosuslugi OAuth client (ESIA integration), which is legally and technically complex but provides the smoothest UX. The proxy service handles the full OAuth 2.0 + ESIA cryptographic flow (GOST signing, etc.), obtains diary tokens, and redirects back to the bot with an encrypted payload.
 
 **Priority:** Low. Complex legal and technical requirements. Only worth pursuing if the bot grows significantly and the manual token extraction becomes a major adoption barrier.
-
----
-
-## F13: Fix pre-existing Keystone admin UI build error
-
-**Problem:** `npm run build` exits with code 1 due to `NEXT_EXPORT_ERROR` — a pre-existing Keystone 6 + Next.js admin UI static export failure (`<Html> should not be imported outside of pages/_document`). This affects admin UI pages (`/`, `/signin`, `/messenger-users`, etc.) and prevents `hermes verify` from recording passing evidence.
-
-**Solution:** Investigate and fix the Keystone admin UI's Next.js export configuration. This may involve:
-- Upgrading Keystone 6 to a version compatible with the installed Next.js
-- Pinning Next.js to a version known to work with Keystone's admin UI
-- Configuring Next.js export settings in Keystone's build pipeline
-
-**Implementation:** This is a Keystone/Next.js compatibility issue, not related to the transport layer. It requires investigating the Keystone 6 admin UI build process and Next.js version compatibility matrix.
-
-**Priority:** Medium. Currently blocks `hermes verify` from recording passing evidence. The admin UI works fine in dev mode (`npm run dev`), only the production build's static export step fails.

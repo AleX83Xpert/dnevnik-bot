@@ -99,12 +99,10 @@ Transport-agnostic business logic. All bot logic lives here:
 ## Verification
 
 ```bash
-npm run test      # Jest — 4 suites, 23 tests
+npm run test      # Tests
 npm run build     # Keystone build (TypeScript compiles, but Next.js export has pre-existing error)
 npx tsc --noEmit  # TypeScript check (0 source errors expected)
 ```
-
-**Known issue:** `npm run build` exits with code 1 due to `NEXT_EXPORT_ERROR` — a pre-existing Keystone admin UI + Next.js static export issue. TypeScript compilation passes (`✓ Compiled successfully`). This is NOT caused by transport layer changes. See `TODO.md` F13.
 
 ## Common Pitfalls
 
