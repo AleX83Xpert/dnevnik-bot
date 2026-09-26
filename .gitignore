@@ -12,5 +12,4 @@ tsconfig.tsbuildinfo
 coverage/
 schema.graphql
 schema.prisma
-generated/
 .prism
