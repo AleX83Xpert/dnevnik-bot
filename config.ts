@@ -23,7 +23,6 @@ function requiredNumber (name: string): number {
 export const config = {
   nodeEnv: optional('NODE_ENV') ?? 'development',
   databaseUrl: required('DATABASE_URL'),
-  shadowDatabaseUrl: required('SHADOW_DATABASE_URL'),
   redisUrl: required('REDIS_URL'),
   sessionSecret: required('SESSION_SECRET'),
   tokensEncryptionKey: required('TOKENS_ENCRYPTION_KEY'),
