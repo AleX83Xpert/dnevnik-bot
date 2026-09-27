@@ -9,6 +9,9 @@ import type { BotContext } from './types.js'
 import { NoUserError, NoTokensError } from './errors.js'
 import { updateUserTokens, clearUserTokens } from './userRepo.js'
 
+// Track in-flight refresh promises per user to prevent competing refreshes
+const inFlightRefreshes = new Map<string, Promise<void>>()
+
 type TDnevnikRequest =
   | { action: 'students', params?: any }
   | { action: 'schedule', params: TScheduleParams }
@@ -86,38 +89,55 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
     return await method(dnevnikClient, request.params)
   } catch (err) {
     if (err instanceof DnevnikClientUnauthorizedError) {
-      // Unauthorized! Try to refresh tokens and retry.
       logger.warn({ msg: 'token expired', platform: user.platform, platformUserId: user.platformUserId, reqId, accessToken: cutToken(dnevnikClient.dnevnikAccessToken), refreshToken: cutToken(dnevnikClient.dnevnikRefreshToken), accessTokenExpirationDate: user.dnevnikAccessTokenExpirationDate })
-      try {
-        const newTokens = await dnevnikClient.refreshTokens()
-        if (newTokens) {
-          const dnevnikAccessTokenExpirationDate = getTokenExpirationDate(newTokens.accessToken)
-          logger.info({ msg: 'tokens refreshed', platform: user.platform, platformUserId: user.platformUserId, reqId, accessToken: cutToken(newTokens.accessToken), refreshToken: cutToken(newTokens.refreshToken), accessTokenExpirationDate: dnevnikAccessTokenExpirationDate })
 
-          const updatedUser = await updateUserTokens(godContext, user.id, {
-            accessToken: newTokens.accessToken,
-            accessTokenExpirationDate: dnevnikAccessTokenExpirationDate,
-            refreshToken: newTokens.refreshToken,
-          })
+      // Check if there's already a refresh in progress for this user
+      let refreshPromise = inFlightRefreshes.get(user.id)
+      let refreshFailed = false
 
-          // Update context with refreshed tokens
-          ctx.user = updatedUser
+      if (!refreshPromise) {
+        refreshPromise = (async () => {
+          try {
+            const newTokens = await dnevnikClient.refreshTokens()
+            if (newTokens) {
+              const dnevnikAccessTokenExpirationDate = getTokenExpirationDate(newTokens.accessToken)
+              logger.info({ msg: 'tokens refreshed', platform: user.platform, platformUserId: user.platformUserId, reqId, accessToken: cutToken(newTokens.accessToken), refreshToken: cutToken(newTokens.refreshToken), accessTokenExpirationDate: dnevnikAccessTokenExpirationDate })
 
-          // Retry the request with the same client (now has updated tokens)
-          return await method(dnevnikClient, request.params)
-        }
-      } catch (err) {
-        logger.warn({ msg: 'tokens refresh failed', reqId, err })
+              const updatedUser = await updateUserTokens(godContext, user.id, {
+                accessToken: newTokens.accessToken,
+                accessTokenExpirationDate: dnevnikAccessTokenExpirationDate,
+                refreshToken: newTokens.refreshToken,
+              })
 
-        if (err instanceof DnevnikClientUnauthorizedError) {
-          // Clear tokens
-          await clearUserTokens(godContext, user.id)
+              ctx.user = updatedUser
+            }
+          } catch (refreshErr) {
+            refreshFailed = true
+            logger.warn({ msg: 'tokens refresh failed', reqId, err: refreshErr })
 
-          await transport.sendLoginPrompt(
-            'К сожалению, случилось так что я потерял доступ к вашему аккаунту в дневнике. Причины могут быть разными и даже не зависящими от меня. Но, что есть - то есть. Нам нужно снова получить доступ к вашему аккаунту в дневнике. Кнопка снова внизу, вы знаете что делать.',
-          )
-        }
+            if (refreshErr instanceof DnevnikClientUnauthorizedError) {
+              await clearUserTokens(godContext, user.id)
+
+              await transport.sendLoginPrompt(
+                'К сожалению, случилось так что я потерял доступ к вашему аккаунту в дневнике. Причины могут быть разными и даже не зависящими от меня. Но, что есть - то есть. Нам нужно снова получить доступ к вашему аккаунту в дневнике. Кнопка снова внизу, вы знаете что делать.',
+              )
+            }
+          } finally {
+            inFlightRefreshes.delete(user.id)
+          }
+        })()
+
+        inFlightRefreshes.set(user.id, refreshPromise)
       }
+
+      await refreshPromise
+
+      if (refreshFailed) {
+        return
+      }
+
+      // Retry the request with refreshed tokens
+      return await method(dnevnikClient, request.params)
     } else if (err instanceof DnevnikClientExternalServerError) {
       await transport.reply('Да что ж такое! На сайте дневника сейчас идут технические работы. Ничего не могу поделать 😥')
     } else {
