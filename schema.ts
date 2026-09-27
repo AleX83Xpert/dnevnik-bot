@@ -1,5 +1,5 @@
-import { list, group, graphql } from '@keystone-6/core'
-import { encryptedText } from './keystone/fields/encryptedText/index'
+import { list, group, gWithContext } from '@keystone-6/core'
+import { encryptedText } from './keystone/fields/encryptedText/index.js'
 
 import {
   text,
@@ -10,42 +10,40 @@ import {
   virtual,
 } from '@keystone-6/core/fields'
 
-import { type Lists } from '.keystone/types'
+import { type Lists, type Context } from './generated/keystone/types.js'
 
-import { get } from 'lodash'
 import dayjs from 'dayjs'
+import { config } from './config.ts'
 
 type TSession = {
   data: {
-    id: string;
-    isAdmin: boolean;
+    id: string
+    isAdmin: boolean
   }
 }
 
 type TUserData = {
-  id: string;
-  name: string;
-  email: string;
-  isAdmin: boolean;
+  id: string
+  name: string
+  email: string
+  isAdmin: boolean
 }
 
 function getEncryptionToken (): string {
-  const TOKENS_ENCRYPTION_KEY = process.env.TOKENS_ENCRYPTION_KEY
-
-  if (TOKENS_ENCRYPTION_KEY?.length !== 32) {
-    throw new Error('TOKENS_ENCRYPTION_KEY must be 32 symbols length')
-  }
-
-  return TOKENS_ENCRYPTION_KEY
+  return config.tokensEncryptionKey
 }
 
 const isAdmin = ({ session }: { session?: TSession }) => Boolean(session?.data.isAdmin)
 const isOwner = ({ session, item }: { session: TSession, item: TUserData }) => session?.data.id === item.id
 
+// Create g with context for type inference
+const g = gWithContext<Context>()
+type G = typeof g
+
 export const lists = {
   User: list({
     access: isAdmin,
-    description: 'The web site user',
+    graphql: { description: 'The web site user' },
     fields: {
       name: text({ validation: { isRequired: true } }),
       email: text({
@@ -65,39 +63,44 @@ export const lists = {
     },
   }),
 
-  TelegramUser: list({
+  MessengerUser: list({
     access: isAdmin,
     fields: {
       label: virtual({
-        field: graphql.field({
-          type: graphql.String,
+        field: g.field({
+          type: g.String,
           async resolve (item, args, context) {
-            const telegramId = get(item, ['meta', 'id'])
-            const title = get(item, ['meta', 'username'], get(item, ['meta', 'first_name']))
+            const platformUserId = item.platformUserId
+            const meta = item.meta as any
+            const title = meta?.username || meta?.first_name
 
-            return title ? `${title}/${telegramId}` : item.id
-          }
+            return title ? `${title}/${platformUserId}` : item.id
+          },
         }),
       }),
-      telegramId: text({
+      platform: text({
         validation: { isRequired: true },
-        isIndexed: 'unique',
+        isIndexed: true,
+      }),
+      platformUserId: text({
+        validation: { isRequired: true },
+        isIndexed: true,
       }),
       ...group({
         label: 'Dnevnik token set',
         fields: {
           isTokenActual: virtual({
-            field: graphql.field({
-              type: graphql.Boolean,
+            field: g.field({
+              type: g.Boolean,
               async resolve (item, args, context) {
                 return dayjs().isBefore(item.dnevnikAccessTokenExpirationDate)
               },
             }),
           }),
           dnevnikAccessToken: encryptedText({ secretKey: getEncryptionToken(), validation: { isRequired: false } }),
-          dnevnikAccessTokenExpirationDate: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
+          dnevnikAccessTokenExpirationDate: timestamp({ validation: { isRequired: false }, isIndexed: true }),
           dnevnikRefreshToken: encryptedText({ secretKey: getEncryptionToken(), validation: { isRequired: false } }),
-          dnevnikTokensUpdatedAt: timestamp({ validation: { isRequired: false }, isOrderable: true, isIndexed: true }),
+          dnevnikTokensUpdatedAt: timestamp({ validation: { isRequired: false }, isIndexed: true }),
         },
       }),
       isBlocked: checkbox({ defaultValue: false }),

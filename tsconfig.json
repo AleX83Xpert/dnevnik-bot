@@ -1,11 +1,29 @@
 {
   "compilerOptions": {
-    "jsx": "react",
-    "target": "esnext",
-    "module": "commonjs",
+    "jsx": "react-jsx",
+    "target": "es2023",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "moduleDetection": "force",
+    "verbatimModuleSyntax": true,
     "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
-  }
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedSideEffectImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "resolvePackageJsonExports": true,
+    "resolvePackageJsonImports": true,
+    "composite": true,
+    "incremental": true,
+    "types": ["vitest/globals"],
+    "paths": {
+      ".keystone/*": ["./.keystone/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "pgdata", "redisdata"]
 }

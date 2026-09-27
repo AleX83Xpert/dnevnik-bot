@@ -1,27 +1,55 @@
-import 'dotenv/config'
-import { config } from '@keystone-6/core'
-import { lists } from './schema'
-import { withAuth, session } from './auth'
-import { getLogger } from './utils/logger'
-import { startTokensRefresher } from './utils/dnevnikTokensRefresher'
-import { prepareTelegramBot } from './telegramBot/bot'
+import { config as keystoneConfig } from '@keystone-6/core'
+import { config } from './config.js'
+import { lists } from './schema.js'
+import { withAuth, session } from './auth.js'
+import { getLogger } from './utils/logger.js'
+import { startTokenRefresher } from './core/tokenRefresher.js'
+import { prepareTelegramBot } from './transports/telegram/bot.js'
+import { prepareMaxBot, ensureWebhookSubscription } from './transports/max/bot.js'
+import { randomBytes } from 'node:crypto'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ru'
+// @ts-ignore - dayjs plugins don't have ES module type declarations
 import localeData from 'dayjs/plugin/localeData'
+import { PrismaPg } from '@prisma/adapter-pg'
 
 dayjs.locale('ru')
-dayjs.extend(localeData)
+dayjs.extend(localeData as any)
 
 const logger = getLogger('main')
 
 export default withAuth(
-  config({
+  keystoneConfig({
     db: {
       provider: 'postgresql',
-      url: process.env.DATABASE_URL as string,
-      shadowDatabaseUrl: process.env.SHADOW_DATABASE_URL as string,
-      onConnect: async (context) => { logger.info({ msg: 'Connected to database' }) },
-      enableLogging: process.env.ENABLE_DB_LOGS === 'true',
+      prismaClientOptions: () => ({
+        adapter: new PrismaPg({ connectionString: config.databaseUrl }),
+      }),
+      onConnect: async (context) => {
+        logger.info({ msg: 'Connected to database' })
+        // Seed development data if no users exist
+        const sudo = context.sudo()
+        const User = sudo.db['User']
+        if (!User) {
+          logger.warn({ msg: 'User list not available, skipping seed' })
+          return
+        }
+        const userCount = await User.count()
+        if (userCount === 0) {
+          logger.info({ msg: 'No users found, creating development user' })
+          // Create a development-only account with a random password
+          const password = randomBytes(16).toString('hex')
+          await User.createOne({
+            data: {
+              name: 'Development Admin',
+              email: 'admin@example.com',
+              password,
+              isAdmin: true,
+            },
+          })
+          logger.info({ msg: 'Development user created', email: 'admin@example.com', password })
+        }
+      },
       idField: { kind: 'uuid' },
     },
     lists,
@@ -37,30 +65,43 @@ export default withAuth(
         // Disable GraphQL multipart upload middleware when not using file uploads
         // This prevents potential conflicts with request parsing and reduces overhead
         app.disable('graphqlUploadMiddleware')
-        
+
         const godContext = context.sudo()
 
-        if (!process.env.TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC) {
-          throw new Error('TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC must be provided!')
+        startTokenRefresher(godContext, config.refreshIntervalSec, config.refreshBeforeSec)
+
+        if (config.telegramBotToken) {
+          const bot = await prepareTelegramBot(godContext, config.telegramBotToken)
+          bot.launch()
+
+          // Enable graceful stop
+          process.once('SIGINT', () => bot.stop('SIGINT'))
+          process.once('SIGTERM', () => bot.stop('SIGTERM'))
+          logger.info({ msg: 'Telegram bot started' })
         }
 
-        if (!process.env.TELEGRAM_TOKENS_REFRESH_BEFORE_SEC) {
-          throw new Error('TELEGRAM_TOKENS_REFRESH_BEFORE_SEC must be provided!')
+        if (config.maxBotToken) {
+          const maxBot = await prepareMaxBot(godContext, app)
+
+          if (config.maxBotWebhookUrl && config.maxBotWebhookSecret) {
+            // Production: use webhooks
+            try {
+              await ensureWebhookSubscription(
+                config.maxBotToken,
+                config.maxBotWebhookUrl,
+                config.maxBotWebhookSecret,
+              )
+              logger.info({ msg: 'MAX bot started with webhook', url: config.maxBotWebhookUrl })
+            } catch (err) {
+              logger.error({ msg: 'Failed to setup MAX webhook subscription', err })
+            }
+          } else {
+            // Development: use long polling
+            maxBot.start()
+            logger.info({ msg: 'MAX bot started with long polling' })
+          }
         }
-
-        startTokensRefresher(godContext, Number(process.env.TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC), Number(process.env.TELEGRAM_TOKENS_REFRESH_BEFORE_SEC))
-
-        if (!process.env.TELEGRAM_BOT_TOKEN) {
-          throw new Error('TELEGRAM_BOT_TOKEN must be provided!')
-        }
-        
-        const bot = prepareTelegramBot(godContext, process.env.TELEGRAM_BOT_TOKEN as string)
-        bot.launch()
-
-        // Enable graceful stop
-        process.once('SIGINT', () => bot.stop('SIGINT'))
-        process.once('SIGTERM', () => bot.stop('SIGTERM'))
       },
-    }
+    },
   })
 )

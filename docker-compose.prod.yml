@@ -22,6 +22,14 @@ services:
     networks:
       - appnet
 
+  static-server:
+    image: static-server:latest
+    restart: unless-stopped
+    container_name: static-server
+    hostname: static-server
+    networks:
+      - appnet
+
   dnevnik-app:
     image: dnevnik-app:latest
     restart: unless-stopped

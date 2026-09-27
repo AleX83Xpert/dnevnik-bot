@@ -1,13 +1,14 @@
 > I use English due to open source, and Russian due to the project's purpose.
 
 # Here's an example / И сразу пример
-https://t.me/dnevnik66_bot
+Telegram: https://t.me/dnevnik66_bot
+Max: https://max.ru/se13902840_bot
 
 # What is that / Что это
 ### en
-This is a Telegram bot that makes using the Sverdlovsk Region's electronic school diary much more convenient than the diary https://dnevnik.egov66.ru itself.
+This is a multi-transport bot (Telegram, MAX) that makes using the Sverdlovsk Region's electronic school diary much more convenient than the diary https://dnevnik.egov66.ru itself.
 ### ru
-Это телеграм бот, дающий возможность гораздо удобнее пользоваться электронным школьным дневником Свердловской области, чем сам дневник https://dnevnik.egov66.ru.
+Это мульти-транспортный бот (Telegram, MAX), дающий возможность гораздо удобнее пользоваться электронным школьным дневником Свердловской области, чем сам дневник https://dnevnik.egov66.ru.
 
 # Why / Мотивация
 ### en
@@ -53,7 +54,7 @@ docker compose up -d
 
 3. Start project
 ```bash
-npm start
+npm run dev
 ```
 
 4. Run tests
@@ -69,15 +70,17 @@ You may use `docker-compose.prod.yml`.
 
 1. Create `.env` file on prod server (see `.env.example`)
 
-2. Build images for the app & load balancer
+2. Build images
 ```bash
 docker build . -t dnevnik-app:latest
+docker build ./infra/static-server/ -t static-server:latest
 docker build ./infra/load-balancer/ -t load-balancer:latest
 ```
 
 2. Upload images to server
 ```bash
 docker save dnevnik-app:latest | ssh user@server "docker load"
+docker save static-server:latest | ssh user@server "docker load"
 docker save load-balancer:latest | ssh user@server "docker load"
 ```
 
@@ -86,6 +89,24 @@ docker save load-balancer:latest | ssh user@server "docker load"
 5. Down&up containers
 
 > P.S. You need to migrate database if starting first time or if you created new migrations. Use `npm run migrate-apply` from the container
+
+# Multi-transport support / Мульти-транспортная поддержка
+### en
+The bot supports multiple messenger platforms (transports). Currently:
+- **Telegram** — via Telegraf, using WebApp for token delivery
+- **MAX** — via @maxhub/max-bot-api, using a mini-app with HTTP POST for token delivery
+
+Adding a new transport is purely additive: implement a `TransportAdapter`, create a `transports/<platform>/bot.ts`, and wire it in `keystone.ts`. No core files change.
+
+At least one transport token is required (`TELEGRAM_BOT_TOKEN` or `MAX_BOT_TOKEN`).
+### ru
+Бот поддерживает несколько мессенджеров (транспортов). Сейчас:
+- **Telegram** — через Telegraf, использует WebApp для передачи токенов
+- **MAX** — через @maxhub/max-bot-api, использует мини-приложение с HTTP POST для передачи токенов
+
+Добавление нового транспорта — чисто аддитивное: реализуйте `TransportAdapter`, создайте `transports/<platform>/bot.ts` и подключите в `keystone.ts`. Ядро не меняется.
+
+Требуется хотя бы один токен транспорта (`TELEGRAM_BOT_TOKEN` или `MAX_BOT_TOKEN`).
 
 # PostgreSQL Version Upgrade / Обновление версии PostgreSQL
 
