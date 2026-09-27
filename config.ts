@@ -35,7 +35,7 @@ export const config = {
   maxBotWebhookSecret: optional('MAX_BOT_WEBHOOK_SECRET'),
   refreshIntervalSec: requiredNumber('TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC'),
   refreshBeforeSec: requiredNumber('TELEGRAM_TOKENS_REFRESH_BEFORE_SEC'),
-  tokensTtlSec: optional('TELEGRAM_TOKENS_TTL_SEC') ? Number(optional('TELEGRAM_TOKENS_TTL_SEC')) : 600,
+  tokensTtlSec: optional('TELEGRAM_TOKENS_TTL_SEC') ? requiredNumber('TELEGRAM_TOKENS_TTL_SEC') : 600,
   forceAccessTokenTtl: optional('FORCE_ACCESS_TOKEN_TTL') === 'true',
   enableDbLogs: optional('ENABLE_DB_LOGS') === 'true',
 } as const
