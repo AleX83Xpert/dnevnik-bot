@@ -30,15 +30,15 @@ jobs:
       - name: No telemetry
         run: npm run disable-telemetry
 
-      - name: Prepare .env
+      - name: Set environment variables
         run: |
-          echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/main" >> .env
-          echo "REDIS_URL=redis://127.0.0.1:6379" >> .env
-          echo "SESSION_SECRET=change_me_to_a_longer_secret_for_ci" >> .env
-          echo "TOKENS_ENCRYPTION_KEY=someRandomString32SymbolsLength!" >> .env
-          echo "TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC=60" >> .env
-          echo "TELEGRAM_TOKENS_REFRESH_BEFORE_SEC=180" >> .env
-          echo "TELEGRAM_BOT_TOKEN=test_token" >> .env
+          echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/main" >> $GITHUB_ENV
+          echo "REDIS_URL=redis://127.0.0.1:6379" >> $GITHUB_ENV
+          echo "SESSION_SECRET=change_me_to_a_longer_secret_for_ci" >> $GITHUB_ENV
+          echo "TOKENS_ENCRYPTION_KEY=someRandomString32SymbolsLength!" >> $GITHUB_ENV
+          echo "TELEGRAM_TOKENS_REFRESH_INTERVAL_SEC=60" >> $GITHUB_ENV
+          echo "TELEGRAM_TOKENS_REFRESH_BEFORE_SEC=180" >> $GITHUB_ENV
+          echo "TELEGRAM_BOT_TOKEN=test_token" >> $GITHUB_ENV
 
       - name: Build
         run: NODE_ENV=production npm run build
