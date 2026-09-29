@@ -122,6 +122,8 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
                 'К сожалению, случилось так что я потерял доступ к вашему аккаунту в дневнике. Причины могут быть разными и даже не зависящими от меня. Но, что есть - то есть. Нам нужно снова получить доступ к вашему аккаунту в дневнике. Кнопка снова внизу, вы знаете что делать.',
               )
             }
+
+            throw refreshErr
           } finally {
             inFlightRefreshes.delete(user.id)
           }
@@ -140,9 +142,12 @@ export async function fetchFromDnevnik<TReq extends TDnevnikRequest, TResMap ext
       return await method(dnevnikClient, request.params)
     } else if (err instanceof DnevnikClientExternalServerError) {
       await transport.reply('Да что ж такое! На сайте дневника сейчас идут технические работы. Ничего не могу поделать 😥')
-    } else {
-      const { status, statusText } = err as DnevnikClientHttpResponseError
+    } else if (err instanceof DnevnikClientHttpResponseError) {
+      const { status, statusText } = err
       await transport.reply(`Какие-то проблемы с сервером дневника. Получил код ответа ${status} ${statusText}. Попробуйте немного позже. Если ошибка повторяется, то воспользуйтесь командой /start.`)
+    } else {
+      // Network failures, DNS errors, etc. — rethrow so caller can handle
+      throw err
     }
   }
 }
