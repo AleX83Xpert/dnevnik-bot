@@ -233,6 +233,8 @@
     const status = document.getElementById('status')
 
     form.addEventListener('submit', async function (event) {
+      event.preventDefault()
+
       const accessToken = event.target.elements.accessToken.value
       const refreshToken = event.target.elements.refreshToken.value
 
