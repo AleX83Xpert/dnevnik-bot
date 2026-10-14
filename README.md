@@ -1,3 +1,8 @@
+> [!WARNING]
+> **This project is currently unusable.** Since 1 September 2026, schools in the Sverdlovsk Region have moved from `dnevnik.egov66.ru` to **[Gosuslugi My School](https://www.gosuslugi.ru/myschool)**. Install the official mobile app using the links on the [regional service notice](https://t2.ecp.egov66.ru/index.html); the diary is also available through the “Diary” widget in Sferum/MAX. The old website was the only place where users could obtain tokens for these Telegram and MAX bots, so the bots cannot currently be connected.
+>
+> **Проект в настоящее время не работает.** С 1 сентября 2026 года школы Свердловской области перешли с `dnevnik.egov66.ru` на сервис **[«Госуслуги Моя школа»](https://www.gosuslugi.ru/myschool)**. Установите официальное мобильное приложение по ссылкам на [странице регионального сервиса](https://t2.ecp.egov66.ru/index.html); дневник также доступен через виджет «Дневник» в Сферуме/MAX. Старый сайт был единственным местом, где можно было получить токены для этих ботов Telegram и MAX, поэтому сейчас подключить ботов невозможно.
+
 > I use English due to open source, and Russian due to the project's purpose.
 
 # Here's an example / И сразу пример
