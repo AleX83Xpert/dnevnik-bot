@@ -330,10 +330,14 @@ function validateMaxInitData (initData: string, botToken: string): string | null
     const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest()
 
     // Compute hash: HMAC-SHA256 with secret_key as key, launchParams as data
-    const computedHash = crypto.createHmac('sha256', secretKey).update(launchParams).digest('hex')
+    const computedBuffer = crypto.createHmac('sha256', secretKey).update(launchParams).digest()
+    const originalBuffer = Buffer.from(originalHash, 'hex')
 
-    // Compare computed hash with original
-    if (computedHash !== originalHash) return null
+    // Compare using constant-time equality to prevent timing attacks
+    if (computedBuffer.length !== originalBuffer.length ||
+        !crypto.timingSafeEqual(computedBuffer, originalBuffer)) {
+      return null
+    }
 
     // Check auth_date freshness (recommended interval: 1 hour)
     const authDateEntry = params.find(([key]) => key === 'auth_date')
