@@ -3,27 +3,27 @@ import {
   fieldType,
   type FieldTypeFunc,
   orderDirectionEnum,
-  QueryMode,
 } from '@keystone-6/core/types'
-import { graphql } from '@keystone-6/core'
-import { TextFieldConfig } from '@keystone-6/core/fields'
-import { decrypt, encrypt } from './utils'
+import { g } from '@keystone-6/core'
+import type { TextFieldConfig } from '@keystone-6/core/fields'
+import type { GInputObjectType, GArg } from '@graphql-ts/schema'
+import { decrypt, encrypt } from './utils.js'
 import { isNil } from 'lodash'
 
 type EncryptedTextFieldConfig<ListTypeInfo extends BaseListTypeInfo> = TextFieldConfig<ListTypeInfo> & {
   secretKey: string
 }
 
-type EncryptedTextFilterFilterType = graphql.InputObjectType<{
-  equals: graphql.Arg<typeof graphql.String> // can be null
-  not: graphql.Arg<EncryptedTextFilterFilterType> // can be null
+type EncryptedTextFilterType = GInputObjectType<{
+  equals: GArg<typeof g.String>
+  not: GArg<EncryptedTextFilterType>
 }>
 
-const encryptedTextFilter: EncryptedTextFilterFilterType = graphql.inputObject({
+const encryptedTextFilter: EncryptedTextFilterType = g.inputObject({
   name: 'EncryptedTextFilter',
   fields: () => ({
-    equals: graphql.arg({ type: graphql.String }),
-    not: graphql.arg({ type: encryptedTextFilter }),
+    equals: g.arg({ type: g.String }),
+    not: g.arg({ type: encryptedTextFilter }),
   }),
 })
 
@@ -36,7 +36,6 @@ export function encryptedText<ListTypeInfo extends BaseListTypeInfo> ({
   }
 
   const {
-    // defaultValue: defaultValue_,
     validation = {}
   } = config
 
@@ -47,13 +46,11 @@ export function encryptedText<ListTypeInfo extends BaseListTypeInfo> ({
 
   return (meta) => {
     const isNullable = config.db?.isNullable ?? false
-    // const defaultValue = isNullable ? (defaultValue_ ?? null) : (defaultValue_ ?? '')
 
     return fieldType({
       kind: 'scalar',
       mode: isRequired ? 'required' : 'optional',
       scalar: 'String',
-      // default: (defaultValue === null) ? undefined : { kind: 'literal', value: defaultValue },
       index: undefined,
       map: config.db?.map,
       nativeType: config.db?.nativeType,
@@ -62,13 +59,13 @@ export function encryptedText<ListTypeInfo extends BaseListTypeInfo> ({
       ...config,
       input: {
         where: {
-          arg: graphql.arg({
+          arg: g.arg({
             type: encryptedTextFilter,
           }),
         },
         create: {
-          arg: graphql.arg({
-            type: graphql.String,
+          arg: g.arg({
+            type: g.String,
           }),
           resolve (value, context) {
             try {
@@ -79,7 +76,7 @@ export function encryptedText<ListTypeInfo extends BaseListTypeInfo> ({
           },
         },
         update: {
-          arg: graphql.arg({ type: graphql.String }),
+          arg: g.arg({ type: g.String }),
           resolve (value, context) {
             try {
               return isNil(value) ? value : encrypt(value, secretKey)
@@ -88,15 +85,15 @@ export function encryptedText<ListTypeInfo extends BaseListTypeInfo> ({
             }
           },
         },
-        orderBy: { arg: graphql.arg({ type: orderDirectionEnum }) },
+        orderBy: { arg: g.arg({ type: orderDirectionEnum }) },
       },
-      output: graphql.field({
-        type: graphql.String,
+      output: g.field({
+        type: g.String,
         resolve ({ value, item }, args, context, info) {
           try {
             return value ? decrypt(value, secretKey) : undefined
           } catch (err) {
-            return value // backward compatibility: not encrypted text will return as is
+            return value
           }
         },
       }),

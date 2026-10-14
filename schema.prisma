@@ -2,13 +2,12 @@
 // Modify your Keystone config when you want to change this.
 
 datasource postgresql {
-  url               = env("DATABASE_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
-  provider          = "postgresql"
+  provider = "postgresql"
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "./generated/prisma"
 }
 
 model User {
@@ -21,9 +20,10 @@ model User {
   updatedAt DateTime? @default(now())
 }
 
-model TelegramUser {
+model MessengerUser {
   id                               String    @id @default(uuid()) @postgresql.Uuid
-  telegramId                       String    @unique @default("")
+  platform                         String    @default("")
+  platformUserId                   String    @default("")
   dnevnikAccessToken               String?
   dnevnikAccessTokenExpirationDate DateTime?
   dnevnikRefreshToken              String?
@@ -33,6 +33,8 @@ model TelegramUser {
   createdAt                        DateTime? @default(now())
   updatedAt                        DateTime? @default(now())
 
+  @@index([platform])
+  @@index([platformUserId])
   @@index([dnevnikAccessTokenExpirationDate])
   @@index([dnevnikTokensUpdatedAt])
 }
