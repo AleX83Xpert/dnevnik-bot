@@ -35,7 +35,7 @@ export default withAuth(
           return
         }
         const userCount = await User.count()
-        if (userCount === 0) {
+        if (config.nodeEnv === 'development' && userCount === 0) {
           logger.info({ msg: 'No users found, creating development user' })
           // Create a development-only account with a random password
           const password = randomBytes(16).toString('hex')
@@ -47,7 +47,7 @@ export default withAuth(
               isAdmin: true,
             },
           })
-          logger.info({ msg: 'Development user created', email: 'admin@example.com', password })
+          logger.info({ msg: 'Development user created', email: 'admin@example.com' })
         }
       },
       idField: { kind: 'uuid' },
