@@ -184,15 +184,19 @@ export async function prepareMaxBot (godContext: KeystoneContext, app: Express):
 
   // Token delivery: HTTP endpoint (Max has no sendData equivalent)
   // The mini-app POSTs tokens here with initData for authentication
+  // Allow cross-origin requests from the MAX mini-app
+  app.options('/api/max/connect-dnevnik', (req, res) => {
+    res.header('Access-Control-Allow-Origin', '*')
+    res.header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+    res.header('Access-Control-Allow-Headers', 'Content-Type')
+    res.sendStatus(204)
+  })
+
   app.post('/api/max/connect-dnevnik', json(), async (req, res) => {
     // Allow cross-origin requests from the MAX mini-app
     res.header('Access-Control-Allow-Origin', '*')
     res.header('Access-Control-Allow-Methods', 'POST, OPTIONS')
     res.header('Access-Control-Allow-Headers', 'Content-Type')
-
-    if (req.method === 'OPTIONS') {
-      return res.sendStatus(204)
-    }
 
     try {
       const { accessToken, refreshToken, initData } = req.body
