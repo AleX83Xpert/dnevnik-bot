@@ -14,9 +14,11 @@
     "test:ci": "vitest run --reporter=verbose --reporter=junit --coverage"
   },
   "dependencies": {
+    "@graphql-ts/schema": "^1.0.2",
     "@keystone-6/auth": "^10.0.4",
     "@keystone-6/core": "^8.0.6",
     "@keystone-6/fields-document": "^11.0.4",
+    "@keystar/ui": "~0.9.6",
     "@maxhub/max-bot-api": "^0.2.5",
     "@prisma/adapter-pg": "^7.9.1",
     "@telegraf/session": "^2.0.0-beta.7",
